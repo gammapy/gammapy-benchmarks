@@ -1,0 +1,12 @@
+env:
+  machine: x86_64
+  system: Darwin
+  user: deil
+software:
+  astropy: 3.2.1
+  gammapy: 0.13.dev9353
+  numpy: 1.16.4
+  python_executable: /Users/deil/software/anaconda3/envs/gammapy-dev/bin/python
+  python_version: 3.7.0
+  scipy: 1.3.0
+  sherpa: 4.11.0
