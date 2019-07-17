@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 from pathlib import Path
 import numpy as np
 import astropy.units as u
@@ -17,158 +16,148 @@ from gammapy.utils.fitting import Fit
 N_OBS = 100
 OBS_ID = 110380
 
+
 def run_benchmark():
-	data_store = DataStore.from_dir("$GAMMAPY_DATA/cta-1dc/index/gps/")
-	obs_ids = OBS_ID * np.ones(N_OBS)
+    data_store = DataStore.from_dir("$GAMMAPY_DATA/cta-1dc/index/gps/")
+    obs_ids = OBS_ID * np.ones(N_OBS)
 
-	observations = data_store.get_observations(obs_ids)
+    observations = data_store.get_observations(obs_ids)
 
-	energy_axis = MapAxis.from_edges(
-    	np.logspace(-1.0, 1.0, 10), unit="TeV", name="energy", interp="log"
-	)
-	geom = WcsGeom.create(
-	    skydir=(0, 0),
-	    binsz=0.02,
-	    width=(10, 8),
-	    coordsys="GAL",
-	    proj="CAR",
-	    axes=[energy_axis],
-	)
+    energy_axis = MapAxis.from_edges(
+        np.logspace(-1.0, 1.0, 10), unit="TeV", name="energy", interp="log"
+    )
+    geom = WcsGeom.create(
+        skydir=(0, 0),
+        binsz=0.02,
+        width=(10, 8),
+        coordsys="GAL",
+        proj="CAR",
+        axes=[energy_axis],
+    )
 
+    maker = MapMaker(geom, offset_max=4.0 * u.deg)
+    maps = maker.run(observations)
 
-	maker = MapMaker(geom, offset_max=4.0 * u.deg)
-	maps = maker.run(observations)
+    counts = maps["counts"].sum_over_axes()
+    background = maps["background"].sum_over_axes()
+    exposure = maps["exposure"].sum_over_axes()
 
+    diffuse_gal = Map.read("$GAMMAPY_DATA/fermi-3fhl-gc/gll_iem_v06_gc.fits.gz")
+    coord = maps["counts"].geom.get_coord()
+    data = diffuse_gal.interp_by_coord(
+        {
+            "skycoord": coord.skycoord,
+            "energy": coord["energy"]
+            * maps["counts"].geom.get_axis_by_name("energy").unit,
+        },
+        interp=3,
+    )
+    diffuse_galactic = WcsNDMap(maps["counts"].geom, data)
+    diffuse = diffuse_galactic.sum_over_axes()
+    combination = diffuse * exposure
+    combination.unit = ""
 
-	counts = maps["counts"].sum_over_axes()
-	background = maps["background"].sum_over_axes()
-	exposure = maps["exposure"].sum_over_axes()
-	excess = counts - background
+    src_pos = SkyCoord(0, 0, unit="deg", frame="galactic")
+    table_psf = make_mean_psf(observations, src_pos)
 
-	diffuse_gal = Map.read("$GAMMAPY_DATA/fermi-3fhl-gc/gll_iem_v06_gc.fits.gz")
-	coord = maps["counts"].geom.get_coord()
-	data = diffuse_gal.interp_by_coord(
-	    {
-	        "skycoord": coord.skycoord,
-	        "energy": coord["energy"]
-	        * maps["counts"].geom.get_axis_by_name("energy").unit,
-	    },
-	    interp=3,
-	)
-	diffuse_galactic = WcsNDMap(maps["counts"].geom, data)
-	diffuse = diffuse_galactic.sum_over_axes()
-	combination = diffuse * exposure
-	combination.unit = ""
-	excess2 = counts - background - combination
+    psf_kernel = PSFKernel.from_table_psf(table_psf, geom, max_radius="0.3 deg")
 
-	src_pos = SkyCoord(0, 0, unit="deg", frame="galactic")
-	table_psf = make_mean_psf(observations, src_pos)
+    energy = energy_axis.edges
+    edisp = make_mean_edisp(
+        observations, position=src_pos, e_true=energy, e_reco=energy
+    )
 
-	psf_kernel = PSFKernel.from_table_psf(table_psf, geom, max_radius="0.3 deg")
+    path = Path("analysis_3d")
+    path.mkdir(exist_ok=True)
 
-	energy = energy_axis.edges
-	edisp = make_mean_edisp(
-	    observations, position=src_pos, e_true=energy, e_reco=energy
-	)
+    maps["counts"].write(str(path / "counts.fits"), overwrite=True)
+    maps["background"].write(str(path / "background.fits"), overwrite=True)
+    maps["exposure"].write(str(path / "exposure.fits"), overwrite=True)
 
-	path = Path("analysis_3d")
-	path.mkdir(exist_ok=True)
+    psf_kernel.write(str(path / "psf.fits"), overwrite=True)
+    edisp.write(str(path / "edisp.fits"), overwrite=True)
 
-	maps["counts"].write(str(path / "counts.fits"), overwrite=True)
-	maps["background"].write(str(path / "background.fits"), overwrite=True)
-	maps["exposure"].write(str(path / "exposure.fits"), overwrite=True)
+    maps = {
+        "counts": Map.read(str(path / "counts.fits")),
+        "background": Map.read(str(path / "background.fits")),
+        "exposure": Map.read(str(path / "exposure.fits")),
+    }
 
-	psf_kernel.write(str(path / "psf.fits"), overwrite=True)
-	edisp.write(str(path / "edisp.fits"), overwrite=True)
+    psf_kernel = PSFKernel.read(str(path / "psf.fits"))
+    edisp = EnergyDispersion.read(str(path / "edisp.fits"))
 
-	maps = {
-	    "counts": Map.read(str(path / "counts.fits")),
-	    "background": Map.read(str(path / "background.fits")),
-	    "exposure": Map.read(str(path / "exposure.fits")),
-	}
+    coords = maps["counts"].geom.get_coord()
+    mask = coords["energy"] > 0.3
 
-	psf_kernel = PSFKernel.read(str(path / "psf.fits"))
-	edisp = EnergyDispersion.read(str(path / "edisp.fits"))
+    spatial_model = SkyPointSource(lon_0="0.01 deg", lat_0="0.01 deg")
+    spectral_model = PowerLaw(
+        index=2.2, amplitude="3e-12 cm-2 s-1 TeV-1", reference="1 TeV"
+    )
+    model = SkyModel(spatial_model=spatial_model, spectral_model=spectral_model)
 
-	coords = maps["counts"].geom.get_coord()
-	mask = coords["energy"] > 0.3
+    background_model = BackgroundModel(maps["background"], norm=1.1, tilt=0.0)
+    background_model.parameters["norm"].frozen = False
+    background_model.parameters["tilt"].frozen = True
 
-	spatial_model = SkyPointSource(lon_0="0.01 deg", lat_0="0.01 deg")
-	spectral_model = PowerLaw(
-	    index=2.2, amplitude="3e-12 cm-2 s-1 TeV-1", reference="1 TeV"
-	)
-	model = SkyModel(spatial_model=spatial_model, spectral_model=spectral_model)
+    dataset = MapDataset(
+        model=model,
+        counts=maps["counts"],
+        exposure=maps["exposure"],
+        background_model=background_model,
+        mask_fit=mask,
+        psf=psf_kernel,
+        edisp=edisp,
+    )
 
-	background_model = BackgroundModel(maps["background"], norm=1.1, tilt=0.0)
-	background_model.parameters["norm"].frozen = False
-	background_model.parameters["tilt"].frozen = True
+    fit = Fit(dataset)
+    result = fit.run(optimize_opts={"print_level": 1})
 
-	dataset = MapDataset(
-	    model=model,
-	    counts=maps["counts"],
-	    exposure=maps["exposure"],
-	    background_model=background_model,
-	    mask_fit=mask,
-	    psf=psf_kernel,
-	    edisp=edisp,
-	)
+    spec = model.spectral_model
 
-	fit = Fit(dataset)
-	result = fit.run(optimize_opts={"print_level": 1})
+    covariance = result.parameters.covariance
+    spec.parameters.covariance = covariance[2:5, 2:5]
 
-	npred = dataset.npred()
+    diffuse_model = SkyDiffuseCube.read(
+        "$GAMMAPY_DATA/fermi-3fhl-gc/gll_iem_v06_gc.fits.gz"
+    )
 
-	spec = model.spectral_model
+    background_diffuse = BackgroundModel.from_skymodel(
+        diffuse_model, exposure=maps["exposure"], psf=psf_kernel
+    )
 
-	covariance = result.parameters.covariance
-	spec.parameters.covariance = covariance[2:5, 2:5]
+    background_irf = BackgroundModel(maps["background"], norm=1.0, tilt=0.0)
+    background_total = background_irf + background_diffuse
 
-	energy_range = [0.3, 10] * u.TeV
-	diffuse_model = SkyDiffuseCube.read(
-	    "$GAMMAPY_DATA/fermi-3fhl-gc/gll_iem_v06_gc.fits.gz"
-	)
+    spatial_model = SkyPointSource(lon_0="-0.05 deg", lat_0="-0.05 deg")
+    spectral_model = ExponentialCutoffPowerLaw(
+        index=2 * u.Unit(""),
+        amplitude=3e-12 * u.Unit("cm-2 s-1 TeV-1"),
+        reference=1.0 * u.TeV,
+        lambda_=0.1 / u.TeV,
+    )
 
-	background_diffuse = BackgroundModel.from_skymodel(
-	   	diffuse_model, exposure=maps["exposure"], psf=psf_kernel
-	)
+    model_ecpl = SkyModel(
+        spatial_model=spatial_model, spectral_model=spectral_model, name="gc-source"
+    )
 
-	background_irf = BackgroundModel(maps["background"], norm=1.0, tilt=0.0)
-	background_total = background_irf + background_diffuse
+    dataset_combined = MapDataset(
+        model=model_ecpl,
+        counts=maps["counts"],
+        exposure=maps["exposure"],
+        background_model=background_total,
+        psf=psf_kernel,
+        edisp=edisp,
+    )
 
-	spatial_model = SkyPointSource(lon_0="-0.05 deg", lat_0="-0.05 deg")
-	spectral_model = ExponentialCutoffPowerLaw(
-	    index=2 * u.Unit(""),
-	    amplitude=3e-12 * u.Unit("cm-2 s-1 TeV-1"),
-	    reference=1.0 * u.TeV,
-	    lambda_=0.1 / u.TeV,
-	)
+    fit_combined = Fit(dataset_combined)
+    fit_combined.run()
 
-	model_ecpl = SkyModel(
-	    spatial_model=spatial_model,
-	    spectral_model=spectral_model,
-	    name="gc-source",
-	)
+    e_edges = [0.3, 1, 3, 10] * u.TeV
+    fpe = FluxPointsEstimator(
+        datasets=[dataset_combined], e_edges=e_edges, source="gc-source"
+    )
 
-	dataset_combined = MapDataset(
-	    model=model_ecpl,
-	    counts=maps["counts"],
-	    exposure=maps["exposure"],
-	    background_model=background_total,
-	    psf=psf_kernel,
-	    edisp=edisp,
-	)
-
-	fit_combined = Fit(dataset_combined)
-	result_combined = fit_combined.run()
-
-
-	e_edges = [0.3, 1, 3, 10] * u.TeV
-	fpe = FluxPointsEstimator(
-	    datasets=[dataset_combined], e_edges=e_edges, source="gc-source"
-	)
-
-	flux_points = fpe.run()
-
+    fpe.run()
 
 
 if __name__ == "__main__":
