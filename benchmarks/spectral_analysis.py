@@ -1,8 +1,4 @@
-import matplotlib.pyplot as plt
-import gammapy
 import numpy as np
-import astropy
-import regions
 import astropy.units as u
 from astropy.coordinates import SkyCoord, Angle
 from regions import CircleSkyRegion
@@ -11,10 +7,8 @@ from gammapy.utils.fitting import Fit
 from gammapy.data import ObservationStats, ObservationSummary, DataStore
 from gammapy.background import ReflectedRegionsBackgroundEstimator
 from gammapy.spectrum.models import PowerLaw
-from gammapy.spectrum.crab import MeyerCrabModel
 from gammapy.spectrum import (
     SpectrumExtraction,
-    SpectrumDatasetOnOff,
     SpectrumDatasetOnOffStacker,
     FluxPointsEstimator,
     FluxPointsDataset,
@@ -97,14 +91,12 @@ def run_benchmark():
     fpe = FluxPointsEstimator(datasets=datasets_joint, e_edges=e_edges)
     flux_points = fpe.run()
 
-    flux_points_dataset = FluxPointsDataset(data=flux_points, model=model_best_joint)
-
     stacker = SpectrumDatasetOnOffStacker(datasets_joint)
     dataset_stacked = stacker.run()
 
     dataset_stacked.model = model
     stacked_fit = Fit([dataset_stacked])
-    result_stacked = stacked_fit.run()
+    stacked_fit.run()
 
 
 if __name__ == "__main__":
