@@ -11,10 +11,9 @@ from gammapy.spectrum import (
     SpectrumExtraction,
     SpectrumDatasetOnOffStacker,
     FluxPointsEstimator,
-    FluxPointsDataset,
 )
 
-N_OBS = 10
+N_OBS = 100
 OBS_ID = 23523
 
 
@@ -52,7 +51,7 @@ def run_benchmark():
     for obs, bkg in zip(observations, background_estimator.result):
         stats.append(ObservationStats.from_observation(obs, bkg))
 
-    obs_summary = ObservationSummary(stats)
+    ObservationSummary(stats)
 
     e_reco = np.logspace(-1, np.log10(40), 40) * u.TeV
     e_true = np.logspace(np.log10(0.05), 2, 200) * u.TeV
@@ -89,7 +88,7 @@ def run_benchmark():
     e_edges = np.logspace(np.log10(e_min), np.log10(e_max), 11) * u.TeV
 
     fpe = FluxPointsEstimator(datasets=datasets_joint, e_edges=e_edges)
-    flux_points = fpe.run()
+    fpe.run()
 
     stacker = SpectrumDatasetOnOffStacker(datasets_joint)
     dataset_stacked = stacker.run()

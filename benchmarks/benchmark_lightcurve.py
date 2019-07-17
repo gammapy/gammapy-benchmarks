@@ -1,12 +1,10 @@
 import numpy as np
 from gammapy.data import DataStore
-from gammapy.maps import MapAxis, WcsGeom
-from gammapy.cube import MapMaker
 import astropy.units as u
 from astropy.coordinates import SkyCoord, Angle
 from regions import CircleSkyRegion
+from gammapy.utils.energy import energy_logspace
 from gammapy.background import ReflectedRegionsBackgroundEstimator
-from gammapy.utils.energy import EnergyBounds
 from gammapy.spectrum import SpectrumExtraction
 from gammapy.spectrum.models import PowerLaw
 from gammapy.time import LightCurveEstimator
@@ -16,7 +14,6 @@ OBS_ID = 23523
 
 
 def run_benchmark():
-
     data_store = DataStore.from_dir("$GAMMAPY_DATA/hess-dl3-dr1/")
 
     obs_ids = OBS_ID * np.ones(N_OBS)
@@ -31,7 +28,7 @@ def run_benchmark():
     )
     bkg_estimator.run()
 
-    ebounds = EnergyBounds.equal_log_spacing(0.7, 100, 50, unit="TeV")
+    ebounds = energy_logspace("0.7 TeV", "100 TeV", 50)
     extraction = SpectrumExtraction(
         observations=observations,
         bkg_estimate=bkg_estimator.result,
@@ -40,7 +37,6 @@ def run_benchmark():
         e_true=ebounds,
     )
     extraction.run()
-    spectrum_observations = extraction.spectrum_observations
 
     time_intervals = [(obs.tstart, obs.tstop) for obs in observations]
 
@@ -56,6 +52,7 @@ def run_benchmark():
         spectral_model=spectral_model,
         energy_range=energy_range,
     )
+    assert len(lc.table) == N_OBS
 
 
 if __name__ == "__main__":

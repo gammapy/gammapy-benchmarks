@@ -38,8 +38,8 @@ def run_benchmark():
     maker = MapMaker(geom, offset_max=4.0 * u.deg)
     maps = maker.run(observations)
 
-    counts = maps["counts"].sum_over_axes()
-    background = maps["background"].sum_over_axes()
+    maps["counts"].sum_over_axes()
+    maps["background"].sum_over_axes()
     exposure = maps["exposure"].sum_over_axes()
 
     diffuse_gal = Map.read("$GAMMAPY_DATA/fermi-3fhl-gc/gll_iem_v06_gc.fits.gz")

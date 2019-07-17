@@ -27,7 +27,7 @@ def run_benchmark():
     )
 
     maker = MapMaker(geom, offset_max=4.0 * u.deg)
-    maps = maker.run(observations)
+    maker.run(observations)
 
 
 if __name__ == "__main__":
