@@ -21,10 +21,10 @@ log = logging.getLogger(__name__)
 THIS_REPO = Path(__file__).parent
 
 AVAILABLE_BENCHMARKS = {
-    "3d_analysis": "benchmarks/3d_analysis.py",
-    "benchmark_lightcurve": "benchmarks/benchmark_lightcurve.py",
-    "benchmark_maps": "benchmarks/benchmark_maps.py",
-    "spectral_analysis": "benchmarks/spectral_analysis.py",
+    "analysis_3d": "benchmarks/analysis_3d.py",
+    "lightcurve_1d": "benchmarks/lightcurve_1d.py",
+    "maps_3d": "benchmarks/maps_3d.py",
+    "spectrum_1d": "benchmarks/spectrum_1d.py",
 }
 
 MONITOR_OPTIONS = {"duration": None, "interval": 0.5, "include_children": True}
