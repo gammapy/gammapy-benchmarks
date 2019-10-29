@@ -1,4 +1,4 @@
-# Gammapy validation: HESS DL3 DR1 and validation paper
+ Gammapy validation: HESS DL3 DR1 and validation paper
 
 ## Task
 
