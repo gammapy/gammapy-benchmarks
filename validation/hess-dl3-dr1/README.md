@@ -10,5 +10,6 @@
 
 - Dataset: https://github.com/gammapy/gammapy-extra/tree/master/datasets/hess-dl3-dr1
 - Lars paper: https://ui.adsabs.harvard.edu/abs/2019arXiv191008088M
+  - Results in machine-readable format: https://github.com/lmohrmann/hess_ost_paper_material
 - Jürgen paper: https://ui.adsabs.harvard.edu/abs/2019arXiv191009456K
 - Tutorial: https://docs.gammapy.org/0.14/notebooks/hess.html
