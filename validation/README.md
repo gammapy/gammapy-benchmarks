@@ -4,10 +4,20 @@ High-level science analysis validation for Gammapy.
 
 ## Analyses
 
+We would like to have the following analyses scripted:
+
 - [fermi-3fhl](fermi-3fhl) - Fermi 3FHL catalog paper
 - [hess-dl3-dr1](hess-dl3-dr1) - H.E.S.S. DR1 & validation paper
 - [cta-1dc](cta-1dc) - CTA first data challenge tools check
 - [joint-crab](joint-crab) - Joint Crab paper
+
+Other ideas and contributions are welcome, but are considered lower-priority at the moment:
+
+- Simulate and fit various models (e.g. each spectral and spatial model) and check that input=output.
+  Possibly use ctools or Fermi ST to simulate, to get a validation against a different tool.
+- Use 3FGL and test energy dispersion against latest Fermi ST
+- Try to reproduce full 3FHL catalog (should be doable with a 1000 line script) or HGPS catalog (needs private data, more work)
+- ...
 
 ## Howto
 
