@@ -15,7 +15,7 @@ Other ideas and contributions are welcome, but are considered lower-priority at 
 
 - Simulate and fit various models (e.g. each spectral and spatial model) and check that input=output.
   Possibly use ctools or Fermi ST to simulate, to get a validation against a different tool.
-- Use 3FGL and test energy dispersion against latest Fermi ST
+- Use 4FGL and test energy dispersion against latest Fermi ST
 - Try to reproduce full 3FHL catalog (should be doable with a 1000 line script) or HGPS catalog (needs private data, more work)
 - ...
 
