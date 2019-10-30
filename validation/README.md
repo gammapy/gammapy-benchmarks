@@ -13,6 +13,7 @@ We would like to have the following analyses scripted:
 
 Other ideas and contributions are welcome, but are considered lower-priority at the moment:
 
+- Simulate and fit spectral line at low energy where energy dispersion matters
 - Simulate and fit various models (e.g. each spectral and spatial model) and check that input=output.
   Possibly use ctools or Fermi ST to simulate, to get a validation against a different tool.
 - Use 4FGL and test energy dispersion against latest Fermi ST
