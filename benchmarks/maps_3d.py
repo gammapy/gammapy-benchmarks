@@ -1,7 +1,7 @@
 import numpy as np
 from gammapy.data import DataStore
 from gammapy.maps import MapAxis, WcsGeom
-from gammapy.cube import MapMaker
+from gammapy.cube import MapDataset, MapDatasetMaker
 import astropy.units as u
 
 N_OBS = 100
@@ -19,15 +19,19 @@ def run_benchmark():
     )
     geom = WcsGeom.create(
         skydir=(0, 0),
-        binsz=0.02,
+        binsz=0.05,
         width=(10, 8),
         coordsys="GAL",
         proj="CAR",
         axes=[energy_axis],
     )
 
-    maker = MapMaker(geom, offset_max=4.0 * u.deg)
-    maker.run(observations)
+    stacked = MapDataset.create(geom)
+
+    for obs in observations:
+        maker = MapDatasetMaker(geom, offset_max=4.0 * u.deg)
+        dataset = maker.run(obs)
+        stacked.stack(dataset)
 
 
 if __name__ == "__main__":
