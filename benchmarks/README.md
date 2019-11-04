@@ -1,6 +1,6 @@
 # gammapy-benchmarks
 
-Performance benchmarks for Gammapy
+Performance benchmarks for Gammapy.
 
 ## Analyses
 
@@ -16,14 +16,13 @@ We have the following typical science cases tested:
 
 ## Execution
 
-To run a specific benchmark use:
+To run a specific benchmark use [make.py](make.py).
+
 ```bash
-./make.py run-benchmark benchmark-name
+python make.py run-benchmark benchmark-name
 ```
 
 To run all benchmarks:
 ```bash
-./make.py run-benchmark all
+python make.py run-benchmark all
 ```
-
-
