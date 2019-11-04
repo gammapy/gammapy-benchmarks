@@ -2,7 +2,7 @@
 
 High-level science analysis validation for Gammapy.
 
-Note that we have performance benchmarks separately, see [here](../README.md].
+Note that we have performance benchmarks separately, see [here](../README.md).
 
 ## Analyses
 
