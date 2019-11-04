@@ -4,6 +4,7 @@
 
 - Script some or all of the analyses from the CTA 1DC tools validation with latest Gammapy.
 - Compare to results on the wiki page or in the close-out document
+- Note that the IRFs used to simulate and analyse CTA 1DC had some issues. Especially the energy dispersion was noisy, leading to unstable spectral results in several cases at low energies (see e.g. links [here](https://github.com/gammapy/gammapy/issues/2484#issuecomment-545904310)). The way we handle this is to just document discrepancies for now, and then in 2020 or later we'll change CTA validation dataset for Gammapy when something newer becomes available.
 
 ## References
 
