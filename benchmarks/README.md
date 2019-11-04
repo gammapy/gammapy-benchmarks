@@ -2,6 +2,8 @@
 
 Performance benchmarks for Gammapy.
 
+Note that we have validation separately, see [here](../README.md].
+
 ## Analyses
 
 We have the following typical science cases tested:
