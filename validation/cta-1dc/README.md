@@ -9,6 +9,7 @@
 
 - [CTA 1DC wiki page](https://forge.in2p3.fr/projects/data-challenge-1-dc-1/wiki)
 - [CTA 1DC tools checks page](https://forge.in2p3.fr/projects/data-challenge-1-dc-1/wiki/Current_capabilities_and_limitations_of_the_analysis_tools)
+- https://github.com/gammasky/cta-analyses/tree/master/dc-1-checks (private repo, ask on Slack if you want access)
 - [CTA 1DC close-out document](https://forge.in2p3.fr/attachments/download/63626/CTA_DC1_CloseOut.pdf)
 - Tutorial: https://docs.gammapy.org/0.14/notebooks/cta_1dc_introduction.html
 - Tutorial: https://docs.gammapy.org/0.14/notebooks/cta_data_analysis.html
