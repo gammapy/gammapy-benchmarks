@@ -2,13 +2,13 @@
 
 ## Task
 
-- Update `gammapy-extra/datasets/hess-dl3-dr1` to include background model (write `make.py` script that combines files and generates new index files). Possibly downsample BG to have smaller files.
 - Script some or all analyses from the validation paper(s) with the latest Gammapy version
+- The analyses are very similar, it should be possible to script them all. That is preferred over manually writing one notebook per target, to simplify maintenance for the Gammapy team.
 - Run analyses and compare with the paper(s), report discrepancies as issues in Gammapy, or document why they occur.
 
 ## References
 
-- Dataset: https://github.com/gammapy/gammapy-extra/tree/master/datasets/hess-dl3-dr1
+- Dataset (including background models from HESS validation paper): https://github.com/gammapy/gammapy-extra/tree/master/datasets/hess-dl3-dr1
 - Lars paper: https://ui.adsabs.harvard.edu/abs/2019arXiv191008088M
   - Results in machine-readable format: https://github.com/lmohrmann/hess_ost_paper_material
 - Jürgen paper: https://ui.adsabs.harvard.edu/abs/2019arXiv191009456K
