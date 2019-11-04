@@ -2,6 +2,8 @@
 
 High-level science analysis validation for Gammapy.
 
+Note that we have performance benchmarks separately, see [here](../README.md].
+
 ## Analyses
 
 We would like to have the following analyses scripted as soon as possible:
