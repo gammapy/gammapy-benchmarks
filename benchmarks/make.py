@@ -25,6 +25,7 @@ AVAILABLE_BENCHMARKS = {
     "lightcurve_1d": "lightcurve_1d.py",
     "maps_3d": "maps_3d.py",
     "spectrum_1d": "spectrum_1d.py",
+    "spectrum_1d_joint": "spectrum_1d_joint.py",
 }
 
 MONITOR_OPTIONS = {"duration": None, "interval": 0.5, "include_children": True}
