@@ -20,7 +20,6 @@ OBS_ID = 23523
 
 def run_benchmark():
     # Set up data store and select N_OBS times the observation OBS_ID
-
     data_store = DataStore.from_dir("$GAMMAPY_DATA/hess-dl3-dr1/")
     obs_ids = OBS_ID * np.ones(N_OBS)
 
@@ -46,19 +45,20 @@ def run_benchmark():
     e_reco = np.logspace(-1, np.log10(40), 40) * u.TeV
     e_true = np.logspace(np.log10(0.05), 2, 200) * u.TeV
 
-    stacked = SpectrumDatasetOnOff.create(e_reco=e_reco, e_true=e_true)
-
     dataset_maker = SpectrumDatasetMaker(
-        region=on_region, e_reco=e_reco, e_true=e_true, containment_correction=False,
+        region=on_region, e_reco=e_reco, e_true=e_true, containment_correction=True,
     )
     bkg_maker = ReflectedRegionsBackgroundMaker(exclusion_mask=exclusion_mask)
     safe_mask_masker = SafeMaskMaker(methods=["aeff-max"], aeff_percent=10)
+
+    # Data preparation
+    datasets = []
 
     for observation in observations:
         dataset = dataset_maker.run(observation, selection=["counts", "aeff", "edisp"])
         dataset_on_off = bkg_maker.run(dataset, observation)
         dataset_on_off = safe_mask_masker.run(dataset_on_off, observation)
-        stacked.stack(dataset_on_off)
+        datasets.append(dataset_on_off)
 
     # Modeling and fitting
 
@@ -66,17 +66,19 @@ def run_benchmark():
         index=2, amplitude=2e-11 * u.Unit("cm-2 s-1 TeV-1"), reference=1 * u.TeV
     )
 
-    stacked.model = model
-    fit = Fit(stacked)
-    result = fit.run(optimize_opts={"print_level": 1})
+    for dataset in datasets:
+        dataset.model = model
 
-    model_best = model.copy()
-    model_best.parameters.covariance = result.parameters.covariance
+    fit_joint = Fit(datasets)
+    result_joint = fit_joint.run()
+
+    model_best_joint = model.copy()
+    model_best_joint.parameters.covariance = result_joint.parameters.covariance
 
     # Flux points
     e_min, e_max = 0.7, 30
     e_edges = np.logspace(np.log10(e_min), np.log10(e_max), 11) * u.TeV
-    fpe = FluxPointsEstimator(datasets=[stacked], e_edges=e_edges)
+    fpe = FluxPointsEstimator(datasets=datasets, e_edges=e_edges)
     fpe.run()
 
 
