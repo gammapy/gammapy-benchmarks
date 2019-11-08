@@ -22,6 +22,7 @@ THIS_REPO = Path(__file__).parent
 
 AVAILABLE_BENCHMARKS = {
     "analysis_3d": "analysis_3d.py",
+    "analysis_3d_joint": "analysis_3d_joint.py",
     "lightcurve_1d": "lightcurve_1d.py",
     "maps_3d": "maps_3d.py",
     "spectrum_1d": "spectrum_1d.py",
