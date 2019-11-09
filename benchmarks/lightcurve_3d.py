@@ -44,7 +44,7 @@ def run_benchmark():
     )
 
     spectral_model = PowerLawSpectralModel(
-        index=2.6, amplitude=2.0e-11 * u.Unit("1 / (cm2 s TeV)"), reference=1 * u.TeV,
+        index=2.6, amplitude=2.0e-11 * u.Unit("1 / (cm2 s TeV)"), reference=1 * u.TeV
     )
     spectral_model.parameters["index"].frozen = False
 
@@ -82,7 +82,7 @@ def run_benchmark():
         )
 
         stacked.psf = stacked.psf.get_psf_kernel(
-            position=target_position, geom=stacked.exposure.geom, max_radius="0.3 deg",
+            position=target_position, geom=stacked.exposure.geom, max_radius="0.3 deg"
         )
 
         stacked.counts.meta["t_start"] = time_interval[0]

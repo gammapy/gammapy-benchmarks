@@ -46,7 +46,7 @@ def run_benchmark():
     e_true = np.logspace(np.log10(0.05), 2, 200) * u.TeV
 
     dataset_maker = SpectrumDatasetMaker(
-        region=on_region, e_reco=e_reco, e_true=e_true, containment_correction=True,
+        region=on_region, e_reco=e_reco, e_true=e_true, containment_correction=True
     )
     bkg_maker = ReflectedRegionsBackgroundMaker(exclusion_mask=exclusion_mask)
     safe_mask_masker = SafeMaskMaker(methods=["aeff-max"], aeff_percent=10)

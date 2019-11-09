@@ -49,7 +49,7 @@ def run_benchmark():
     stacked = SpectrumDatasetOnOff.create(e_reco=e_reco, e_true=e_true)
 
     dataset_maker = SpectrumDatasetMaker(
-        region=on_region, e_reco=e_reco, e_true=e_true, containment_correction=False,
+        region=on_region, e_reco=e_reco, e_true=e_true, containment_correction=False
     )
     bkg_maker = ReflectedRegionsBackgroundMaker(exclusion_mask=exclusion_mask)
     safe_mask_masker = SafeMaskMaker(methods=["aeff-max"], aeff_percent=10)

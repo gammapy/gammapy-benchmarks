@@ -28,7 +28,7 @@ def run_benchmark():
     e_true = np.logspace(np.log10(0.05), 2, 100) * u.TeV
 
     spectral_model = PowerLawSpectralModel(
-        index=2.6, amplitude=2.0e-11 * u.Unit("1 / (cm2 s TeV)"), reference=1 * u.TeV,
+        index=2.6, amplitude=2.0e-11 * u.Unit("1 / (cm2 s TeV)"), reference=1 * u.TeV
     )
     spectral_model.parameters["index"].frozen = False
 
