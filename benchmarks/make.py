@@ -8,12 +8,10 @@ import warnings
 import getpass
 import platform
 import sys
+import importlib
 from pathlib import Path
 
 import click
-import numpy as np
-import astropy
-import gammapy
 from psrecord.main import monitor
 
 log = logging.getLogger(__name__)
@@ -35,34 +33,22 @@ MONITOR_OPTIONS = {"duration": None, "interval": 0.5, "include_children": True}
 
 def get_provenance():
     """Compute provenance info about software and data used."""
-    na = "not available"
     data = {}
 
-    data["env"] = {}
-    data["env"]["user"] = getpass.getuser()
-    data["env"]["machine"] = platform.machine()
-    data["env"]["system"] = platform.system()
+    data["env"] = {
+        "user": getpass.getuser(),
+        "machine": platform.machine(),
+        "system": platform.system(),
+    }
 
     data["software"] = {}
     data["software"]["python_executable"] = sys.executable
     data["software"]["python_version"] = platform.python_version()
-    data["software"]["numpy"] = np.__version__
-    try:
-        import scipy
+    data["software"]["numpy"] = importlib.import_module("numpy").__version__
+    data["software"]["scipy"] = importlib.import_module("scipy").__version__
+    data["software"]["astropy"] = importlib.import_module("astropy").__version__
+    data["software"]["gammapy"] = importlib.import_module("gammapy").__version__
 
-        scipy_version = scipy.__version__
-    except ImportError:
-        scipy_version = na
-    data["software"]["scipy"] = scipy_version
-    data["software"]["astropy"] = astropy.__version__
-    try:
-        import sherpa
-
-        sherpa_version = sherpa.__version__
-    except ImportError:
-        sherpa_version = na
-    data["software"]["sherpa"] = sherpa_version
-    data["software"]["gammapy"] = gammapy.__version__
     return data
 
 
@@ -96,7 +82,7 @@ def cli(log_level, show_warnings):
 @click.option(
     "--tag",
     help="Assign a tag to the benchmark run, so results will"
-    " be stored under this tag.",
+         " be stored under this tag.",
 )
 def run_benchmarks(benchmarks, tag):
     info = get_provenance()
@@ -111,13 +97,8 @@ def run_benchmarks(benchmarks, tag):
         tag = now.strftime("%Y-%m-%d")
 
     for benchmark in benchmarks:
-        folder_ = dict(
-            version=info["software"]["gammapy"], tag=tag, benchmark=benchmark
-        )
-
-        results_folder = THIS_REPO / "results/{benchmark}/{version}/{tag}".format(
-            **folder_
-        )
+        version = info["software"]["gammapy"]
+        results_folder = THIS_REPO / f"results/{benchmark}/{version}/{tag}"
         results_folder.mkdir(exist_ok=True, parents=True)
 
         results_filename = results_folder / "results.txt"
@@ -140,16 +121,16 @@ def run_benchmarks(benchmarks, tag):
 
 
 def run_single_benchmark(benchmark, **kwargs):
-    command = "python {}".format(AVAILABLE_BENCHMARKS[benchmark])
-    log.info("Executing command {}".format(command))
+    cmd = "python {}".format(AVAILABLE_BENCHMARKS[benchmark])
+    log.info(f"Executing command: {cmd}")
 
-    sprocess = subprocess.Popen(command, shell=True)
-    pid = sprocess.pid
+    process = subprocess.Popen(cmd, shell=True)
+    pid = process.pid
 
     monitor(pid, **kwargs)
 
-    if sprocess is not None:
-        sprocess.kill()
+    if process is not None:
+        process.kill()
 
 
 if __name__ == "__main__":
