@@ -82,7 +82,7 @@ def cli(log_level, show_warnings):
 @click.option(
     "--tag",
     help="Assign a tag to the benchmark run, so results will"
-         " be stored under this tag.",
+    " be stored under this tag.",
 )
 def run_benchmarks(benchmarks, tag):
     info = get_provenance()
@@ -109,7 +109,7 @@ def run_benchmarks(benchmarks, tag):
             benchmark,
             logfile=str(results_filename),
             plot=str(plot_filename),
-            **MONITOR_OPTIONS
+            **MONITOR_OPTIONS,
         )
 
         log.info("Writing {}".format(results_filename))

@@ -22,8 +22,8 @@ def run_benchmark():
     obs_ids = OBS_ID * np.ones(N_OBS)
     observations = data_store.get_observations(obs_ids)
 
-    energy_axis = MapAxis.from_edges(
-        np.logspace(-1.0, 1.0, 10), unit="TeV", name="energy", interp="log"
+    energy_axis = MapAxis.from_bounds(
+        0.1, 10, nbin=10, unit="TeV", name="energy", interp="log"
     )
     geom = WcsGeom.create(
         skydir=(0, 0),
@@ -46,7 +46,9 @@ def run_benchmark():
         reference=1.0 * u.TeV,
         lambda_=0.1 / u.TeV,
     )
-    model = SkyModel(spatial_model=spatial_model, spectral_model=spectral_model)
+    model = SkyModel(
+        spatial_model=spatial_model, spectral_model=spectral_model, name="gc-source"
+    )
 
     datasets = []
     for obs in observations:

@@ -2,7 +2,7 @@ import numpy as np
 import astropy.units as u
 from astropy.coordinates import SkyCoord, Angle
 from regions import CircleSkyRegion
-from gammapy.maps import Map
+from gammapy.maps import Map, MapAxis
 from gammapy.modeling import Fit
 from gammapy.data import DataStore
 from gammapy.modeling.models import PowerLawSpectralModel
@@ -39,8 +39,8 @@ def run_benchmark():
     mask = exclusion_mask.geom.region_mask([exclusion_region], inside=False)
     exclusion_mask.data = mask
 
-    e_reco = np.logspace(-1, np.log10(40), 40) * u.TeV
-    e_true = np.logspace(np.log10(0.05), 2, 200) * u.TeV
+    e_reco = MapAxis.from_bounds(0.1, 40, nbin=40, interp="log", unit="TeV").edges
+    e_true = MapAxis.from_bounds(0.05, 100, nbin=200, interp="log", unit="TeV").edges
 
     dataset_maker = SpectrumDatasetMaker(
         region=on_region, e_reco=e_reco, e_true=e_true, containment_correction=True
@@ -69,12 +69,8 @@ def run_benchmark():
     fit_joint = Fit(datasets)
     result_joint = fit_joint.run()
 
-    model_best_joint = model.copy()
-    model_best_joint.parameters.covariance = result_joint.parameters.covariance
-
     # Flux points
-    e_min, e_max = 0.7, 30
-    e_edges = np.logspace(np.log10(e_min), np.log10(e_max), 11) * u.TeV
+    e_edges = MapAxis.from_bounds(0.7, 30, nbin=11, interp="log", unit="TeV").edges
     fpe = FluxPointsEstimator(datasets=datasets, e_edges=e_edges)
     fpe.run()
 

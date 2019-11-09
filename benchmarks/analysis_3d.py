@@ -22,9 +22,10 @@ def run_benchmark():
     obs_ids = OBS_ID * np.ones(N_OBS)
     observations = data_store.get_observations(obs_ids)
 
-    energy_axis = MapAxis.from_edges(
-        np.logspace(-1.0, 1.0, 10), unit="TeV", name="energy", interp="log"
+    energy_axis = MapAxis.from_bounds(
+        0.1, 10, nbin=10, unit="TeV", name="energy", interp="log"
     )
+
     geom = WcsGeom.create(
         skydir=(0, 0),
         binsz=0.05,
@@ -68,14 +69,8 @@ def run_benchmark():
     fit = Fit(stacked)
     result = fit.run(optimize_opts={"print_level": 1})
 
-    spec = model.spectral_model
-
-    covariance = result.parameters.covariance
-    spec.parameters.covariance = covariance[2:6, 2:6]
-
     e_edges = [0.3, 1, 3, 10] * u.TeV
     fpe = FluxPointsEstimator(datasets=[stacked], e_edges=e_edges, source="gc-source")
-
     fpe.run()
 
 

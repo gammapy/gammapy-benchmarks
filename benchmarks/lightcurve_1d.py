@@ -2,6 +2,7 @@ import numpy as np
 import astropy.units as u
 from astropy.coordinates import SkyCoord, Angle
 from regions import CircleSkyRegion
+from gammapy.maps import MapAxis
 from gammapy.data import DataStore
 from gammapy.modeling.models import PowerLawSpectralModel
 from gammapy.spectrum import (
@@ -24,13 +25,13 @@ def run_benchmark():
 
     target_position = SkyCoord(ra=83.63308, dec=22.01450, unit="deg")
 
-    e_reco = np.logspace(-1, np.log10(40), 40) * u.TeV
-    e_true = np.logspace(np.log10(0.05), 2, 100) * u.TeV
+    e_reco = MapAxis.from_bounds(0.1, 40, nbin=40, interp="log", unit="TeV").edges
+    e_true = MapAxis.from_bounds(0.05, 100, nbin=200, interp="log", unit="TeV").edges
 
     spectral_model = PowerLawSpectralModel(
         index=2.6, amplitude=2.0e-11 * u.Unit("1 / (cm2 s TeV)"), reference=1 * u.TeV
     )
-    spectral_model.parameters["index"].frozen = False
+    spectral_model.index.frozen = False
 
     on_region_radius = Angle("0.11 deg")
     on_region = CircleSkyRegion(center=target_position, radius=on_region_radius)
@@ -57,7 +58,6 @@ def run_benchmark():
         datasets_1d.append(dataset_on_off)
 
     for dataset in datasets_1d:
-        # Copy the source model
         model = spectral_model.copy()
         model.name = "crab"
         dataset.model = model

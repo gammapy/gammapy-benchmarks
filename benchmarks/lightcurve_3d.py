@@ -40,17 +40,17 @@ def run_benchmark():
     spatial_model = PointSpatialModel(
         lon_0=target_position.ra, lat_0=target_position.dec, frame="icrs"
     )
+    spatial_model.lon_0.frozen = True
+    spatial_model.lat_0.frozen = True
 
     spectral_model = PowerLawSpectralModel(
         index=2.6, amplitude=2.0e-11 * u.Unit("1 / (cm2 s TeV)"), reference=1 * u.TeV
     )
-    spectral_model.parameters["index"].frozen = False
+    spectral_model.index.frozen = False
 
     sky_model = SkyModel(
         spatial_model=spatial_model, spectral_model=spectral_model, name=""
     )
-    sky_model.parameters["lon_0"].frozen = True
-    sky_model.parameters["lat_0"].frozen = True
 
     datasets = []
 
@@ -59,7 +59,6 @@ def run_benchmark():
     )
 
     for time_interval in time_intervals:
-        # get filtered observation lists in time interval
         observations = observations.select_time(time_interval)
 
         # Proceed with further analysis only if there are observations
@@ -88,7 +87,6 @@ def run_benchmark():
         datasets.append(stacked)
 
     for dataset in datasets:
-        # Copy the source model
         model = sky_model.copy(name="crab")
         dataset.model = model
 
