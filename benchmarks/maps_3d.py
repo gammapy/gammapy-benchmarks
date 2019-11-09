@@ -10,7 +10,6 @@ OBS_ID = 110380
 
 
 def run_benchmark():
-
     data_store = DataStore.from_dir("$GAMMAPY_DATA/cta-1dc/index/gps/")
     obs_ids = OBS_ID * np.ones(N_OBS)
     observations = data_store.get_observations(obs_ids)

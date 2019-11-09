@@ -3,7 +3,7 @@ import astropy.units as u
 from astropy.coordinates import SkyCoord, Angle
 from regions import CircleSkyRegion
 from gammapy.maps import Map
-from gammapy.modeling import Fit, Datasets
+from gammapy.modeling import Fit
 from gammapy.data import DataStore
 from gammapy.modeling.models import PowerLawSpectralModel
 from gammapy.spectrum import (
@@ -19,11 +19,8 @@ OBS_ID = 23523
 
 
 def run_benchmark():
-    # Set up data store and select N_OBS times the observation OBS_ID
-
     data_store = DataStore.from_dir("$GAMMAPY_DATA/hess-dl3-dr1/")
     obs_ids = OBS_ID * np.ones(N_OBS)
-
     observations = data_store.get_observations(obs_ids)
 
     target_position = SkyCoord(ra=83.63, dec=22.01, unit="deg", frame="icrs")

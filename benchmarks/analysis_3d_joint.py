@@ -1,15 +1,16 @@
 import numpy as np
 import astropy.units as u
 from astropy.coordinates import SkyCoord
-from gammapy.cube import MapDataset
-from gammapy.modeling.models import SkyModel, SkyDiffuseCube
-from gammapy.modeling.models.spectral import ExpCutoffPowerLawSpectralModel
+from gammapy.modeling.models import (
+    SkyModel,
+    ExpCutoffPowerLawSpectralModel,
+    PointSpatialModel,
+)
 from gammapy.spectrum import FluxPointsEstimator
-from gammapy.modeling.models.spatial import PointSpatialModel
 from gammapy.modeling import Fit
 from gammapy.data import DataStore
 from gammapy.maps import MapAxis, WcsGeom
-from gammapy.cube import MapDataset, MapDatasetMaker
+from gammapy.cube import MapDatasetMaker
 
 
 N_OBS = 20
@@ -17,7 +18,6 @@ OBS_ID = 110380
 
 
 def run_benchmark():
-
     data_store = DataStore.from_dir("$GAMMAPY_DATA/cta-1dc/index/gps/")
     obs_ids = OBS_ID * np.ones(N_OBS)
     observations = data_store.get_observations(obs_ids)

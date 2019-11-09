@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Run gammapy benchmarks
+"""Run gammapy benchmarks"""
 import subprocess
 import yaml
 import logging

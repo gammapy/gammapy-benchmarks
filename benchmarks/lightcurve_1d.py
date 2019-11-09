@@ -17,9 +17,9 @@ OBS_ID = 23523
 
 def run_benchmark():
     data_store = DataStore.from_dir("$GAMMAPY_DATA/hess-dl3-dr1/")
-
     obs_ids = OBS_ID * np.ones(N_OBS)
     observations = data_store.get_observations(obs_ids)
+
     time_intervals = [(obs.tstart, obs.tstop) for obs in observations]
 
     target_position = SkyCoord(ra=83.63308, dec=22.01450, unit="deg")

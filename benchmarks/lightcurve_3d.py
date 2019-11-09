@@ -2,9 +2,7 @@ import numpy as np
 import astropy.units as u
 from astropy.coordinates import SkyCoord
 from gammapy.data import DataStore
-from gammapy.modeling.models import PowerLawSpectralModel
-from gammapy.modeling.models import PointSpatialModel
-from gammapy.modeling.models import SkyModel
+from gammapy.modeling.models import PowerLawSpectralModel, PointSpatialModel, SkyModel
 from gammapy.cube import MapDatasetMaker, MapDataset
 from gammapy.maps import WcsGeom, MapAxis
 from gammapy.time import LightCurveEstimator
@@ -15,9 +13,9 @@ OBS_ID = 23523
 
 def run_benchmark():
     data_store = DataStore.from_dir("$GAMMAPY_DATA/hess-dl3-dr1/")
-
     obs_ids = OBS_ID * np.ones(N_OBS)
     observations = data_store.get_observations(obs_ids)
+
     time_intervals = [(obs.tstart, obs.tstop) for obs in observations]
     target_position = SkyCoord(ra=83.63308, dec=22.01450, unit="deg")
 
