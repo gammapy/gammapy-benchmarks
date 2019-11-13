@@ -1,0 +1,33 @@
+data_fitting: !!python/object/apply:numpy.core.multiarray.scalar
+- &id001 !!python/object/apply:numpy.dtype
+  args:
+  - f8
+  - 0
+  - 1
+  state: !!python/tuple
+  - 3
+  - <
+  - null
+  - null
+  - null
+  - -1
+  - -1
+  - 0
+- !!binary |
+  AAAA4EaKBkA=
+data_preparation: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  AAAA8JPLIUA=
+flux_point_estimation: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  AAAAAFAT+D8=
+reading: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  AAAAACFY1j8=
+writing: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  AAAAANHv3z8=
