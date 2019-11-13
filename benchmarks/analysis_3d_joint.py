@@ -52,8 +52,7 @@ def data_prep():
         )
 
         datasets.append(dataset)
-
-        return datasets
+    return datasets
 
 
 def write(datasets):
@@ -81,7 +80,7 @@ def read():
         dataset.model = model
         datasets.append(dataset)
 
-        return datasets
+    return datasets
 
 
 def data_fit(datasets):
