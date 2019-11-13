@@ -2,7 +2,6 @@ import numpy as np
 import astropy.units as u
 import time
 import yaml
-import sys
 from astropy.coordinates import SkyCoord
 from gammapy.modeling.models import (
     SkyModel,
@@ -16,8 +15,7 @@ from gammapy.maps import MapAxis, WcsGeom
 from gammapy.cube import MapDataset, MapDatasetMaker
 
 
-
-N_OBS = 5
+N_OBS = 100
 OBS_ID = 110380
 
 
@@ -69,7 +67,7 @@ def read(filename):
 
 
 def data_fit(stacked):
-    #Data fitting
+    # Data fitting
 
     spatial_model = PointSpatialModel(
         lon_0="0.01 deg", lat_0="0.01 deg", frame="galactic"
@@ -97,43 +95,34 @@ def flux_point(stacked):
 
 
 def run_benchmark():
-    times = []
+    info = {}
     filename = "stacked_3d.fits.gz"
 
-    times.append(time.time())
+    t = time.time()
 
     stacked = data_prep()
-    times.append(time.time())
+    info["data_preparation"] = time.time() - t
+    t = time.time()
 
     write(stacked, filename)
-    times.append(time.time())
+    info["writing"] = time.time() - t
+    t = time.time()
 
     stacked = read(filename)
-    times.append(time.time())
+    info["reading"] = time.time() - t
+    t = time.time()
 
     data_fit(stacked)
-    times.append(time.time())
+    info["data_fitting"] = time.time() - t
+    t = time.time()
 
     flux_point(stacked)
-    times.append(time.time())
+    info["flux_point"] = time.time() - t
 
-    times = np.array(times)
-    dt = times[1:] - times[:-1]
-
-    data = {
-        "data_preparation" : dt[0],
-        "writing": dt[1],
-        "reading": dt[2],
-        "data_fitting": dt[3],
-        "flux_point_estimation": dt[4]
-    }
-    print(data)
     results_folder = "results/analysis_3d/"
     subtimes_filename = results_folder + "/subtimings.yaml"
     with open(subtimes_filename, "w") as fh:
-        yaml.dump(data, fh, default_flow_style=False)
-
-    
+        yaml.dump(info, fh, default_flow_style=False)
 
 
 if __name__ == "__main__":
