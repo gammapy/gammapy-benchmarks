@@ -4,7 +4,6 @@ import numpy as np
 import subprocess
 import yaml
 import logging
-import datetime
 import warnings
 import getpass
 import platform
@@ -22,7 +21,6 @@ THIS_REPO = Path(__file__).parent
 AVAILABLE_BENCHMARKS = {
     "analysis_3d": "analysis_3d.py",
     "analysis_3d_joint": "analysis_3d_joint.py",
-    "maps_3d": "maps_3d.py",
     "lightcurve_1d": "lightcurve_1d.py",
     "lightcurve_3d": "lightcurve_3d.py",
     "spectrum_1d": "spectrum_1d.py",
@@ -102,7 +100,7 @@ def run_benchmarks(benchmarks, tag):
         results_filename = results_folder / "results.txt"
         plot_filename = results_folder / "results.png"
         provenance_filename = results_folder / "provenance.yaml"
-        yaml_filename = results_folder / "results.yaml"
+
 
         run_single_benchmark(
             benchmark,
@@ -120,12 +118,13 @@ def run_benchmarks(benchmarks, tag):
 
         dict = {}
         t, cpu = np.loadtxt(results_filename, unpack=True, usecols=(0, 1))
-        dict["total_time"] = max(t)
-        dict["CPU_max"] = max(cpu[2:])
-        dict["CPU_min"] = min(cpu[1:])
+        dict["total_time"] = str(max(t))
+        dict["CPU_max"] = str(max(cpu[2:]))
+        dict["CPU_min"] = str(min(cpu[1:]))
 
-        result["benchmark"] = dict
+        result[benchmark] = dict
 
+    yaml_filename = THIS_REPO / "results/results.yaml"
     with yaml_filename.open("w") as fh:
         log.info("Writing {}".format(yaml_filename))
         yaml.dump(result, fh, default_flow_style=False)
