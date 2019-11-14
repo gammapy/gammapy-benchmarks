@@ -11,10 +11,10 @@ from gammapy.modeling.models import PowerLawSpectralModel
 from gammapy.spectrum import (
     SpectrumDatasetMaker,
     SpectrumDatasetOnOff,
-    SafeMaskMaker,
     FluxPointsEstimator,
     ReflectedRegionsBackgroundMaker,
 )
+from gammapy.cube import SafeMaskMaker
 
 N_OBS = 10
 OBS_ID = 23523

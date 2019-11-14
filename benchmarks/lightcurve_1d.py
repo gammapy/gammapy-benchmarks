@@ -9,10 +9,9 @@ from gammapy.data import DataStore
 from gammapy.modeling.models import PowerLawSpectralModel
 from gammapy.spectrum import (
     SpectrumDatasetMaker,
-    SpectrumDatasetOnOff,
     ReflectedRegionsBackgroundMaker,
-    SafeMaskMaker,
 )
+from gammapy.cube import SafeMaskMaker
 from gammapy.time import LightCurveEstimator
 
 N_OBS = 10
