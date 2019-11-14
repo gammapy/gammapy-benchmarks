@@ -118,9 +118,9 @@ def run_benchmarks(benchmarks, tag):
 
         dict = {}
         t, cpu = np.loadtxt(results_filename, unpack=True, usecols=(0, 1))
-        dict["total_time"] = str(max(t))
-        dict["CPU_max"] = str(max(cpu[2:]))
-        dict["CPU_min"] = str(min(cpu[1:]))
+        dict["total_time"] = float(max(t))
+        dict["CPU_max"] = float(max(cpu[2:]))
+        dict["CPU_min"] = float(min(cpu[1:]))
 
         result[benchmark] = dict
 
