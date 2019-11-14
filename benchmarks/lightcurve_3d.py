@@ -1,5 +1,7 @@
 import numpy as np
 import astropy.units as u
+import time
+import yaml
 from astropy.coordinates import SkyCoord
 from gammapy.data import DataStore
 from gammapy.modeling.models import PowerLawSpectralModel, PointSpatialModel, SkyModel
@@ -7,11 +9,11 @@ from gammapy.cube import MapDatasetMaker, MapDataset
 from gammapy.maps import WcsGeom, MapAxis
 from gammapy.time import LightCurveEstimator
 
-N_OBS = 20
+N_OBS = 10
 OBS_ID = 23523
 
 
-def run_benchmark():
+def data_prep():
     data_store = DataStore.from_dir("$GAMMAPY_DATA/hess-dl3-dr1/")
     obs_ids = OBS_ID * np.ones(N_OBS)
     observations = data_store.get_observations(obs_ids)
@@ -35,22 +37,7 @@ def run_benchmark():
     energy_axis_true = MapAxis.from_bounds(
         0.1, 20, 20, unit="TeV", name="energy", interp="log"
     )
-
     offset_max = 2 * u.deg
-    spatial_model = PointSpatialModel(
-        lon_0=target_position.ra, lat_0=target_position.dec, frame="icrs"
-    )
-    spatial_model.lon_0.frozen = True
-    spatial_model.lat_0.frozen = True
-
-    spectral_model = PowerLawSpectralModel(
-        index=2.6, amplitude=2.0e-11 * u.Unit("1 / (cm2 s TeV)"), reference=1 * u.TeV
-    )
-    spectral_model.index.frozen = False
-
-    sky_model = SkyModel(
-        spatial_model=spatial_model, spectral_model=spectral_model, name=""
-    )
 
     datasets = []
 
@@ -73,7 +60,7 @@ def run_benchmark():
             dataset = maker.run(obs)
             stacked.stack(dataset)
 
-        # TODO: remove once IRF maps are handled correctly in fit
+
         stacked.edisp = stacked.edisp.get_energy_dispersion(
             position=target_position, e_reco=energy_axis.edges
         )
@@ -86,13 +73,53 @@ def run_benchmark():
         stacked.counts.meta["t_stop"] = time_interval[1]
         datasets.append(stacked)
 
+    spatial_model = PointSpatialModel(
+        lon_0=target_position.ra, lat_0=target_position.dec, frame="icrs"
+    )
+    spatial_model.lon_0.frozen = True
+    spatial_model.lat_0.frozen = True
+
+    spectral_model = PowerLawSpectralModel(
+        index=2.6, amplitude=2.0e-11 * u.Unit("1 / (cm2 s TeV)"), reference=1 * u.TeV
+    )
+    spectral_model.index.frozen = False
+
+    sky_model = SkyModel(
+        spatial_model=spatial_model, spectral_model=spectral_model, name=""
+    )
+
     for dataset in datasets:
         model = sky_model.copy(name="crab")
         dataset.model = model
 
-    lc_maker = LightCurveEstimator(datasets, source="crab", reoptimize=True)
+    return datasets
 
+
+
+def data_fit(datasets):
+
+    lc_maker = LightCurveEstimator(datasets, source="crab", reoptimize=True)
     lc = lc_maker.run(e_ref=1 * u.TeV, e_min=1.0 * u.TeV, e_max=10.0 * u.TeV)
+
+
+def run_benchmark():
+    info = {}
+
+    t = time.time()
+
+    datasets = data_prep()
+    info["data_preparation"] = time.time() - t
+    t = time.time()
+
+
+    data_fit(datasets)
+    info["data_fitting"] = time.time() - t
+
+
+    results_folder = "results/lightcurve_3d/"
+    subtimes_filename = results_folder + "/subtimings.yaml"
+    with open(subtimes_filename, "w") as fh:
+        yaml.dump(info, fh, default_flow_style=False)
 
 
 if __name__ == "__main__":
