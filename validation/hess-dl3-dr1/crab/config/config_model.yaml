@@ -1,0 +1,27 @@
+components:
+- name: crab
+  type: SkyModel
+  spatial:
+    type: PointSpatialModel
+    frame: icrs
+    parameters:
+    - name: lon_0
+      value: 83.63
+      unit: deg
+    - name: lat_0 
+      value: 22.01    
+      unit: deg
+  spectral:
+    type: PowerLawSpectralModel
+    parameters:
+    - name: amplitude      
+      value: 1.0e-12
+      unit: cm-2 s-1 TeV-1
+    - name: index
+      value: 2.0
+      unit: ''
+    - name: reference
+      value: 1.45
+      unit: TeV
+      frozen: true
+
