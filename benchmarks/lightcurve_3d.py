@@ -5,7 +5,7 @@ import yaml
 from astropy.coordinates import SkyCoord
 from gammapy.data import DataStore
 from gammapy.modeling.models import PowerLawSpectralModel, PointSpatialModel, SkyModel
-from gammapy.cube import MapDatasetMaker, MapDataset
+from gammapy.cube import MapDatasetMaker, MapDataset, SafeMaskMaker
 from gammapy.maps import WcsGeom, MapAxis
 from gammapy.time import LightCurveEstimator
 
@@ -44,6 +44,7 @@ def data_prep():
     maker = MapDatasetMaker(
         geom=geom, energy_axis_true=energy_axis_true, offset_max=offset_max
     )
+    safe_mask_maker = SafeMaskMaker(methods=["offset-max"], offset_max=offset_max)
 
     for time_interval in time_intervals:
         observations = observations.select_time(time_interval)
@@ -58,6 +59,7 @@ def data_prep():
 
         for obs in observations:
             dataset = maker.run(obs)
+            dataset = safe_mask_maker.run(dataset, obs)
             stacked.stack(dataset)
 
         stacked.edisp = stacked.edisp.get_energy_dispersion(
