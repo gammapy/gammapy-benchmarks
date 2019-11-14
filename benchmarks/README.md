@@ -8,7 +8,6 @@ Note that we have validation separately, see [here](../README.md).
 
 We have the following typical science cases tested:
 
-- [maps_3d.py](maps_3d.py) - Stacked data preparation for the 3D case
 - [analysis_3d.py](analysis_3d.py) - Stacked data fitting in 3D
 - [analysis_3d_joint.py](analysis_3d_joint.py) - Joint Data fit in 3D 
 - [spectrum_1d.py](spectrum_1d.py) - 1D stacked spectral extraction and fitting
