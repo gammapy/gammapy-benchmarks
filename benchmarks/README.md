@@ -8,7 +8,7 @@ Note that we have validation separately, see [here](../README.md).
 
 We have the following typical science cases tested:
 
-- [analysis_3d.py](analysis_3d.py) - [results](results/analysis_3d) - Stacked data fitting in 3D
+- `analysis_3d` ([script](analysis_3d.py), [results](results/analysis_3d)) - Stacked data fitting in 3D
 - [analysis_3d_joint.py](analysis_3d_joint.py) - Joint Data fit in 3D 
 - [spectrum_1d.py](spectrum_1d.py) - 1D stacked spectral extraction and fitting
 - [spectrum_1d_joint.py](spectrum_1d_joint.py) - 3D stacked spectral extraction and fitting
