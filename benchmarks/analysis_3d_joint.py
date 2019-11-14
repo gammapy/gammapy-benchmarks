@@ -12,7 +12,7 @@ from gammapy.spectrum import FluxPointsEstimator
 from gammapy.modeling import Fit
 from gammapy.data import DataStore
 from gammapy.maps import MapAxis, WcsGeom
-from gammapy.cube import MapDatasetMaker, MapDataset
+from gammapy.cube import MapDatasetMaker, MapDataset, SafeMaskMaker
 
 
 N_OBS = 10
@@ -43,7 +43,9 @@ def data_prep():
     datasets = []
     for obs in observations:
         maker = MapDatasetMaker(geom=geom, offset_max=offset_max)
+        safe_mask_maker = SafeMaskMaker(methods=["offset-max"], offset_max="4 deg")
         dataset = maker.run(obs)
+        dataset = safe_mask_maker.run(dataset, obs)
         dataset.edisp = dataset.edisp.get_energy_dispersion(
             position=src_pos, e_reco=energy_axis.edges
         )
