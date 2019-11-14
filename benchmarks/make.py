@@ -101,7 +101,6 @@ def run_benchmarks(benchmarks, tag):
         plot_filename = results_folder / "results.png"
         provenance_filename = results_folder / "provenance.yaml"
 
-
         run_single_benchmark(
             benchmark,
             logfile=str(results_filename),

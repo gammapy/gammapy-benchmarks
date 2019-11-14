@@ -60,7 +60,6 @@ def data_prep():
             dataset = maker.run(obs)
             stacked.stack(dataset)
 
-
         stacked.edisp = stacked.edisp.get_energy_dispersion(
             position=target_position, e_reco=energy_axis.edges
         )
@@ -95,7 +94,6 @@ def data_prep():
     return datasets
 
 
-
 def data_fit(datasets):
 
     lc_maker = LightCurveEstimator(datasets, source="crab", reoptimize=True)
@@ -111,10 +109,8 @@ def run_benchmark():
     info["data_preparation"] = time.time() - t
     t = time.time()
 
-
     data_fit(datasets)
     info["data_fitting"] = time.time() - t
-
 
     results_folder = "results/lightcurve_3d/"
     subtimes_filename = results_folder + "/subtimings.yaml"

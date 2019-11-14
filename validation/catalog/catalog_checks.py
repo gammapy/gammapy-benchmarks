@@ -5,6 +5,7 @@ from gammapy.modeling.models import SpectralModel, SpatialModel, SkyModel, SkyMo
 
 log = logging.getLogger(__name__)
 
+
 def check_source(source):
     str(source)
     # source.energy_range
@@ -29,6 +30,6 @@ def main():
                 log.exception(exc)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     main()

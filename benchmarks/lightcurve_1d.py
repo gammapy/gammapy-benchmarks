@@ -7,10 +7,7 @@ from regions import CircleSkyRegion
 from gammapy.maps import MapAxis
 from gammapy.data import DataStore
 from gammapy.modeling.models import PowerLawSpectralModel
-from gammapy.spectrum import (
-    SpectrumDatasetMaker,
-    ReflectedRegionsBackgroundMaker,
-)
+from gammapy.spectrum import SpectrumDatasetMaker, ReflectedRegionsBackgroundMaker
 from gammapy.cube import SafeMaskMaker
 from gammapy.time import LightCurveEstimator
 
