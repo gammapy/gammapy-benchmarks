@@ -1,4 +1,5 @@
 import logging
+
 log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
@@ -13,8 +14,8 @@ from gammapy.spectrum import FluxPointsEstimator
 
 PATH_CONFIG = Path("./config/")
 PATH_RESULTS = Path("./results/")
-OBS_IDS = ['23523', '23526', '23559', '23592']
-EMIN, EMAX = [0.7, 60] * u.TeV # Used for flux points estimation
+OBS_IDS = ["23523", "23526", "23559", "23592"]
+EMIN, EMAX = [0.7, 60] * u.TeV  # Used for flux points estimation
 N_FLUX_POINTS = 15
 
 filename = str(PATH_CONFIG / "config_3d.yaml")
@@ -37,7 +38,7 @@ for dataset in analysis.datasets:
     e_reco = geom.get_axis_by_name("energy").edges
     E_thr_bias = dataset.edisp.get_bias_energy(0.1)
 
-	# E_thr_bkg (= background peak energy)
+    # E_thr_bkg (= background peak energy)
     background_model = dataset.background_model
     bkg_spectrum = background_model.map.get_spectrum()
     peak = bkg_spectrum.data.max()
@@ -68,8 +69,8 @@ for parameter in parameters:
     unit = parameter.unit
     name = parameter.name
     string = "{0:.2e} +- {1:.2e} {2}".format(value, error, unit)
-    fit_results_dict.update({name : string})
-with open(str(PATH_RESULTS / "results-summary-fit-3d.yaml"), 'w') as f:    
+    fit_results_dict.update({name: string})
+with open(str(PATH_RESULTS / "results-summary-fit-3d.yaml"), "w") as f:
     yaml.dump(fit_results_dict, f)
 
 # Flux points
@@ -81,16 +82,12 @@ for dataset in datasets:
         if par is not dataset.background_model.norm:
             par.frozen = True
 
-e_edges = np.logspace(np.log10(EMIN.value), np.log10(EMAX.value), N_FLUX_POINTS + 1) * u.TeV
+e_edges = (
+    np.logspace(np.log10(EMIN.value), np.log10(EMAX.value), N_FLUX_POINTS + 1) * u.TeV
+)
 fpe = FluxPointsEstimator(
     datasets=datasets, e_edges=e_edges, source="crab", reoptimize=True
 )
 
 flux_points = fpe.run()
 flux_points.write(str(PATH_RESULTS / "flux-points-3d.html"))
-
-
-
-
-
-

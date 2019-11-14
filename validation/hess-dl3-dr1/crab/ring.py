@@ -1,4 +1,5 @@
 import logging
+
 log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
@@ -24,8 +25,8 @@ from gammapy.cube import (
 PATH_RESULTS = Path("./results/")
 OBS_IDS = [23592, 23523, 23526, 23559]
 EMIN, EMAX = [0.1, 10] * u.TeV
-NBINS = 5 
-TARGET_POS = SkyCoord(83.63, 22.01, unit='deg', frame='icrs')
+NBINS = 5
+TARGET_POS = SkyCoord(83.63, 22.01, unit="deg", frame="icrs")
 OFFSET_MAX = 2 * u.deg
 EXCLUSION_REGION_RAD = 0.5 * u.deg
 R_IN = 0.5 * u.deg
@@ -38,8 +39,11 @@ observations = data_store.get_observations(OBS_IDS)
 
 # Run ring background estimation
 energy_axis = MapAxis.from_edges(
-    np.logspace(np.log10(EMIN.value), np.log10(EMAX.value), NBINS), unit="TeV", name="energy", interp="log"
-    )
+    np.logspace(np.log10(EMIN.value), np.log10(EMAX.value), NBINS),
+    unit="TeV",
+    name="energy",
+    interp="log",
+)
 geom = WcsGeom.create(
     skydir=TARGET_POS,
     binsz=0.02,
@@ -59,9 +63,7 @@ regions = CircleSkyRegion(center=TARGET_POS, radius=EXCLUSION_REGION_RAD)
 geom_image = geom.to_image().to_cube([energy_axis.squash()])
 exclusion_mask = Map.from_geom(geom_image)
 exclusion_mask.data = geom_image.region_mask([regions], inside=False)
-ring_maker = RingBackgroundMaker(
-    r_in=R_IN, width=WIDTH, exclusion_mask=exclusion_mask
-)
+ring_maker = RingBackgroundMaker(r_in=R_IN, width=WIDTH, exclusion_mask=exclusion_mask)
 
 stacked_on_off = MapDatasetOnOff.create(geom=geom_image)
 for obs in observations:
@@ -70,7 +72,6 @@ for obs in observations:
 
     dataset_image = dataset.to_image()
     dataset_on_off = ring_maker.run(dataset_image)
-
 
     stacked_on_off.stack(dataset_on_off)
 
@@ -99,26 +100,14 @@ plt.savefig(str(PATH_RESULTS / "ring_excess_map.png"))
 # Signficance distribution outside the exclusion region:
 significance_map_off = significance_map * exclusion_mask
 significance_all = significance_map.data[np.isfinite(significance_map.data)]
-significance_off = significance_map_off.data[
-    np.isfinite(significance_map_off.data)
-]
+significance_off = significance_map_off.data[np.isfinite(significance_map_off.data)]
 plt.figure(figsize=(7, 5))
 plt.hist(
-    significance_all,
-    density=True,
-    alpha=0.5,
-    color="red",
-    label="all bins",
-    bins=21
+    significance_all, density=True, alpha=0.5, color="red", label="all bins", bins=21
 )
 
 plt.hist(
-    significance_off,
-    density=True,
-    alpha=0.5,
-    color="blue",
-    label="off bins",
-    bins=21
+    significance_off, density=True, alpha=0.5, color="blue", label="off bins", bins=21
 )
 
 mu, std = norm.fit(significance_off)
