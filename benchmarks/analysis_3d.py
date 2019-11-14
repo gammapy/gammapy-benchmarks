@@ -15,7 +15,7 @@ from gammapy.maps import MapAxis, WcsGeom
 from gammapy.cube import MapDataset, MapDatasetMaker
 
 
-N_OBS = 100
+N_OBS = 10
 OBS_ID = 110380
 
 
