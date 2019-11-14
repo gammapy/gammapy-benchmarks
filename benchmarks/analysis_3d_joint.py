@@ -1,5 +1,7 @@
 import numpy as np
 import astropy.units as u
+import time
+import yaml
 from astropy.coordinates import SkyCoord
 from gammapy.modeling.models import (
     SkyModel,
@@ -10,14 +12,15 @@ from gammapy.spectrum import FluxPointsEstimator
 from gammapy.modeling import Fit
 from gammapy.data import DataStore
 from gammapy.maps import MapAxis, WcsGeom
-from gammapy.cube import MapDatasetMaker
+from gammapy.cube import MapDatasetMaker, MapDataset
 
 
-N_OBS = 20
+N_OBS = 5
 OBS_ID = 110380
 
 
-def run_benchmark():
+def data_prep():
+    # Create maps
     data_store = DataStore.from_dir("$GAMMAPY_DATA/cta-1dc/index/gps/")
     obs_ids = OBS_ID * np.ones(N_OBS)
     observations = data_store.get_observations(obs_ids)
@@ -37,6 +40,29 @@ def run_benchmark():
     src_pos = SkyCoord(0, 0, unit="deg", frame="galactic")
     offset_max = 4 * u.deg
 
+    datasets = []
+    for obs in observations:
+        maker = MapDatasetMaker(geom=geom, offset_max=offset_max)
+        dataset = maker.run(obs)
+        dataset.edisp = dataset.edisp.get_energy_dispersion(
+            position=src_pos, e_reco=energy_axis.edges
+        )
+        dataset.psf = dataset.psf.get_psf_kernel(
+            position=src_pos, geom=geom, max_radius="0.3 deg"
+        )
+
+        datasets.append(dataset)
+    return datasets
+
+
+def write(datasets):
+    for ind, dataset in enumerate(datasets):
+        dataset.write(f"dataset-{ind}.fits", overwrite=True)
+
+
+def read():
+
+    datasets = []
     spatial_model = PointSpatialModel(
         lon_0="-0.05 deg", lat_0="-0.05 deg", frame="galactic"
     )
@@ -49,27 +75,54 @@ def run_benchmark():
     model = SkyModel(
         spatial_model=spatial_model, spectral_model=spectral_model, name="gc-source"
     )
-
-    datasets = []
-    for obs in observations:
-        maker = MapDatasetMaker(geom=geom, offset_max=offset_max)
-        dataset = maker.run(obs)
-        dataset.edisp = dataset.edisp.get_energy_dispersion(
-            position=src_pos, e_reco=energy_axis.edges
-        )
-        dataset.psf = dataset.psf.get_psf_kernel(
-            position=src_pos, geom=geom, max_radius="0.3 deg"
-        )
+    for ind in range(N_OBS):
+        dataset = MapDataset.read(f"dataset-{ind}.fits")
         dataset.model = model
         datasets.append(dataset)
 
+    return datasets
+
+
+def data_fit(datasets):
     fit = Fit(datasets)
     result = fit.run()
 
+
+def flux_point(datasets):
     e_edges = [0.3, 1, 3, 10] * u.TeV
     fpe = FluxPointsEstimator(datasets=datasets, e_edges=e_edges, source="gc-source")
 
     fpe.run()
+
+
+def run_benchmark():
+    info = {}
+
+    t = time.time()
+
+    datasets = data_prep()
+    info["data_preparation"] = time.time() - t
+    t = time.time()
+
+    write(datasets)
+    info["writing"] = time.time() - t
+    t = time.time()
+
+    datasets = read()
+    info["reading"] = time.time() - t
+    t = time.time()
+
+    data_fit(datasets)
+    info["data_fitting"] = time.time() - t
+    t = time.time()
+
+    flux_point(datasets)
+    info["flux_point"] = time.time() - t
+
+    results_folder = "results/analysis_3d_joint/"
+    subtimes_filename = results_folder + "/subtimings.yaml"
+    with open(subtimes_filename, "w") as fh:
+        yaml.dump(info, fh, default_flow_style=False)
 
 
 if __name__ == "__main__":

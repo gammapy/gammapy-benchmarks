@@ -1,5 +1,7 @@
 import numpy as np
 import astropy.units as u
+import time
+import yaml
 from astropy.coordinates import SkyCoord
 from gammapy.modeling.models import (
     SkyModel,
@@ -17,7 +19,9 @@ N_OBS = 100
 OBS_ID = 110380
 
 
-def run_benchmark():
+def data_prep():
+    # Create maps
+
     data_store = DataStore.from_dir("$GAMMAPY_DATA/cta-1dc/index/gps/")
     obs_ids = OBS_ID * np.ones(N_OBS)
     observations = data_store.get_observations(obs_ids)
@@ -51,6 +55,20 @@ def run_benchmark():
         max_radius="0.3 deg",
     )
 
+    return stacked
+
+
+def write(stacked, filename):
+    stacked.write(filename, overwrite=True)
+
+
+def read(filename):
+    return MapDataset.read(filename)
+
+
+def data_fit(stacked):
+    # Data fitting
+
     spatial_model = PointSpatialModel(
         lon_0="0.01 deg", lat_0="0.01 deg", frame="galactic"
     )
@@ -66,12 +84,45 @@ def run_benchmark():
 
     stacked.model = model
 
-    fit = Fit(stacked)
+    fit = Fit([stacked])
     result = fit.run(optimize_opts={"print_level": 1})
 
+
+def flux_point(stacked):
     e_edges = [0.3, 1, 3, 10] * u.TeV
     fpe = FluxPointsEstimator(datasets=[stacked], e_edges=e_edges, source="gc-source")
     fpe.run()
+
+
+def run_benchmark():
+    info = {}
+    filename = "stacked_3d.fits.gz"
+
+    t = time.time()
+
+    stacked = data_prep()
+    info["data_preparation"] = time.time() - t
+    t = time.time()
+
+    write(stacked, filename)
+    info["writing"] = time.time() - t
+    t = time.time()
+
+    stacked = read(filename)
+    info["reading"] = time.time() - t
+    t = time.time()
+
+    data_fit(stacked)
+    info["data_fitting"] = time.time() - t
+    t = time.time()
+
+    flux_point(stacked)
+    info["flux_point"] = time.time() - t
+
+    results_folder = "results/analysis_3d/"
+    subtimes_filename = results_folder + "/subtimings.yaml"
+    with open(subtimes_filename, "w") as fh:
+        yaml.dump(info, fh, default_flow_style=False)
 
 
 if __name__ == "__main__":
