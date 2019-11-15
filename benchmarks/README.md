@@ -27,3 +27,7 @@ To run all benchmarks:
 ```bash
 python make.py run-benchmark all
 ```
+
+## Results
+
+A summary of the results can be found [here](results/results.yaml).
