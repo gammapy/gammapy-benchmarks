@@ -8,13 +8,12 @@ Note that we have validation separately, see [here](../README.md).
 
 We have the following typical science cases tested:
 
-- `analysis_3d` /[script](analysis_3d.py) / [results](results/analysis_3d) / Stacked data fitting in 3D
-- [analysis_3d_joint.py](analysis_3d_joint.py) - Joint Data fit in 3D 
-- [spectrum_1d.py](spectrum_1d.py) - 1D stacked spectral extraction and fitting
-- [spectrum_1d_joint.py](spectrum_1d_joint.py) - 3D stacked spectral extraction and fitting
-- [lightcurve_1d.py](lightcurve_1d.py) - Light-curve extraction in 1D
-- [lightcurve_3d.py](lightcurve_3d.py) - Light-curve extraction in 3D
-
+- analysis_3d / [script](analysis_3d.py) / [results](results/analysis_3d) / 3d stacked analysis
+- analysis_3d_joint / [script](analysis_3d_joint.py) / [results](results/analysis_3d_joint) - 3d joint analysis
+- spectrum_1d / [script](spectrum_1d.py) / [results](results/spectrum_1d) - 1d stacked analysis
+- spectrum_1d_joint / [script](spectrum_1d_joint.py) / [results](results/spectrum_1d_joint) - 1d joint analysis
+- lightcurve_1d / [script](lightcurve_1d.py) / [results](results/lightcurve_1d) - 1d lightcurve analysis
+- lightcurve_3d / [script](lightcurve_3d.py) / [results](results/lightcurve_3d) - 3d lightcurve analysis
 
 ## Execution
 
