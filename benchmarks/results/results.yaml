@@ -1,24 +1,24 @@
 analysis_3d:
-  CPU_max: 101.6
-  CPU_min: 0.0
-  total_time: 22.349
+  CPU_max: 101.5
+  CPU_min: 80.6
+  total_time: 21.355
 analysis_3d_joint:
-  CPU_max: 101.3
-  CPU_min: 68.0
-  total_time: 202.124
+  CPU_max: 100.8
+  CPU_min: 92.4
+  total_time: 172.3
 lightcurve_1d:
-  CPU_max: 101.8
-  CPU_min: 95.6
-  total_time: 10.102
+  CPU_max: 101.3
+  CPU_min: 98.4
+  total_time: 9.662
 lightcurve_3d:
-  CPU_max: 100.4
-  CPU_min: 99.1
-  total_time: 110.631
-spectrum_1d:
   CPU_max: 100.7
-  CPU_min: 97.1
-  total_time: 8.084
+  CPU_min: 98.3
+  total_time: 106.769
+spectrum_1d:
+  CPU_max: 100.5
+  CPU_min: 95.7
+  total_time: 8.136
 spectrum_1d_joint:
   CPU_max: 101.0
-  CPU_min: 96.4
-  total_time: 15.659
+  CPU_min: 97.1
+  total_time: 15.247
