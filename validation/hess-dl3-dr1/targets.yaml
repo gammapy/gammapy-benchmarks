@@ -1,0 +1,10 @@
+- tag: crab
+  name: Crab
+  ra: 83.63
+  dec: 22.01
+  on_size: 0.11
+  model: pwl
+  exclusion_ra: [80.44]
+  exclusion_dec: [21.21]
+  exclusion_size : [0.5]
+  decorrelation_energy: 1.45
