@@ -1,0 +1,46 @@
+general:
+    logging:
+        level: INFO
+    outdir: .
+
+observations:
+    datastore: $CTADATA/index/gps/
+    filters:
+        - filter_type: sky_circle
+          frame: galactic          #  or icrs
+          lon: 344.3 deg
+          lat: -0.1847 deg
+          radius: 1. deg
+          border: 1. deg
+
+datasets:
+    dataset-type: MapDataset
+    stack-datasets: true
+    offset-max: 5 deg
+    geom:
+        skydir: [344.3, -0.1847]
+        width: [2.1, 2.1]
+        binsz: 0.02
+        coordsys: GAL
+        proj: TAN
+        axes:
+          - name: energy
+            hi_bnd: 160
+            lo_bnd: 0.1
+            nbin: 35
+            interp: log
+            node_type: edges
+            unit: TeV
+
+fit:
+    fit_range:
+        max: 160 TeV
+        min: 0.1 TeV
+
+flux-points:
+    fp_binning:
+        lo_bnd: 0.1
+        hi_bnd: 160
+        interp: log
+        nbin: 20
+        unit: TeV
