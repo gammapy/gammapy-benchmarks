@@ -28,3 +28,11 @@ datasets:
             interp: log
             node_type: edges
             unit: TeV
+    energy-axis-true:
+        name: energy
+        hi_bnd: 100
+        lo_bnd: 0.05
+        nbin: 72
+        interp: log
+        node_type: edges
+        unit: TeV
