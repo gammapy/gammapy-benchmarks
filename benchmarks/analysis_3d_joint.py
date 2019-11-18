@@ -18,7 +18,7 @@ from gammapy.cube import MapDatasetMaker, MapDataset, SafeMaskMaker
 
 import os
 
-N_OBS = 100
+N_OBS = 10
 OBS_ID = 110380
 
 
@@ -42,12 +42,13 @@ def data_prep():
 
     src_pos = SkyCoord(0, 0, unit="deg", frame="galactic")
     offset_max = 4 * u.deg
+    maker = MapDatasetMaker(offset_max=offset_max)
+    safe_mask_maker = SafeMaskMaker(methods=["offset-max"], offset_max="4 deg")
+    stacked = MapDataset.create(geom=geom)
 
     datasets = []
     for obs in observations:
-        maker = MapDatasetMaker(geom=geom, offset_max=offset_max)
-        safe_mask_maker = SafeMaskMaker(methods=["offset-max"], offset_max="4 deg")
-        dataset = maker.run(obs)
+        dataset = maker.run(stacked, obs)
         dataset = safe_mask_maker.run(dataset, obs)
         dataset.edisp = dataset.edisp.get_energy_dispersion(
             position=src_pos, e_reco=energy_axis.edges
@@ -129,7 +130,8 @@ def run_benchmark():
     with open(subtimes_filename, "w") as fh:
         yaml.dump(info, fh, sort_keys=False, indent=4)
 
-    os.system('rm *.fits')
+    os.system("rm *.fits")
+
 
 if __name__ == "__main__":
     run_benchmark()

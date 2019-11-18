@@ -16,7 +16,7 @@ from gammapy.maps import MapAxis, WcsGeom
 from gammapy.cube import MapDataset, MapDatasetMaker, SafeMaskMaker
 
 
-N_OBS = 100
+N_OBS = 10
 OBS_ID = 110380
 
 
@@ -41,10 +41,10 @@ def data_prep():
     )
 
     stacked = MapDataset.create(geom)
+    maker = MapDatasetMaker(offset_max=4.0 * u.deg)
+    safe_mask_maker = SafeMaskMaker(methods=["offset-max"], offset_max="4 deg")
     for obs in observations:
-        maker = MapDatasetMaker(geom, offset_max=4.0 * u.deg)
-        safe_mask_maker = SafeMaskMaker(methods=["offset-max"], offset_max="4 deg")
-        dataset = maker.run(obs)
+        dataset = maker.run(stacked, obs)
         dataset = safe_mask_maker.run(dataset, obs)
         stacked.stack(dataset)
 
@@ -127,7 +127,7 @@ def run_benchmark():
     with open(subtimes_filename, "w") as fh:
         yaml.dump(info, fh, sort_keys=False, indent=4)
 
-    os.system('rm *.fits.gz')
+    os.system("rm *.fits.gz")
 
 
 if __name__ == "__main__":
