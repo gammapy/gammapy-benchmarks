@@ -11,7 +11,7 @@ from gammapy.spectrum import SpectrumDatasetMaker, ReflectedRegionsBackgroundMak
 from gammapy.cube import SafeMaskMaker
 from gammapy.time import LightCurveEstimator
 
-N_OBS = 100
+N_OBS = 10
 OBS_ID = 23523
 
 

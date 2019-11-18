@@ -17,7 +17,7 @@ from gammapy.spectrum import (
 from gammapy.cube import SafeMaskMaker
 import os
 
-N_OBS = 100
+N_OBS = 10
 OBS_ID = 23523
 
 
@@ -116,7 +116,7 @@ def run_benchmark():
     with open(subtimes_filename, "w") as fh:
         yaml.dump(info, fh, sort_keys=False, indent=4)
 
-    os.system('rm *.fits')
+    os.system("rm *.fits")
 
 
 if __name__ == "__main__":

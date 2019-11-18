@@ -9,7 +9,7 @@ from gammapy.cube import MapDatasetMaker, MapDataset, SafeMaskMaker
 from gammapy.maps import WcsGeom, MapAxis
 from gammapy.time import LightCurveEstimator
 
-N_OBS = 100
+N_OBS = 10
 OBS_ID = 23523
 
 
