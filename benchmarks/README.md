@@ -14,6 +14,7 @@ We have the following typical science cases tested:
 - spectrum_1d_joint / [script](spectrum_1d_joint.py) / [results](results/spectrum_1d_joint) - 1d joint analysis
 - lightcurve_1d / [script](lightcurve_1d.py) / [results](results/lightcurve_1d) - 1d lightcurve analysis
 - lightcurve_3d / [script](lightcurve_3d.py) / [results](results/lightcurve_3d) - 3d lightcurve analysis
+- io / [script](io.py) / [results](results/io) - Read/write of DL3 data
 
 ## Execution
 
@@ -30,4 +31,4 @@ python make.py run-benchmark all
 
 ## Results
 
-A summary of the results can be found [here](results/results.yaml).
+A summary of the results (for 100 runs) can be found [here](results/results.yaml).
