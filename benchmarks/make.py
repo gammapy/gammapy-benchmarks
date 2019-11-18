@@ -11,6 +11,7 @@ import sys
 import importlib
 from pathlib import Path
 
+
 import click
 from psrecord.main import monitor
 
@@ -19,6 +20,7 @@ log = logging.getLogger(__name__)
 THIS_REPO = Path(__file__).parent
 
 AVAILABLE_BENCHMARKS = {
+    "io": "io.py",
     "analysis_3d": "analysis_3d.py",
     "analysis_3d_joint": "analysis_3d_joint.py",
     "lightcurve_1d": "lightcurve_1d.py",
@@ -116,10 +118,11 @@ def run_benchmarks(benchmarks, tag):
             yaml.dump(info, fh, default_flow_style=False)
 
         dict = {}
-        t, cpu = np.loadtxt(results_filename, unpack=True, usecols=(0, 1))
+        t, cpu, _, memory = np.loadtxt(results_filename, unpack=True)
         dict["total_time"] = float(max(t))
         dict["CPU_max"] = float(max(cpu[2:]))
-        dict["CPU_min"] = float(min(cpu[1:]))
+        dict["CPU_mean"] = float(np.mean(cpu[2:]))
+        dict["memory_peak"] = float(np.max(memory))
 
         result[benchmark] = dict
 

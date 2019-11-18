@@ -9,7 +9,7 @@ from gammapy.cube import MapDatasetMaker, MapDataset, SafeMaskMaker
 from gammapy.maps import WcsGeom, MapAxis
 from gammapy.time import LightCurveEstimator
 
-N_OBS = 10
+N_OBS = 100
 OBS_ID = 23523
 
 
@@ -117,7 +117,7 @@ def run_benchmark():
     results_folder = "results/lightcurve_3d/"
     subtimes_filename = results_folder + "/subtimings.yaml"
     with open(subtimes_filename, "w") as fh:
-        yaml.dump(info, fh, default_flow_style=False)
+        yaml.dump(info, fh, sort_keys=False, indent=4)
 
 
 if __name__ == "__main__":

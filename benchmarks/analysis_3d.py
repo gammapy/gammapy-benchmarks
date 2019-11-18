@@ -2,6 +2,7 @@ import numpy as np
 import astropy.units as u
 import time
 import yaml
+import os
 from astropy.coordinates import SkyCoord
 from gammapy.modeling.models import (
     SkyModel,
@@ -15,7 +16,7 @@ from gammapy.maps import MapAxis, WcsGeom
 from gammapy.cube import MapDataset, MapDatasetMaker, SafeMaskMaker
 
 
-N_OBS = 10
+N_OBS = 100
 OBS_ID = 110380
 
 
@@ -124,7 +125,9 @@ def run_benchmark():
     results_folder = "results/analysis_3d/"
     subtimes_filename = results_folder + "/subtimings.yaml"
     with open(subtimes_filename, "w") as fh:
-        yaml.dump(info, fh, default_flow_style=False)
+        yaml.dump(info, fh, sort_keys=False, indent=4)
+
+    os.system('rm *.fits.gz')
 
 
 if __name__ == "__main__":
