@@ -1,0 +1,20 @@
+- tag: cas_a
+  frame: galactic
+  lon: 111.7 deg
+  lat: -2.1  deg
+  radius: 1 deg
+  emin: 0.1
+  emax: 50
+  nbin: 25
+  fp_nbin: 20
+
+- tag: hess_j1702
+  frame: galactic
+  lon: 344.3 deg
+  lat: -0.18 deg
+  radius: 1 deg
+  emin: 0.1
+  emax: 160
+  nbin: 35
+  fp_nbin: 25
+

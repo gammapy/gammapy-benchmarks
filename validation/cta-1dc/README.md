@@ -1,5 +1,26 @@
 # Gammapy: CTA 1DC validation
 
+## 1DC model
+In the sky model for 1DC, the parameters for this source are given in model_galactic_bright.xml under the name Cassiopeia A.
+It's an isolated point source with a power-law spectrum.
+
+-    (GLON, GLAT) = (111.734, -2.129) deg
+-    Differential flux at 1 TeV = 1.45e-12 cm-2 s-1 TeV-1
+-    Photon index = 2.75
+
+ctools/gammapy results:
+!(results/cas_a/cas_a_dc1_closeout.png)
+
+## Results
+
+
+| Target        | SpatialModel              | SpectralModel  |
+| ------------- |:-------------------------:| --------------:|
+| CasA          | lon= 1.117e+02 1.156e-03  | Norm=1.454e-12 ± 6.096e-14                |
+|               | lat= -2.129e+00 1.151e-03 | Index=2.790e+00 ± 1.935e-02               |
+| hess_j1702    | lon=   | Norm=               |
+|               | lat=  | Index=              |
+
 ## Task
 
 - Script some or all of the analyses from the CTA 1DC tools validation with latest Gammapy.
