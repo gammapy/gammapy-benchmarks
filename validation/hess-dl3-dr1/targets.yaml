@@ -3,8 +3,28 @@
   ra: 83.63
   dec: 22.01
   on_size: 0.11
-  model: pwl
-  exclusion_ra: [80.44]
-  exclusion_dec: [21.21]
-  exclusion_size : [0.5]
-  decorrelation_energy: 1.45
+  spatial_model: PointSpatialModel
+  e_decorr: 1.45
+- tag: msh1552
+  name: MSH 15-52
+  ra: 228.53
+  dec: -59.16
+  on_size: 0.3
+  spatial_model: DiskSpatialModel
+  e_decorr: 1.4
+- tag: pks2155
+  name: PKS 2155-304 (steady)
+  ra: 329.72
+  dec: -30.23
+  on_size: 0.11
+  spatial_model: PointSpatialModel
+  e_decorr: 0.65
+- tag: rxj1713
+  name: RX J1713.7-3946
+  ra: 258.39
+  dec: -39.76
+  on_size: 0.6
+  spatial_model: excess
+  e_decorr: 1.15
+
+
