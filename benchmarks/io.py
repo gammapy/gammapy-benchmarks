@@ -33,9 +33,7 @@ def run_benchmark():
 
     info["writing"] = time.time() - t
 
-    results_folder = "results/io/"
-    subtimes_filename = results_folder + "/subtimings.yaml"
-    with open(subtimes_filename, "w") as fh:
+    with open("bench.yaml", "w") as fh:
         yaml.dump(info, fh, sort_keys=False, indent=4)
 
 
@@ -43,4 +41,5 @@ if __name__ == "__main__":
     format = "%(filename)s:%(lineno)s: %(message)s"
     logging.basicConfig(level=logging.INFO, format=format)
     logging.info(f"Running io.py with N_OBS = {N_OBS}")
+    logging.info(f"cwd = {os.getcwd()}")
     run_benchmark()

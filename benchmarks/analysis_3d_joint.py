@@ -1,6 +1,7 @@
 import os
 import time
 import yaml
+from pathlib import Path
 import numpy as np
 import astropy.units as u
 from astropy.coordinates import SkyCoord
@@ -121,10 +122,7 @@ def run_benchmark():
     flux_point(datasets)
     info["flux_point"] = time.time() - t
 
-    results_folder = "results/analysis_3d_joint/"
-    subtimes_filename = results_folder + "/subtimings.yaml"
-    with open(subtimes_filename, "w") as fh:
-        yaml.dump(info, fh, sort_keys=False, indent=4)
+    Path("bench.yaml").write_text(yaml.dump(info, sort_keys=False, indent=4))
 
 
 if __name__ == "__main__":

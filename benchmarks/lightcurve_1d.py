@@ -2,6 +2,7 @@ import numpy as np
 import os
 import time
 import yaml
+from pathlib import Path
 import astropy.units as u
 from astropy.coordinates import SkyCoord, Angle
 from regions import CircleSkyRegion
@@ -86,10 +87,7 @@ def run_benchmark():
     info["data_fitting"] = time.time() - t
     t = time.time()
 
-    results_folder = "results/lightcurve_1d/"
-    subtimes_filename = results_folder + "/subtimings.yaml"
-    with open(subtimes_filename, "w") as fh:
-        yaml.dump(info, fh, sort_keys=False, indent=4)
+    Path("bench.yaml").write_text(yaml.dump(info, sort_keys=False, indent=4))
 
 
 if __name__ == "__main__":

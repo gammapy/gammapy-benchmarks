@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Run gammapy benchmarks"""
+import shutil
 import numpy as np
 import subprocess
 import yaml
@@ -9,6 +10,7 @@ import getpass
 import platform
 import sys
 import importlib
+import tempfile
 from pathlib import Path
 import click
 from psrecord.main import monitor
@@ -131,13 +133,15 @@ def run_benchmarks(benchmarks, tag):
 
 
 def run_single_benchmark(benchmark, **kwargs):
-    cmd = "python {}".format(AVAILABLE_BENCHMARKS[benchmark])
+    script_path = Path(AVAILABLE_BENCHMARKS[benchmark]).absolute()
+    cmd = "python {}".format(script_path)
     log.info(f"Executing command: {cmd}")
 
-    process = subprocess.Popen(cmd, shell=True)
-    pid = process.pid
-
-    monitor(pid, **kwargs)
+    with tempfile.TemporaryDirectory() as path:
+        process = subprocess.Popen(cmd, shell=True, cwd=str(path))
+        pid = process.pid
+        monitor(pid, **kwargs)
+        shutil.copyfile(Path(path) / "bench.yaml", f"results/{benchmark}/bench.yaml")
 
 
 if __name__ == "__main__":

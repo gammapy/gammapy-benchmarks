@@ -3,6 +3,7 @@ import astropy.units as u
 import time
 import yaml
 import os
+from pathlib import Path
 from astropy.coordinates import SkyCoord
 from gammapy.modeling.models import (
     SkyModel,
@@ -120,10 +121,7 @@ def run_benchmark():
     flux_point(stacked)
     info["flux_point"] = time.time() - t
 
-    results_folder = "results/analysis_3d/"
-    subtimes_filename = results_folder + "/subtimings.yaml"
-    with open(subtimes_filename, "w") as fh:
-        yaml.dump(info, fh, sort_keys=False, indent=4)
+    Path("bench.yaml").write_text(yaml.dump(info, sort_keys=False, indent=4))
 
 
 if __name__ == "__main__":
