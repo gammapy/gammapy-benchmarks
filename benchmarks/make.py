@@ -10,8 +10,6 @@ import platform
 import sys
 import importlib
 from pathlib import Path
-
-
 import click
 from psrecord.main import monitor
 

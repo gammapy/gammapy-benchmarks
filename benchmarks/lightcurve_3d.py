@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import astropy.units as u
 import time
@@ -9,12 +10,12 @@ from gammapy.cube import MapDatasetMaker, MapDataset, SafeMaskMaker
 from gammapy.maps import WcsGeom, MapAxis
 from gammapy.time import LightCurveEstimator
 
-N_OBS = 10
-OBS_ID = 23523
+N_OBS = int(os.environ.get("GAMMAPY_BENCH_N_OBS", 10))
 
 
 def data_prep():
     data_store = DataStore.from_dir("$GAMMAPY_DATA/hess-dl3-dr1/")
+    OBS_ID = 23523
     obs_ids = OBS_ID * np.ones(N_OBS)
     observations = data_store.get_observations(obs_ids)
 
