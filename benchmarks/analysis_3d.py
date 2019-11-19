@@ -96,7 +96,7 @@ def flux_point(stacked):
 
 
 def run_benchmark():
-    info = {}
+    info = {"n_obs": N_OBS}
     filename = "stacked_3d.fits.gz"
 
     t = time.time()

@@ -74,7 +74,7 @@ def data_fit(datasets):
 
 
 def run_benchmark():
-    info = {}
+    info = {"n_obs": N_OBS}
 
     t = time.time()
 

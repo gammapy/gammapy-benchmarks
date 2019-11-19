@@ -98,13 +98,12 @@ def data_prep():
 
 
 def data_fit(datasets):
-
     lc_maker = LightCurveEstimator(datasets, source="crab", reoptimize=True)
     lc = lc_maker.run(e_ref=1 * u.TeV, e_min=1.0 * u.TeV, e_max=10.0 * u.TeV)
 
 
 def run_benchmark():
-    info = {}
+    info = {"n_obs": N_OBS}
 
     t = time.time()
 

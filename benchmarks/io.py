@@ -1,4 +1,5 @@
 # To check the reading/writing performance of DL3 data
+import logging
 import numpy as np
 import time
 import yaml
@@ -6,12 +7,10 @@ import os
 from gammapy.data import DataStore
 from gammapy.maps import Map
 
-
 N_OBS = int(os.environ.get("GAMMAPY_BENCH_N_OBS", 10))
 
-
 def run_benchmark():
-    info = {}
+    info = {"n_obs": N_OBS}
 
     t = time.time()
 
@@ -41,4 +40,7 @@ def run_benchmark():
 
 
 if __name__ == "__main__":
+    format = "%(filename)s:%(lineno)s: %(message)s"
+    logging.basicConfig(level=logging.INFO, format=format)
+    logging.info(f"Running io.py with N_OBS = {N_OBS}")
     run_benchmark()

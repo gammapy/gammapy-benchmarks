@@ -14,20 +14,21 @@ We have the following typical science cases tested:
 - spectrum_1d_joint / [script](spectrum_1d_joint.py) / [results](results/spectrum_1d_joint) - 1d joint analysis
 - lightcurve_1d / [script](lightcurve_1d.py) / [results](results/lightcurve_1d) - 1d lightcurve analysis
 - lightcurve_3d / [script](lightcurve_3d.py) / [results](results/lightcurve_3d) - 3d lightcurve analysis
-- io / [script](io.py) / [results](results/io) - Read/write of DL3 data
+- io / [script](io.py) / [results](results/io) - Read DL3 events data
 
 ## Execution
 
 To run a specific benchmark use [make.py](make.py).
 
-```bash
-python make.py run-benchmark benchmark-name
-```
+    python make.py run-benchmark benchmark-name
 
 To run all benchmarks:
-```bash
-python make.py run-benchmark all
-```
+
+    python make.py run-benchmark all
+
+To debug scripts (run quickly using only 2 observations):
+
+    GAMMAPY_BENCH_N_OBS=2 python make.py run-benchmark all
 
 ## Results
 

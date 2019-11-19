@@ -88,7 +88,7 @@ def flux_point(stacked):
 
 
 def run_benchmark():
-    info = {}
+    info = {"n_obs": N_OBS}
 
     t = time.time()
 

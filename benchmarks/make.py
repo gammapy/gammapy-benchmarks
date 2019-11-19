@@ -139,9 +139,6 @@ def run_single_benchmark(benchmark, **kwargs):
 
     monitor(pid, **kwargs)
 
-    if process is not None:
-        process.kill()
-
 
 if __name__ == "__main__":
     cli()
