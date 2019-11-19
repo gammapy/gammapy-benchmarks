@@ -44,9 +44,7 @@ def data_prep():
 
     datasets = []
 
-    maker = MapDatasetMaker(
-        geom=geom, energy_axis_true=energy_axis_true, offset_max=offset_max
-    )
+    maker = MapDatasetMaker(offset_max=offset_max)
     safe_mask_maker = SafeMaskMaker(methods=["offset-max"], offset_max=offset_max)
 
     for time_interval in time_intervals:
@@ -61,7 +59,7 @@ def data_prep():
         stacked = MapDataset.create(geom=geom, energy_axis_true=energy_axis_true)
 
         for obs in observations:
-            dataset = maker.run(obs)
+            dataset = maker.run(stacked, obs)
             dataset = safe_mask_maker.run(dataset, obs)
             stacked.stack(dataset)
 
@@ -73,8 +71,6 @@ def data_prep():
             position=target_position, geom=stacked.exposure.geom, max_radius="0.3 deg"
         )
 
-        stacked.counts.meta["t_start"] = time_interval[0]
-        stacked.counts.meta["t_stop"] = time_interval[1]
         datasets.append(stacked)
 
     spatial_model = PointSpatialModel(
