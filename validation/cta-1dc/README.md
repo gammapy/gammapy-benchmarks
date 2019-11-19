@@ -14,9 +14,12 @@ ctools/gammapy results:
 ## Results
 
 
-| Target        | SpatialModel           | SpectralModel  |
-| ------------- |:----------------------:| --------------:|
-| CasA          |                        |                |
+| Target        | SpatialModel              | SpectralModel  |
+| ------------- |:-------------------------:| --------------:|
+| CasA          | lon= 1.117e+02 1.156e-03  | Norm=1.454e-12 ± 6.096e-14                |
+|               | lat= -2.129e+00 1.151e-03 | Index=2.790e+00 ± 1.935e-02               |
+| hess_j1702    | lon=   | Norm=               |
+|               | lat=  | Index=              |
 
 ## Task
 
