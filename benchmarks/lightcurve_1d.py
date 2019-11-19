@@ -53,10 +53,6 @@ def data_prep():
 
         dataset = dataset_maker.run(observation, selection=["counts", "aeff", "edisp"])
 
-        dataset.counts.meta = dict()
-        dataset.counts.meta["t_start"] = time_interval[0]
-        dataset.counts.meta["t_stop"] = time_interval[1]
-
         dataset_on_off = bkg_maker.run(dataset, observation)
         dataset_on_off = safe_mask_masker.run(dataset_on_off, observation)
         datasets_1d.append(dataset_on_off)
