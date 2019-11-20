@@ -1,0 +1,38 @@
+general:
+    logging:
+        level: INFO
+    outdir: .
+
+observations:
+    datastore: $GAMMAPY_DATA/hess-dl3-dr1/
+    filters:
+        - filter_type: par_value
+          value_param: {name}
+          variable: TARGET_NAME
+
+datasets:
+    dataset-type: MapDataset
+    stack-datasets: true
+    offset-max: 2.5 deg
+    geom:
+        skydir: [{ra}, {dec}]
+        width: [3, 3]
+        binsz: 0.02
+        coordsys: CEL
+        proj: TAN
+        axes:
+          - name: energy
+            hi_bnd: 100
+            lo_bnd: 0.1
+            nbin: 24
+            interp: log
+            node_type: edges
+            unit: TeV
+    energy-axis-true:
+        name: energy
+        hi_bnd: 100
+        lo_bnd: 0.1
+        nbin: 72
+        interp: log
+        node_type: edges
+        unit: TeV
