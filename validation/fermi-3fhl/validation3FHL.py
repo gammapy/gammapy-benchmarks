@@ -1,4 +1,9 @@
+import subprocess
+from pathlib import Path
+import sys
+from time import time
 import numpy as np
+import logging
 import multiprocessing as mp
 from astropy import units as u
 from astropy.coordinates import SkyCoord
@@ -18,14 +23,13 @@ from gammapy.modeling.models import (
 from gammapy.spectrum import FluxPoints, FluxPointsEstimator
 from gammapy.cube import MapDataset, PSFKernel, MapEvaluator
 from gammapy.catalog import SourceCatalog3FHL
-from pathlib import Path
-from time import time
 from matplotlib import cm
 from matplotlib.colors import LogNorm
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
-import sys
 from gammapy.utils.scripts import make_path
+
+log = logging.getLogger(__name__)
 
 
 def extrapolate_iso(infile, outfile, logEc_extra):
@@ -204,8 +208,8 @@ class Validation_3FHL:
         exposure_hpx.unit = "cm2 s"
 
         # background iem
-        infile = self.datadir + "/catalogs/fermi/gll_iem_v06.fits.gz"
-        outfile = self.resdir + "/gll_iem_v06_extra.fits"
+        infile = "data/gll_iem_v06.fits"
+        outfile ="data/gll_iem_v06_extra.fits"
         model_iem = extrapolate_iem(infile, outfile, self.logEc_extra)
 
         # ROI
@@ -635,9 +639,17 @@ class Validation_3FHL:
         plt.savefig(filename, dpi=plt.gcf().dpi)
         print("\n ![](" + filename + ")")
 
+def get_data():
+    """Get input data files for this validation."""
+    path = Path("data/gll_iem_v06.fits")
+    if not path.exists():
+        url = "https://fermi.gsfc.nasa.gov/ssc/data/analysis/software/aux/gll_iem_v06.fits"
+        cmd = f"wget {url} {path}"
+        log.info(f"Execution: {cmd}")
+        subprocess.call(cmd, shell=True)
 
 if __name__ == "__main__":
-    # run
-    start_time = time()
+    get_data()
+
     validation = Validation_3FHL(selection="short", savefig=True)
     validation(run_fit=True, get_diags=True)
