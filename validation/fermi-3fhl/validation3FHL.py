@@ -5,6 +5,7 @@ from time import time
 import numpy as np
 import logging
 import multiprocessing as mp
+import yaml
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
@@ -31,19 +32,6 @@ from gammapy.utils.scripts import make_path
 
 log = logging.getLogger(__name__)
 
-
-def extrapolate_iso(infile, outfile, logEc_extra):
-    tmp = np.loadtxt(make_path(infile), delimiter=" ")
-    Ecbd = tmp[:, 0]
-    qiso = tmp[:, 1]
-    finterp = interp1d(
-        np.log10(Ecbd), np.log10(qiso), kind="linear", fill_value="extrapolate"
-    )
-    qiso_extra = 10 ** finterp(logEc_extra)
-    np.savetxt(outfile, np.c_[10 ** logEc_extra, qiso_extra], delimiter=" ")
-    return create_fermi_isotropic_diffuse_model(
-        filename=outfile, norm=0.92, interp_kwargs={"fill_value": None}
-    )  # norm=0.92 see paper appendix A
 
 
 def extrapolate_iem(infile, outfile, logEc_extra):
@@ -109,10 +97,7 @@ class Validation_3FHL:
             El_fit, name="energy", unit="GeV", interp="log"
         )
 
-        # background iso
-        infile = Path(self.datadir + "/fermi_3fhl/iso_P8R2_SOURCE_V6_v06.txt")
-        outfile = Path(self.resdir + "/iso_P8R2_SOURCE_V6_v06_extra.txt")
-        self.model_iso = extrapolate_iso(infile, outfile, self.logEc_extra)
+        self.model_iso = get_iso_model(self.logEc_extra)
 
         # regions selection
         file3fhl = self.datadir + "/catalogs/fermi/gll_psch_v13.fit.gz"
@@ -131,10 +116,10 @@ class Validation_3FHL:
             indexes = np.unique(ROIs_ord, return_index=True)[1]
             ROIs_ord = [ROIs_ord[index] for index in sorted(indexes)]
             self.ROIs_sel = [
-                kr
-                for kr in ROIs_ord
-                if sum(Scat.ROI_num == kr) <= 4 and self.ROIs.RADIUS[kr] < 6
-            ][:100]
+                                kr
+                                for kr in ROIs_ord
+                                if sum(Scat.ROI_num == kr) <= 4 and self.ROIs.RADIUS[kr] < 6
+                            ][:100]
         elif selection == "debug":
             self.ROIs_sel = [135]  # Vela region
 
@@ -209,7 +194,7 @@ class Validation_3FHL:
 
         # background iem
         infile = "data/gll_iem_v06.fits"
-        outfile ="data/gll_iem_v06_extra.fits"
+        outfile = "data/gll_iem_v06_extra.fits"
         model_iem = extrapolate_iem(infile, outfile, self.logEc_extra)
 
         # ROI
@@ -470,7 +455,6 @@ class Validation_3FHL:
         self.diags["cat_fp_sel"] += list(cat_fp.table["dnde"][ind])
 
         if isinstance(res_spec, PowerLawSpectralModel):
-
             self.diags["params"]["PL_index"].append(
                 [
                     cat_spec.parameters["index"].value,
@@ -639,16 +623,49 @@ class Validation_3FHL:
         plt.savefig(filename, dpi=plt.gcf().dpi)
         print("\n ![](" + filename + ")")
 
+
 def get_data():
     """Get input data files for this validation."""
-    path = Path("data/gll_iem_v06.fits")
-    if not path.exists():
-        url = "https://fermi.gsfc.nasa.gov/ssc/data/analysis/software/aux/gll_iem_v06.fits"
-        cmd = f"wget {url} {path}"
-        log.info(f"Execution: {cmd}")
-        subprocess.call(cmd, shell=True)
+    items = """
+    - path: data/gll_iem_v06.fits
+      url: https://fermi.gsfc.nasa.gov/ssc/data/analysis/software/aux/gll_iem_v06.fits
+    - path: data/iso_P8R2_SOURCE_V6_v06.txt
+      url: https://raw.githubusercontent.com/gammapy/gammapy-extra/master/datasets/fermi_3fhl/iso_P8R2_SOURCE_V6_v06.txt
+    """
+    for item in yaml.safe_load(items):
+        path = Path(item["path"])
+        if path.exists():
+            log.info(f"Skipping download. File exists: {path}")
+        else:
+            cmd = "wget {url} -O {path}".format_map(item)
+            log.info(f"Execution: {cmd}")
+            subprocess.call(cmd, shell=True)
+
+def get_iso_model(logEc_extra):
+    """Extrapolation isotropic model to high energies."""
+    infile = "data/iso_P8R2_SOURCE_V6_v06.txt"
+    outfile = "data/iso_P8R2_SOURCE_V6_v06_extrapolated.txt"
+
+    if Path(outfile).exists():
+        return
+
+    tmp = np.loadtxt(infile, delimiter=" ")
+    Ecbd = tmp[:, 0]
+    qiso = tmp[:, 1]
+    finterp = interp1d(
+        np.log10(Ecbd), np.log10(qiso), kind="linear", fill_value="extrapolate"
+    )
+    qiso_extra = 10 ** finterp(logEc_extra)
+    log.info(f"Writing {outfile}")
+    np.savetxt(outfile, np.c_[10 ** logEc_extra, qiso_extra], delimiter=" ")
+
+    # norm=0.92 see paper appendix A
+    return create_fermi_isotropic_diffuse_model(
+        filename=outfile, norm=0.92, interp_kwargs={"fill_value": None}
+    )
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     get_data()
 
     validation = Validation_3FHL(selection="short", savefig=True)
