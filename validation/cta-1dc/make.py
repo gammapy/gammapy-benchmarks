@@ -1,16 +1,12 @@
 #!/usr/bin/env python
 """Run Gammapy validation: CTA 1DC"""
-import matplotlib.pyplot as plt
-import sys
+import logging
 import yaml
+import matplotlib.pyplot as plt
 from gammapy.analysis import Analysis, AnalysisConfig
 
-
 def target_config3d(config_file, target_config_file, tag):
-    """
-    Create a Analysis configuration file using parameters
-    from a target file and a target name
-    """
+    """Create analyis configuration for out source."""
     targets_config_ = yaml.safe_load(open(target_config_file))
     targets_config = {}
     for conf in targets_config_:  # define tag as key
@@ -51,20 +47,8 @@ def target_config3d(config_file, target_config_file, tag):
 
 
 def run_3d(name):
-    """
-    Run a full 3D analysis using the HLI producing:
-    - fit
-    - residual
-    - flux points
-    
-    Analysis is defined by external config files names
-    config3d.yaml : template where the run selection, ROI parameters are defined
-    targets.yaml : reduced list of parameters for each target  
-    model_{name}.yaml : where the SkyModel is defined
-    TODOs:
-    - move the prints to a Log file
-    - nicer output for the fitted spectral param
-    """
+    """Run 3D analysis for one source."""
+    logging.info(f"run3d: {name}")
     mode = "3d"
     config_file = f"config{mode}.yaml"
     target_config_file = f"targets.yaml"
@@ -74,7 +58,6 @@ def run_3d(name):
 
     config = target_config3d(config_file, target_config_file, name)
     analysis = Analysis(config)
-    print(config)
     analysis.get_observations()
 
     conf = config.settings["observations"]["filters"][0]
@@ -84,7 +67,7 @@ def run_3d(name):
         conf["lat"],
         conf["radius"],
     )
-    print(f"{nb} observations found in {rad} around {lon}, {lat} ")
+    logging.info(f"{nb} observations found in {rad} around {lon}, {lat} ")
 
     analysis.get_datasets()
 
@@ -94,9 +77,9 @@ def run_3d(name):
     plt.savefig(f"{outdir}/{name}_{mode}_counts.png", bbox_inches="tight")
 
     analysis.set_model(filename=model_file)
-    print(analysis.model)
+    logging.info(analysis.model)
     analysis.run_fit()
-    print(analysis.fit_result.parameters.to_table())
+    logging.info(analysis.fit_result.parameters.to_table())
     analysis.fit_result.parameters.to_table().write(
         f"{outdir}/{name}_{mode}_bestfit.dat", format="ascii", overwrite=True
     )
@@ -120,18 +103,14 @@ def run_3d(name):
 
 
 def main():
-    pattern = sys.argv[1]
-    targets = ["cas_a", "hess_j1702"]
-
-    if pattern == "all":
-        for target in targets:
-            run_3d(target)
+    targets = "all"
+    if targets == "all":
+        targets = ["cas_a", "hess_j1702"]
     else:
-        if pattern in targets:
-            run_3d(pattern)
-        else:
-            print("Target not yet implemented")
+        targets = targets.split(",")
 
+    for target in targets:
+        run_3d(target)
 
 if __name__ == "__main__":
     main()
