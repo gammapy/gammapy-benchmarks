@@ -20,7 +20,7 @@ It's an isolated point source with a power-law spectrum.
 -    Photon index = 2.75
 
 ctools/gammapy results from DC1:
-![DC1](results/cas_a/cas_a_dc1_closeout.png)
+![DC1](cas_a/cas_a_dc1_closeout.png)
 
 
 ## Task
