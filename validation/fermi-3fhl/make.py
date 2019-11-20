@@ -6,6 +6,7 @@ import numpy as np
 import logging
 import multiprocessing as mp
 import yaml
+import click
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
@@ -112,11 +113,7 @@ class Validation_3FHL:
             raise ValueError(f"Invalid selection: {selection!r}")
 
         # fit options
-        self.optimize_opts = {
-            "backend": "minuit",
-            "tol": 10.0,
-            "strategy": 2,
-        }
+        self.optimize_opts = {"backend": "minuit", "tol": 10.0, "strategy": 2}
 
         # calculate flux points only for sources significant above this threshold
         self.sig_cut = 8.0
@@ -366,7 +363,7 @@ class Validation_3FHL:
                     cat_spec = self.FHL3[model.name].spectral_model()
 
                     res_fp = FluxPoints.read(
-                        self.resdir / f"{model.name }_flux_points.fits"
+                        self.resdir / f"{model.name}_flux_points.fits"
                     )
                     res_fp.table["is_ul"] = res_fp.table["ts"] < 1.0
                     cat_fp = self.FHL3[model.name].flux_points.to_sed_type("dnde")
@@ -411,10 +408,7 @@ class Validation_3FHL:
         energy_range = [0.01, 2] * u.TeV
         plt.figure(figsize=(6, 6), dpi=150)
         ax = cat_spec.plot(
-            energy_range=energy_range,
-            energy_power=2,
-            label="3FHL Catalogue",
-            color="k",
+            energy_range=energy_range, energy_power=2, label="3FHL Catalogue", color="k"
         )
         cat_spec.plot_error(ax=ax, energy_range=energy_range, energy_power=2)
         res_spec.plot(
@@ -430,9 +424,7 @@ class Validation_3FHL:
         res_fp.plot(ax=ax, energy_power=2, color="b")
         plt.legend()
         tag = model.name.replace(" ", "_")
-        plt.savefig(
-            self.resdir / f"spec_{tag}_ROI_num{kr}.png", dpi=plt.gcf().dpi,
-        )
+        plt.savefig(self.resdir / f"spec_{tag}_ROI_num{kr}.png", dpi=plt.gcf().dpi)
         plt.close("all")
 
     def update_spec_diags(self, dataset, model, cat_spec, res_spec, cat_fp, res_fp):
@@ -636,17 +628,19 @@ def extrapolate_iso_model(logEc_extra):
     infile = "data/iso_P8R2_SOURCE_V6_v06.txt"
     outfile = "data/iso_P8R2_SOURCE_V6_v06_extrapolated.txt"
 
-    if not Path(outfile).exists():
-        tmp = np.loadtxt(infile, delimiter=" ")
-        Ecbd = tmp[:, 0]
-        qiso = tmp[:, 1]
-        finterp = interp1d(
-            np.log10(Ecbd), np.log10(qiso), kind="linear", fill_value="extrapolate"
-        )
-        qiso_extra = 10 ** finterp(logEc_extra)
+    if Path(outfile).exists():
+        return
 
-        log.info(f"Writing {outfile}")
-        np.savetxt(outfile, np.c_[10 ** logEc_extra, qiso_extra], delimiter=" ")
+    tmp = np.loadtxt(infile, delimiter=" ")
+    Ecbd = tmp[:, 0]
+    qiso = tmp[:, 1]
+    finterp = interp1d(
+        np.log10(Ecbd), np.log10(qiso), kind="linear", fill_value="extrapolate"
+    )
+    qiso_extra = 10 ** finterp(logEc_extra)
+
+    log.info(f"Writing {outfile}")
+    np.savetxt(outfile, np.c_[10 ** logEc_extra, qiso_extra], delimiter=" ")
 
 
 def extrapolate_iem_model(logEc_extra):
@@ -654,37 +648,52 @@ def extrapolate_iem_model(logEc_extra):
     infile = "data/gll_iem_v06.fits"
     outfile = "data/gll_iem_v06_extrapolated.fits"
 
-    if not Path(outfile).exists():
-        iem_fermi = Map.read(infile)
-        Ec = iem_fermi.geom.axes[0].center.value
-        finterp = interp1d(
-            np.log10(Ec),
-            np.log10(iem_fermi.data),
-            axis=0,
-            kind="linear",
-            fill_value="extrapolate",
-        )
-        iem_extra = 10 ** finterp(logEc_extra)
-        Ec_ax = MapAxis.from_nodes(
-            10 ** logEc_extra, unit="MeV", name="energy", interp="log"
-        )
-        geom_3D = iem_fermi.geom.to_image().to_cube([Ec_ax])
+    if Path(outfile).exists():
+        return
 
-        iem_fermi_extra = Map.from_geom(geom_3D, data=iem_extra.astype("float32"))
-        iem_fermi_extra.unit = "cm-2 s-1 MeV-1 sr-1"
+    iem_fermi = Map.read(infile)
+    Ec = iem_fermi.geom.axes[0].center.value
+    finterp = interp1d(
+        np.log10(Ec),
+        np.log10(iem_fermi.data),
+        axis=0,
+        kind="linear",
+        fill_value="extrapolate",
+    )
+    iem_extra = 10 ** finterp(logEc_extra)
+    Ec_ax = MapAxis.from_nodes(
+        10 ** logEc_extra, unit="MeV", name="energy", interp="log"
+    )
+    geom_3D = iem_fermi.geom.to_image().to_cube([Ec_ax])
 
-        log.info(f"Writing {outfile}")
-        iem_fermi_extra.write(outfile, overwrite=True)
+    iem_fermi_extra = Map.from_geom(geom_3D, data=iem_extra.astype("float32"))
+    iem_fermi_extra.unit = "cm-2 s-1 MeV-1 sr-1"
+
+    log.info(f"Writing {outfile}")
+    iem_fermi_extra.write(outfile, overwrite=True)
 
 
-if __name__ == "__main__":
+@click.command()
+@click.option(
+    "--selection",
+    type=click.Choice(["debug", "short", "long"]),
+    default="short",
+)
+def cli(selection):
     logging.basicConfig(level=logging.INFO)
     get_data()
 
+    # TODO: move this code to the extrapolation functions
+    # Use MapAxis and Gammapy for energy axis functionality
+    # Don't call `np.log` or `10 **` for this!
     El_extra = 10 ** np.arange(3.8, 6.51, 0.1)  # MeV
     logEc_extra = (np.log10(El_extra)[1:] + np.log10(El_extra)[:-1]) / 2.0
     extrapolate_iso_model(logEc_extra)
     extrapolate_iem_model(logEc_extra)
 
-    validation = Validation_3FHL(selection="debug", savefig=True)
+    validation = Validation_3FHL(selection=selection, savefig=True)
     validation.run_all(run_fit=True, get_diags=True)
+
+
+if __name__ == "__main__":
+    cli()
