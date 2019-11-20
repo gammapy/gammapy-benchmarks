@@ -55,6 +55,8 @@ def analysis_3d_data_reduction(target):
     log.info("Running data reduction")
     analysis.get_datasets()
 
+    # TODO: write datasets and separate fitting to next function
+    # Not implemented in Gammapy yet, coming very soon.
     log.info("Running fit ...")
     analysis.set_model(filename=f"{target}/model_3d.yaml")
     logging.info(analysis.model)
