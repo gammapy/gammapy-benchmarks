@@ -37,6 +37,8 @@ Rel. err. <30%: 100.0
 Rel. err. mean: -0.1633147376900733  
 compatibility: 100.0  
 
+ ![](./res/PL_index_corr.png)
+
  ![](./res/PL_index_errel.png)
 
  ![](./res/PL_index_error_errel.png)
@@ -48,6 +50,8 @@ Rel. err. <10%: 95.48387096774194
 Rel. err. <30%: 100.0  
 Rel. err. mean: -0.22198785615526734  
 compatibility: 98.06451612903226  
+
+ ![](./res/PL_amplitude_corr.png)
 
  ![](./res/PL_amplitude_errel.png)
 
@@ -61,6 +65,8 @@ Rel. err. <30%: 100.0
 Rel. err. mean: 0.15134907307517098
 compatibility: 100.0
 
+ ![](./res/LP_alpha_corr.png)
+
  ![](./res/LP_alpha_errel.png)
 
  ![](./res/LP_alpha_error_errel.png)
@@ -73,6 +79,8 @@ Rel. err. <30%: 100.0
 Rel. err. mean: -4.091718544272052  
 compatibility: 100.0  
 
+ ![](./res/LP_beta_corr.png)
+
  ![](./res/LP_beta_errel.png)
 
  ![](./res/LP_beta_error_errel.png)
@@ -84,6 +92,8 @@ Rel. err. <10%: 100.0
 Rel. err. <30%: 100.0  
 Rel. err. mean: -1.3330366391977653  
 compatibility: 100.0  
+
+ ![](./res/LP_amplitude_corr.png)
 
  ![](./res/LP_amplitude_errel.png)
 

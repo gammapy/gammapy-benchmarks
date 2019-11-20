@@ -600,6 +600,7 @@ class Validation_3FHL:
                 plt.ylabel(key + " Gammapy")
                 filename = self.resdir + "/" + key + "_corr" + ".png"
                 plt.savefig(filename, dpi=plt.gcf().dpi)
+                print("\n ![](" + filename + ")")
 
                 # relative error and compatibility
                 comp = iscompatible(diag[:, 0], diag[:, 1], diag[:, 2], diag[:, 3])
