@@ -602,16 +602,14 @@ class Validation_3FHL:
                 plt.savefig(filename, dpi=plt.gcf().dpi)
 
                 # relative error and compatibility
-                compatibility = iscompatible(
-                    diag[:, 0], diag[:, 1], diag[:, 2], diag[:, 3]
-                )
-                self.diags["compatibility"][key] = compatibility
+                comp = iscompatible(diag[:, 0], diag[:, 1], diag[:, 2], diag[:, 3])
+                self.diags["compatibility"][key] = comp
                 errel = relative_error(diag[:, 0], diag[:, 1])
                 self.diags["errel"][key] = errel
                 print("Rel. err. <10%:", 100 * sum(abs(errel) < 0.1) / len(errel), "  ")
                 print("Rel. err. <30%:", 100 * sum(abs(errel) < 0.3) / len(errel), "  ")
                 print("Rel. err. mean:", 100 * np.nanmean(errel), "  ")
-                print("compatibility:", 100 * sum(compatibility) / len(compatibility), "  ")
+                print("compatibility:", 100 * sum(comp) / len(comp), "  ")
                 self.plot_errel(diag[:, 0], errel, key)
 
                 key += "_error"
@@ -640,5 +638,5 @@ class Validation_3FHL:
 if __name__ == "__main__":
     # run
     start_time = time()
-    validation = Validation_3FHL(selection="long", savefig=True)
-    validation(run_fit=False, get_diags=True)
+    validation = Validation_3FHL(selection="short", savefig=True)
+    validation(run_fit=True, get_diags=True)
