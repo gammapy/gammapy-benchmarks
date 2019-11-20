@@ -41,8 +41,8 @@ fit:
 
 flux-points:
     fp_binning:
-        lo_bnd: {emin}
-        hi_bnd: {emax}
+        lo_bnd: {emin_tev}
+        hi_bnd: {emax_tev}
         interp: log
         nbin: {fp_nbin}
         unit: TeV

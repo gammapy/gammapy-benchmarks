@@ -49,10 +49,6 @@ def analysis_3d_data_reduction(target):
     config = yaml.safe_load(txt)
     config = AnalysisConfig(config)
 
-    # import IPython; IPython.embed(); 1/0
-
-    log.info(config)
-
     analysis = Analysis(config)
     analysis.get_observations()
 
