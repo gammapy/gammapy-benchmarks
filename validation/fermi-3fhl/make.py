@@ -53,19 +53,19 @@ class Validation_3FHL:
     savefig : bool
         Save figures? TODO: why not always save figures?
     """
+
     def __init__(self, selection="short", savefig=True):
         log.info("Executing __init__()")
-        self.datadir = "$GAMMAPY_DATA"
-        self.resdir = "./results"
+        self.resdir = Path("results")
         self.savefig = savefig
 
         # event list
         self.events = EventList.read(
-            self.datadir + "/fermi_3fhl/fermi_3fhl_events_selected.fits.gz"
+            "$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_events_selected.fits.gz"
         )
         # psf
         self.psf = EnergyDependentTablePSF.read(
-            self.datadir + "/fermi_3fhl/fermi_3fhl_psf_gc.fits.gz"
+            "$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_psf_gc.fits.gz"
         )
 
         # mask margin
@@ -73,19 +73,20 @@ class Validation_3FHL:
         self.psf_margin = np.ceil(psf_r99max.value[0] * 10) / 10.0
 
         # energies
-        self.dlb = 1 / 8.0
-        El_extra = 10 ** np.arange(3.8, 6.51, 0.1)  # MeV
-        self.logEc_extra = (np.log10(El_extra)[1:] + np.log10(El_extra)[:-1]) / 2.0
         self.El_flux = [10.0, 20.0, 50.0, 150.0, 500.0, 2000.0]
         El_fit = 10 ** np.arange(1, 3.31, 0.1)
         self.energy_axis = MapAxis.from_edges(
             El_fit, name="energy", unit="GeV", interp="log"
         )
 
-        self.model_iso = get_iso_model(self.logEc_extra)
-
+        # iso norm=0.92 see paper appendix A
+        self.model_iso = create_fermi_isotropic_diffuse_model(
+            filename="data/iso_P8R2_SOURCE_V6_v06_extrapolated.txt",
+            norm=0.92,
+            interp_kwargs={"fill_value": None},
+        )
         # regions selection
-        file3fhl = self.datadir + "/catalogs/fermi/gll_psch_v13.fit.gz"
+        file3fhl = "$GAMMAPY_DATA/catalogs/fermi/gll_psch_v13.fit.gz"
         self.FHL3 = SourceCatalog3FHL(file3fhl)
         hdulist = fits.open(make_path(file3fhl))
         self.ROIs = hdulist["ROIs"].data
@@ -101,10 +102,10 @@ class Validation_3FHL:
             indexes = np.unique(ROIs_ord, return_index=True)[1]
             ROIs_ord = [ROIs_ord[index] for index in sorted(indexes)]
             self.ROIs_sel = [
-                                kr
-                                for kr in ROIs_ord
-                                if sum(Scat.ROI_num == kr) <= 4 and self.ROIs.RADIUS[kr] < 6
-                            ][:100]
+                kr
+                for kr in ROIs_ord
+                if sum(Scat.ROI_num == kr) <= 4 and self.ROIs.RADIUS[kr] < 6
+            ][:100]
         elif selection == "debug":
             self.ROIs_sel = [135]  # Vela region
         else:
@@ -148,7 +149,7 @@ class Validation_3FHL:
             self.parallel_regions()
 
         orig_stdout = sys.stdout
-        f = open(self.resdir + "/results.md", "w")
+        f = open(self.resdir / "results.md", "w")
         sys.stdout = f
         self.read_regions()
         if get_diags:
@@ -177,11 +178,16 @@ class Validation_3FHL:
 
         # exposure
         exposure_hpx = Map.read(
-            self.datadir + "/fermi_3fhl/fermi_3fhl_exposure_cube_hpx.fits.gz"
+            "$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_exposure_cube_hpx.fits.gz"
         )
         exposure_hpx.unit = "cm2 s"
 
-        model_iem = get_iem_model(self.logEc_extra)
+        # iem
+        iem_fermi_extra = Map.read("data/gll_iem_v06_extrapolated.fits")
+        # norm=1.1, tilt=0.03 see paper appendix A
+        model_iem = SkyDiffuseCube(
+            iem_fermi_extra, norm=1.1, tilt=0.03, name="iem_extrapolated"
+        )
 
         # ROI
         roi_time = time()
@@ -194,7 +200,7 @@ class Validation_3FHL:
             width=width,
             proj="CAR",
             coordsys="GAL",
-            binsz=self.dlb,
+            binsz=1 / 8.0,
             axes=[self.energy_axis],
             dtype=float,
         )
@@ -293,11 +299,11 @@ class Validation_3FHL:
                 path=Path(self.resdir), prefix=dataset.name, overwrite=True
             )
             np.save(
-                self.resdir + "/3FHL_ROI_num" + str(kr) + "_covariance.npy",
+                self.resdir / f"3FHL_ROI_num{kr}_covariance.npy",
                 results.parameters.covariance,
             )
             np.savez(
-                self.resdir + "/3FHL_ROI_num" + str(kr) + "_fit_infos.npz",
+                self.resdir / f"3FHL_ROI_num{kr}_fit_infos.npz",
                 message=results.message,
                 stat=[cat_stat, fit_stat],
             )
@@ -316,7 +322,7 @@ class Validation_3FHL:
                         source=model.name,
                         sigma_ul=2.0,
                     ).run()
-                    filename = self.resdir + "/" + model.name + "_flux_points.fits"
+                    filename = self.resdir / f"{model.name}_flux_points.fits"
                     flux_points.write(filename, overwrite=True)
 
             exec_time = time() - roi_time - exec_time
@@ -324,19 +330,17 @@ class Validation_3FHL:
 
     def read_regions(self):
         for kr in self.ROIs_sel:
-            filedata = Path(self.resdir + "/3FHL_ROI_num" + str(kr) + "_datasets.yaml")
-            filemodel = Path(self.resdir + "/3FHL_ROI_num" + str(kr) + "_models.yaml")
+            filedata = self.resdir / f"3FHL_ROI_num{kr}_datasets.yaml"
+            filemodel = self.resdir / f"3FHL_ROI_num{kr}_models.yaml"
             try:
                 dataset = list(Datasets.from_yaml(filedata, filemodel))[0]
             except (FileNotFoundError, IOError):
                 continue
 
             pars = dataset.parameters
-            pars.covariance = np.load(
-                self.resdir + "/" + dataset.name + "_covariance.npy"
-            )
+            pars.covariance = np.load(self.resdir / f"{dataset.name}_covariance.npy")
 
-            infos = np.load(self.resdir + "/3FHL_ROI_num" + str(kr) + "_fit_infos.npz")
+            infos = np.load(self.resdir / f"3FHL_ROI_num{kr}_fit_infos.npz")
             self.diags["message"].append(infos["message"])
             self.diags["stat"].append(infos["stat"])
 
@@ -362,7 +366,7 @@ class Validation_3FHL:
                     cat_spec = self.FHL3[model.name].spectral_model()
 
                     res_fp = FluxPoints.read(
-                        self.resdir + "/" + model.name + "_flux_points.fits"
+                        self.resdir / f"{model.name }_flux_points.fits"
                     )
                     res_fp.table["is_ul"] = res_fp.table["ts"] < 1.0
                     cat_fp = self.FHL3[model.name].flux_points.to_sed_type("dnde")
@@ -386,21 +390,21 @@ class Validation_3FHL:
             vmax=3,
         )
         plt.title("Residuals: (Nobs-Npred)/sqrt(Npred)")
-        plt.savefig(self.resdir + "/resi_" + dataset.name + ".png", dpi=150)
+        plt.savefig(self.resdir / f"resi_{dataset.name}.png", dpi=150)
 
         plt.figure(figsize=(6, 6), dpi=150)
         npred = dataset.npred().sum_over_axes()
         fig, ax, cb = npred.plot(cmap=cm.nipy_spectral, add_cbar=True, norm=LogNorm())
         plt.title("Npred")
         cl = ax.get_images()[0].get_clim()
-        plt.savefig(self.resdir + "/npred_" + dataset.name + ".png", dpi=plt.gcf().dpi)
+        plt.savefig(self.resdir / f"npred_{dataset.name}.png", dpi=plt.gcf().dpi)
 
         plt.figure(figsize=(6, 6), dpi=150)
         nobs = dataset.counts.sum_over_axes()
         fig, ax, cb = nobs.plot(cmap=cm.nipy_spectral, add_cbar=True, norm=LogNorm())
         plt.title("Nobs")
         ax.get_images()[0].set_clim(cl)
-        plt.savefig(self.resdir + "/counts_" + dataset.name + ".png", dpi=plt.gcf().dpi)
+        plt.savefig(self.resdir / f"counts_{dataset.name}.png", dpi=plt.gcf().dpi)
         plt.close("all")
 
     def plot_spec(self, kr, model, cat_spec, res_spec, cat_fp, res_fp):
@@ -427,8 +431,7 @@ class Validation_3FHL:
         plt.legend()
         tag = model.name.replace(" ", "_")
         plt.savefig(
-            self.resdir + "/spec_" + tag + "_ROI_num" + str(kr) + ".png",
-            dpi=plt.gcf().dpi,
+            self.resdir / f"spec_{tag}_ROI_num{kr}.png", dpi=plt.gcf().dpi,
         )
         plt.close("all")
 
@@ -489,15 +492,15 @@ class Validation_3FHL:
     def save_diags(self):
         print("\n Vela region \n")
         filenames = [
-            "resi_3FHL_ROI_num135.png",
-            "npred_3FHL_ROI_num135.png",
-            "counts_3FHL_ROI_num135.png",
-            "spec_3FHL_J0833.1-4511e_ROI_num135.png",
-            "spec_3FHL_J0835.3-4510_ROI_num135.png",
-            "spec_3FHL_J0851.9-4620e_ROI_num135.png",
+            "/resi_3FHL_ROI_num135.png",
+            "/npred_3FHL_ROI_num135.png",
+            "/counts_3FHL_ROI_num135.png",
+            "/spec_3FHL_J0833.1-4511e_ROI_num135.png",
+            "/spec_3FHL_J0835.3-4510_ROI_num135.png",
+            "/spec_3FHL_J0851.9-4620e_ROI_num135.png",
         ]
         for filename in filenames:
-            print("\n ![](" + self.resdir + filename + ")")
+            print(f"\n ![]({self.resdir} {filename})")
 
         print("\n All following values are given in percent \n")
 
@@ -519,13 +522,13 @@ class Validation_3FHL:
         plt.plot(xl, [0, 0], "-k")
         plt.xlabel("Cash Catalog")
         plt.ylabel("dCash Catalog - Fit")
-        filename = self.resdir + "/Cash_stat_corr" + ".png"
+        filename = self.resdir / "Cash_stat_corr.png"
         plt.savefig(filename, dpi=plt.gcf().dpi)
-        print("\n ![](" + filename + ")")
+        print(f"\n ![]({filename})")
 
         # flux points
         key = "flux_points"
-        errel = np.array(self.diags["errel"][key], "  ")
+        errel = np.array(self.diags["errel"][key])
         print("\n" + key, "  ")
         print("Rel. err. <10%:", 100 * sum(abs(errel) < 0.1) / len(errel), "  ")
         print("Rel. err. <30%:", 100 * sum(abs(errel) < 0.3) / len(errel), "  ")
@@ -541,9 +544,9 @@ class Validation_3FHL:
         if "amplitude" in key:
             ax = plt.gca()
             ax.set_xscale("log")
-        filename = self.resdir + "/" + key + "_errel" + ".png"
+        filename = self.resdir / f"{key}_errel.png"
         plt.savefig(filename, dpi=plt.gcf().dpi)
-        print("\n ![](" + filename + ")")
+        print(f"\n ![]({filename})")
 
         # Parameters diagnostics
         for key, diag in self.diags["params"].items():
@@ -572,9 +575,9 @@ class Validation_3FHL:
                 plt.plot(xl, xl, "-k")
                 plt.xlabel(key + " Catalog")
                 plt.ylabel(key + " Gammapy")
-                filename = self.resdir + "/" + key + "_corr" + ".png"
+                filename = self.resdir / f"{key}_corr.png"
                 plt.savefig(filename, dpi=plt.gcf().dpi)
-                print("\n ![](" + filename + ")")
+                print(f"\n ![]({filename})")
 
                 # relative error and compatibility
                 comp = iscompatible(diag[:, 0], diag[:, 1], diag[:, 2], diag[:, 3])
@@ -605,9 +608,9 @@ class Validation_3FHL:
         if "amplitude" in key:
             ax = plt.gca()
             ax.set_xscale("log")
-        filename = self.resdir + "/" + key + "_errel" + ".png"
+        filename = self.resdir / f"{key}_errel.png"
         plt.savefig(filename, dpi=plt.gcf().dpi)
-        print("\n ![](" + filename + ")")
+        print(f"\n ![]({filename})")
 
 
 def get_data():
@@ -627,65 +630,61 @@ def get_data():
             log.info(f"Execution: {cmd}")
             subprocess.call(cmd, shell=True)
 
-def get_iso_model(logEc_extra):
+
+def extrapolate_iso_model(logEc_extra):
     """Get ISO emission model with high-energy extrapolation."""
     infile = "data/iso_P8R2_SOURCE_V6_v06.txt"
     outfile = "data/iso_P8R2_SOURCE_V6_v06_extrapolated.txt"
 
-    tmp = np.loadtxt(infile, delimiter=" ")
-    Ecbd = tmp[:, 0]
-    qiso = tmp[:, 1]
-    finterp = interp1d(
-        np.log10(Ecbd), np.log10(qiso), kind="linear", fill_value="extrapolate"
-    )
-    qiso_extra = 10 ** finterp(logEc_extra)
-
     if not Path(outfile).exists():
+        tmp = np.loadtxt(infile, delimiter=" ")
+        Ecbd = tmp[:, 0]
+        qiso = tmp[:, 1]
+        finterp = interp1d(
+            np.log10(Ecbd), np.log10(qiso), kind="linear", fill_value="extrapolate"
+        )
+        qiso_extra = 10 ** finterp(logEc_extra)
+
         log.info(f"Writing {outfile}")
         np.savetxt(outfile, np.c_[10 ** logEc_extra, qiso_extra], delimiter=" ")
 
-    # norm=0.92 see paper appendix A
-    return create_fermi_isotropic_diffuse_model(
-        filename=outfile, norm=0.92, interp_kwargs={"fill_value": None}
-    )
 
-def get_iem_model(logEc_extra):
+def extrapolate_iem_model(logEc_extra):
     """Get IEM emission model with high-energy extrapolation."""
     infile = "data/gll_iem_v06.fits"
     outfile = "data/gll_iem_v06_extrapolated.fits"
-    iem_fermi = Map.read(infile)
-    Ec = iem_fermi.geom.axes[0].center.value
-    finterp = interp1d(
-        np.log10(Ec),
-        np.log10(iem_fermi.data),
-        axis=0,
-        kind="linear",
-        fill_value="extrapolate",
-    )
-    iem_extra = 10 ** finterp(logEc_extra)
-    Ec_ax = MapAxis.from_nodes(
-        10 ** logEc_extra, unit="MeV", name="energy", interp="log"
-    )
-    geom_3D = iem_fermi.geom.to_image().to_cube([Ec_ax])
-
-    iem_fermi_extra = Map.from_geom(geom_3D, data=iem_extra.astype("float32"))
-    iem_fermi_extra.unit = "cm-2 s-1 MeV-1 sr-1"
 
     if not Path(outfile).exists():
+        iem_fermi = Map.read(infile)
+        Ec = iem_fermi.geom.axes[0].center.value
+        finterp = interp1d(
+            np.log10(Ec),
+            np.log10(iem_fermi.data),
+            axis=0,
+            kind="linear",
+            fill_value="extrapolate",
+        )
+        iem_extra = 10 ** finterp(logEc_extra)
+        Ec_ax = MapAxis.from_nodes(
+            10 ** logEc_extra, unit="MeV", name="energy", interp="log"
+        )
+        geom_3D = iem_fermi.geom.to_image().to_cube([Ec_ax])
+
+        iem_fermi_extra = Map.from_geom(geom_3D, data=iem_extra.astype("float32"))
+        iem_fermi_extra.unit = "cm-2 s-1 MeV-1 sr-1"
+
         log.info(f"Writing {outfile}")
         iem_fermi_extra.write(outfile, overwrite=True)
-
-    # norm=1.1, tilt=0.03 see paper appendix A
-    return SkyDiffuseCube(
-        iem_fermi_extra, norm=1.1, tilt=0.03, name="iem_extrapolated"
-    )
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     get_data()
 
-    # TODO: create extrapolated iso models here if not present, just read them later
+    El_extra = 10 ** np.arange(3.8, 6.51, 0.1)  # MeV
+    logEc_extra = (np.log10(El_extra)[1:] + np.log10(El_extra)[:-1]) / 2.0
+    extrapolate_iso_model(logEc_extra)
+    extrapolate_iem_model(logEc_extra)
 
     validation = Validation_3FHL(selection="debug", savefig=True)
     validation.run_all(run_fit=True, get_diags=True)
