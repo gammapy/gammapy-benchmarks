@@ -11,7 +11,27 @@ the following test cases were chosen for the validation:
 * [hess_j1702](hess_j1702) - HESS J1702-420
 * [agn_j1224](agn_j1224) - TeV J1224+212
 
-## Validation results
+## Current status and thoughts (this section will be removed later) 
+
+Current workflow is driven by 2 configs files. One to define targets (position, run selection, Emin/Emax, etc) and a general analysis template (ROI size, bins, etc). Run separately dataset generation, fitting, and plotting steps.
+
+Two workflows: 3d analysis, 1d (TODO)
+
+Current thoughts, issues on HLI (some known issues):
+- non uniform unit handling in yaml
+- `sky_circle` `radius` and `border` both needed for selection. Only `radius` should be needed in circle right ?
+- `analysis.datasets.names` attribute missing
+- in yaml file number like 9e-12 are not accepted (need 9.0e-12)
+- For Gaussian model, no default value taken for e, phi (default to 0 not applied)
+
+Final outputs: Ideally want to generate automatically for each source a summary in each source directory (in markdown for direct visualization in Github) including :
+
+- Spectral plot with DC1 model, DC1 Flux points, latest gammapy results 
+- Table with : True model, DC1 gammapy results, latest gammapy results (like below)
+
+
+
+### Validation results
 
 | Target        | SpatialModel              | SpectralModel  |
 | ------------- |:-------------------------:| --------------:|
