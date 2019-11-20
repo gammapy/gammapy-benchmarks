@@ -33,31 +33,6 @@ from gammapy.utils.scripts import make_path
 log = logging.getLogger(__name__)
 
 
-
-def extrapolate_iem(infile, outfile, logEc_extra):
-    iem_fermi = Map.read(infile)
-    Ec = iem_fermi.geom.axes[0].center.value
-    finterp = interp1d(
-        np.log10(Ec),
-        np.log10(iem_fermi.data),
-        axis=0,
-        kind="linear",
-        fill_value="extrapolate",
-    )
-    iem_extra = 10 ** finterp(logEc_extra)
-    Ec_ax = MapAxis.from_nodes(
-        10 ** logEc_extra, unit="MeV", name="energy", interp="log"
-    )
-    geom_3D = iem_fermi.geom.to_image().to_cube([Ec_ax])
-
-    iem_fermi_extra = Map.from_geom(geom_3D, data=iem_extra.astype("float32"))
-    iem_fermi_extra.unit = "cm-2 s-1 MeV-1 sr-1"
-    iem_fermi_extra.write(outfile, hdu=Path(outfile).stem, overwrite=True)
-    return SkyDiffuseCube(
-        iem_fermi_extra, norm=1.1, tilt=0.03, name="iem_extrapolated"
-    )  # norm=1.1, tilt=0.03 see paper appendix A
-
-
 def iscompatible(x, y, dx, dy):
     x, y, dx, dy = np.array(x), np.array(y), np.array(dx), np.array(dy)
     return abs(y - x) < dx + dy
@@ -69,7 +44,17 @@ def relative_error(x, y):
 
 
 class Validation_3FHL:
+    """Run Gammapy 3FHL validation.
+
+    Parameters
+    ----------
+    selection : {"long", "short", "debug"}
+        What analyses to run
+    savefig : bool
+        Save figures? TODO: why not always save figures?
+    """
     def __init__(self, selection="short", savefig=True):
+        log.info("Executing __init__()")
         self.datadir = "$GAMMAPY_DATA"
         self.resdir = "./res"
         self.savefig = savefig
@@ -122,6 +107,8 @@ class Validation_3FHL:
                             ][:100]
         elif selection == "debug":
             self.ROIs_sel = [135]  # Vela region
+        else:
+            raise ValueError(f"Invalid selection: {selection!r}")
 
         # fit options
         self.optimize_opts = {
@@ -155,7 +142,8 @@ class Validation_3FHL:
         for key in keys:
             self.diags["params"][key] = []
 
-    def __call__(self, run_fit=True, get_diags=True):
+    def run_all(self, run_fit=True, get_diags=True):
+        log.info("Executing run_all()")
         if run_fit:
             self.parallel_regions()
 
@@ -169,6 +157,7 @@ class Validation_3FHL:
         f.close()
 
     def parallel_regions(self):
+        log.info("Executing parallel_regions()")
         args = [
             (
                 kr,
@@ -192,10 +181,7 @@ class Validation_3FHL:
         )
         exposure_hpx.unit = "cm2 s"
 
-        # background iem
-        infile = "data/gll_iem_v06.fits"
-        outfile = "data/gll_iem_v06_extra.fits"
-        model_iem = extrapolate_iem(infile, outfile, self.logEc_extra)
+        model_iem = get_iem_model(self.logEc_extra)
 
         # ROI
         roi_time = time()
@@ -642,12 +628,9 @@ def get_data():
             subprocess.call(cmd, shell=True)
 
 def get_iso_model(logEc_extra):
-    """Extrapolation isotropic model to high energies."""
+    """Get ISO emission model with high-energy extrapolation."""
     infile = "data/iso_P8R2_SOURCE_V6_v06.txt"
     outfile = "data/iso_P8R2_SOURCE_V6_v06_extrapolated.txt"
-
-    if Path(outfile).exists():
-        return
 
     tmp = np.loadtxt(infile, delimiter=" ")
     Ecbd = tmp[:, 0]
@@ -656,17 +639,53 @@ def get_iso_model(logEc_extra):
         np.log10(Ecbd), np.log10(qiso), kind="linear", fill_value="extrapolate"
     )
     qiso_extra = 10 ** finterp(logEc_extra)
-    log.info(f"Writing {outfile}")
-    np.savetxt(outfile, np.c_[10 ** logEc_extra, qiso_extra], delimiter=" ")
+
+    if not Path(outfile).exists():
+        log.info(f"Writing {outfile}")
+        np.savetxt(outfile, np.c_[10 ** logEc_extra, qiso_extra], delimiter=" ")
 
     # norm=0.92 see paper appendix A
     return create_fermi_isotropic_diffuse_model(
         filename=outfile, norm=0.92, interp_kwargs={"fill_value": None}
     )
 
+def get_iem_model(logEc_extra):
+    """Get IEM emission model with high-energy extrapolation."""
+    infile = "data/gll_iem_v06.fits"
+    outfile = "data/gll_iem_v06_extrapolated.fits"
+    iem_fermi = Map.read(infile)
+    Ec = iem_fermi.geom.axes[0].center.value
+    finterp = interp1d(
+        np.log10(Ec),
+        np.log10(iem_fermi.data),
+        axis=0,
+        kind="linear",
+        fill_value="extrapolate",
+    )
+    iem_extra = 10 ** finterp(logEc_extra)
+    Ec_ax = MapAxis.from_nodes(
+        10 ** logEc_extra, unit="MeV", name="energy", interp="log"
+    )
+    geom_3D = iem_fermi.geom.to_image().to_cube([Ec_ax])
+
+    iem_fermi_extra = Map.from_geom(geom_3D, data=iem_extra.astype("float32"))
+    iem_fermi_extra.unit = "cm-2 s-1 MeV-1 sr-1"
+
+    if not Path(outfile).exists():
+        log.info(f"Writing {outfile}")
+        iem_fermi_extra.write(outfile, overwrite=True)
+
+    # norm=1.1, tilt=0.03 see paper appendix A
+    return SkyDiffuseCube(
+        iem_fermi_extra, norm=1.1, tilt=0.03, name="iem_extrapolated"
+    )
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     get_data()
 
+    # TODO: create extrapolated iso models here if not present, just read them later
+
     validation = Validation_3FHL(selection="short", savefig=True)
-    validation(run_fit=True, get_diags=True)
+    validation.run_all(run_fit=True, get_diags=True)
