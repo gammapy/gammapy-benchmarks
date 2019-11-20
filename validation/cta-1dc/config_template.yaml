@@ -1,0 +1,48 @@
+general:
+    outdir: {tag}
+    logging:
+      level: INFO
+
+observations:
+    datastore: $CTADATA/index/gps/
+    filters:
+        - filter_type: sky_circle
+          frame: galactic
+          lon: {lon}
+          lat: {lat}
+          radius: {radius}
+          border: 1 deg
+
+datasets:
+    dataset-type: MapDataset
+    stack-datasets: true
+    offset-max: 4 deg
+    geom:
+        skydir:
+          - {lon_deg}
+          - {lat_deg}
+        width: [2, 2]
+        binsz: 0.02
+        coordsys: GAL
+        proj: TAN
+        axes:
+          - name: energy
+            lo_bnd: {emin_tev}
+            hi_bnd: {emax_tev}
+            nbin: {nbin}
+            interp: log
+            node_type: edges
+            unit: TeV
+
+fit:
+    fit_range:
+        min: {emin}
+        max: {emax}
+
+flux-points:
+    fp_binning:
+        lo_bnd: {emin}
+        hi_bnd: {emax}
+        interp: log
+        nbin: {fp_nbin}
+        unit: TeV

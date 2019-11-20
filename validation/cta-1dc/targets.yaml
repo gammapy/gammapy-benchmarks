@@ -1,20 +1,24 @@
-- tag: cas_a
+cas_a:
+  tag: cas_a
+  name: Cassiopeia A
   frame: galactic
   lon: 111.7 deg
-  lat: -2.1  deg
+  lat: -2.1 deg
   radius: 1 deg
-  emin: 0.1
-  emax: 50
+  emin: 0.1 TeV
+  emax: 50 TeV
   nbin: 25
   fp_nbin: 20
 
-- tag: hess_j1702
+hess_j1702:
+  tag: hess_j1702
+  name: HESS J1702-420
   frame: galactic
   lon: 344.3 deg
   lat: -0.18 deg
   radius: 1 deg
-  emin: 0.1
-  emax: 160
+  emin: 0.1 TeV
+  emax: 160 TeV
   nbin: 35
   fp_nbin: 25
 
