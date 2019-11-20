@@ -56,7 +56,7 @@ class Validation_3FHL:
     def __init__(self, selection="short", savefig=True):
         log.info("Executing __init__()")
         self.datadir = "$GAMMAPY_DATA"
-        self.resdir = "./res"
+        self.resdir = "./results"
         self.savefig = savefig
 
         # event list
@@ -687,5 +687,5 @@ if __name__ == "__main__":
 
     # TODO: create extrapolated iso models here if not present, just read them later
 
-    validation = Validation_3FHL(selection="short", savefig=True)
+    validation = Validation_3FHL(selection="debug", savefig=True)
     validation.run_all(run_fit=True, get_diags=True)
