@@ -7,7 +7,7 @@ observations:
     datastore: $CTADATA/index/gps/
     filters:
         - filter_type: sky_circle
-          frame: galactic          #  or icrs
+          frame: galactic
           lon: 111.734 deg
           lat: -2.129 deg
           radius: 2 deg
