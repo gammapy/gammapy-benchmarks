@@ -2,11 +2,7 @@
 
 ## Task
 
-- Reproduce some Fermi-LAT 3FHL results to check Gammapy against the Fermi ST
-- Crab as example of isolated source?
-- Vela pulsar with a strong spetral cutoff?
-- Galactic center as example of overlapping source?
-- LC from an AGN?
+Reproduce some Fermi-LAT 3FHL results to check Gammapy against the Fermi ST
 
 ## References
 
@@ -17,193 +13,132 @@
 
 ## Method
 
-We fit a selection of ROIs defined in the 3FHL catalog (starting by the ones containing the most significant source).  We compare the resulting source parameters and flux points to the catalogued values. The spectrum and flux points comparison is limited to sources with an average significance larger than 8 sigma (Signif_Avg > 8). We also test the correlation between background normalisation and sources parameters relative error. In addition we show the observed/predicted counts and residuals maps.
+We fit a selection of ROIs defined in the 3FHL catalog (starting by the ones containing the most significant source).  We compare the resulting source parameters and flux points to the catalogued values. The spectrum and flux points comparison is limited to sources with an average significance larger than 8 sigma (Signif_Avg > 8). In addition we show the observed/predicted counts and residuals maps.
 
-- Events selection : 3FHL dataset
+- Events selection : 3FHL dataset (7 years,  all event types)
 - Energies : 10 GeV - 2 TeV
-- Spatial bins : 0.05 deg
+- Spatial bins : 1/8 deg
 - Energy bins : 10 per decade
 
 ## Results 
 
 ### Global Diagnostics
 
-(90 ROIs fitted)
+(100 ROIs fitted)
 
-#### Flux points
+All following values are given in percent 
+
+Optimization terminated successfully. 100.0
+Optimization failed. 0.0
+Optimization failed. Estimated distance to minimum too large. 0.0
+
+ ![](./res/Cash_stat_corr.png)
 
 flux_points
+Rel. err. <10%: 61.971830985915496
+Rel. err. <30%: 91.72535211267606
+Rel. err. mean: -5.8491302077856595
 
-- Rel. err. <10%: 0.6106870229007634
-- Rel. err. <30%: 0.9083969465648855
-- Rel. err. mean: -0.0882757033462185
-
-![](flux_points_errel.png)
-
-
-#### Power-law spectrum
+ ![](./res/flux_points_errel.png)
 
 PL_index
+dx/x <10% :  72.25806451612904
+dx/x <30% :  99.35483870967742
+Rel. err. <10%: 99.35483870967742
+Rel. err. <30%: 100.0
+Rel. err. mean: -0.1633147376900733
+compatibility: 100.0
 
-- dx/x <10% :  0.7258064516129032
-- dx/x <30% :  0.9516129032258065
-- Rel. err. <10%: 0.9516129032258065
-- Rel. err. <30%: 0.9838709677419355
-- Rel. err. mean: 0.01706831205875889
-- compatibility: 0.967741935483871
+ ![](./res/PL_index_errel.png)
 
-![](PL_index_corr.png)
-![](PL_index_errel.png)
-![](PL_index_errel_BKGcorr.png)
+ ![](./res/PL_index_error_errel.png)
 
 PL_amplitude
+dx/x <10% :  49.67741935483871
+dx/x <30% :  99.35483870967742
+Rel. err. <10%: 95.48387096774194
+Rel. err. <30%: 100.0
+Rel. err. mean: -0.22198785615526734
+compatibility: 98.06451612903226
 
-- dx/x <10% :  0.5
-- dx/x <30% :  0.9032258064516129
-- Rel. err. <10%: 0.9838709677419355
-- Rel. err. <30%: 0.9838709677419355
-- Rel. err. mean: -0.005484213317139602
-- compatibility: 0.9838709677419355
+ ![](./res/PL_amplitude_errel.png)
 
-![](PL_amplitude_corr.png)
-![](PL_amplitude_errel.png)
-![](PL_amplitude_errel_BKGcorr.png)
-
-#### Log-parabola spectrums
+ ![](./res/PL_amplitude_error_errel.png)
 
 LP_alpha
+dx/x <10% :  76.47058823529412
+dx/x <30% :  100.0
+Rel. err. <10%: 100.0
+Rel. err. <30%: 100.0
+Rel. err. mean: 0.15134907307517098
+compatibility: 100.0
 
-- dx/x <10% :  0.9230769230769231
-- dx/x <30% :  0.9230769230769231
-- Rel. err. <10%: 0.9230769230769231
-- Rel. err. <30%: 0.9230769230769231
-- Rel. err. mean: -0.010879249848928544
-- compatibility: 0.9230769230769231
+ ![](./res/LP_alpha_errel.png)
 
-![](LP_alpha_corr.png)
-![](LP_alpha_errel.png)
-![](LP_alpha_errel_BKGcorr.png)
+ ![](./res/LP_alpha_error_errel.png)
 
 LP_beta
+dx/x <10% :  47.05882352941177
+dx/x <30% :  64.70588235294117
+Rel. err. <10%: 76.47058823529412
+Rel. err. <30%: 100.0
+Rel. err. mean: -4.091718544272052
+compatibility: 100.0
 
-- dx/x <10% :  0.46153846153846156
-- dx/x <30% :  0.9230769230769231
-- Rel. err. <10%: 0.8461538461538461
-- Rel. err. <30%: 0.9230769230769231
-- Rel. err. mean: 0.03714624372322859
-- compatibility: 0.9230769230769231
+ ![](./res/LP_beta_errel.png)
 
-![](LP_beta_corr.png)
-![](LP_beta_errel.png)
-![](LP_beta_errel_BKGcorr.png)
+ ![](./res/LP_beta_error_errel.png)
 
 LP_amplitude
+dx/x <10% :  82.3529411764706
+dx/x <30% :  100.0
+Rel. err. <10%: 100.0
+Rel. err. <30%: 100.0
+Rel. err. mean: -1.3330366391977653
+compatibility: 100.0
 
-- dx/x <10% :  0.9230769230769231
-- dx/x <30% :  0.9230769230769231
-- Rel. err. <10%: 0.9230769230769231
-- Rel. err. <30%: 0.9230769230769231
-- Rel. err. mean: -0.0016654427209143792
-- compatibility: 0.9230769230769231
+ ![](./res/LP_amplitude_errel.png)
 
-![](LP_amplitude_corr.png)
-![](LP_amplitude_errel.png)
-![](LP_amplitude_errel_BKGcorr.png)
+ ![](./res/LP_amplitude_error_errel.png)
 
 ### Regions plots
 
 #### Crab region
 
-![](counts_3FHL_ROI_num430.png)
-![](npred_3FHL_ROI_num430.png)
-![](resi_3FHL_ROI_num430.png)
+![](./res/counts_3FHL_ROI_num430.png)
+![](./res/npred_3FHL_ROI_num430.png)
+![](./res/resi_3FHL_ROI_num430.png)
 
 Crab
 
-![](spec_3FHL_J0534_5+2201_ROI_num430.png)
+![](./res/spec_3FHL_J0534.5+2201_ROI_num430.png)
 
 TXS 0518+211
 
-![](spec_3FHL_J0521_7+2112_ROI_num430.png)
+![](./res/spec_3FHL_J0521.7+2112_ROI_num430.png)
 
 #### Vela region
 
-![](counts_3FHL_ROI_num135.png)
-![](npred_3FHL_ROI_num135.png)
-![](resi_3FHL_ROI_num135.png)
-
-Vela X
-
-![](spec_3FHL_J0851_9-4620e_ROI_num135.png)
-
-Vela PSR
-
-![](spec_3FHL_J0835_3-4510_ROI_num135.png)
-
+![](./res/counts_3FHL_ROI_num135.png)
+![](./res/npred_3FHL_ROI_num135.png)
+![](./res/resi_3FHL_ROI_num135.png)
 
 Vela Jr
 
-![](spec_3FHL_J0851_9-4620e_ROI_num135.png)
+![](./res/spec_3FHL_J0851.9-4620e_ROI_num135.png)
+
+Vela PSR
+
+![](./res/spec_3FHL_J0835.3-4510_ROI_num135.png)
 
 
-#### GC region
+Vela X
 
-![](counts_3FHL_ROI_num80.png)
-![](npred_3FHL_ROI_num80.png)
-![](resi_3FHL_ROI_num80.png)
-
-GC
-
-![](spec_3FHL_J1745_6-2900_ROI_num80.png)
-
-HESS J1745-303
-
-![](spec_3FHL_J1745_8-3028e_ROI_num80.png)
-
-HESS J1746-285
-
-![](spec_3FHL_J1746_2-2852_ROI_num80.png)
-
-#### High-latitude
-
-![](counts_3FHL_ROI_num118.png)
-![](npred_3FHL_ROI_num118.png)
-![](resi_3FHL_ROI_num118.png)
-
-Note that a border source is missing
-
-MS 1221.8+2452
-
-![](spec_3FHL_J1224_4+2436_ROI_num118.png)
-
-4C +21.35
-
-![](spec_3FHL_J1224_9+2122_ROI_num118.png)
-
-S3 1227+25
-
-![](spec_3FHL_J1230_2_2517_ROI_num118.png)
+![](./res/spec_3FHL_J0833.1-4511e_ROI_num135.png)
 
 
-### Convergence and fit statistic
 
-Optimization success. :  0.02702702702702703
-Optimization failed. :  0.0
-Optimization failed. Estimated distance to minimum too large. :  0.972972972972973
 
-This is more a Minuit configuration issue.
-Despite the failure message the fit results seem consistent. I guess the default tolerance in Minuit is  too low.
-We could add the tolerance and stragety options in optimize_minuit  :
-```python
-strategy = kwargs.pop("strategy", 1)
-tol = kwargs.pop("tol", 0.1)
-minuit = Minuit(minuit_func.fcn, **kwargs)
-minuit.migrad(**migrad_opts)
-minuit.tol = tol
-minuit.set_strategy(strategy)
-```
-The few cases that return an optimization success actually have NaN parameters, we should check that in the results wrapper and fix the message.
 
-![](Cash_stat_corr.png)
 
 
