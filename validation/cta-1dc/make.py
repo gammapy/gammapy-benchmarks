@@ -62,9 +62,9 @@ def analysis_3d_data_reduction(target):
     logging.info(analysis.model)
     analysis.run_fit()
     logging.info(analysis.fit_result.parameters.to_table())
-    path = f"{target}/{target}_3d_bestfit.dat"
+    path = f"{target}/{target}_3d_bestfit.rst"
     log.info(f"Writing {path}")
-    analysis.fit_result.parameters.to_table().write(path, format="ascii", overwrite=True)
+    analysis.fit_result.parameters.to_table().write(path, format="ascii.rst", overwrite=True)
 
     analysis.get_flux_points(source=f"{target}")
     path = f"{target}/{target}_3d_fluxpoints.fits"
