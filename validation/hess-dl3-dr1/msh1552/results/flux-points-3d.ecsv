@@ -7,7 +7,9 @@
 # - {name: dnde, unit: 1 / (cm2 s TeV), datatype: float64, format: .3e}
 # - {name: dnde_errp, unit: 1 / (cm2 s TeV), datatype: float64, format: .3e}
 # - {name: dnde_errn, unit: 1 / (cm2 s TeV), datatype: float64, format: .3e}
+# - {name: is_ul, datatype: bool}
+# - {name: dnde_ul, unit: 1 / (cm2 s TeV), datatype: float64, format: .3e}
 # meta: {SED_TYPE: dnde}
 # schema: astropy-2.0
-e_ref e_min e_max dnde dnde_errp dnde_errn
-3.162 0.100 100.000 5.679e-13 6.621e-14 6.325e-14
+e_ref e_min e_max dnde dnde_errp dnde_errn is_ul dnde_ul
+3.162 0.100 100.000 7.172e-12 1.018e-13 1.014e-13 False 7.376e-12

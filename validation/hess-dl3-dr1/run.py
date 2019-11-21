@@ -8,7 +8,8 @@ from gammapy.analysis import Analysis, AnalysisConfig
 from gammapy.maps import MapAxis
 from gammapy.modeling import Fit
 from gammapy.data import DataStore
-from gammapy.modeling.models import PowerLawSpectralModel
+from gammapy.modeling import Model
+from gammapy.modeling.models import PowerLawSpectralModel, SkyModel
 from gammapy.cube import SafeMaskMaker
 from gammapy.spectrum import (
     SpectrumDatasetMaker,
@@ -21,7 +22,7 @@ log = logging.getLogger(__name__)
 with open("targets.yaml", "r") as stream:
     targets = yaml.safe_load(stream)
 
-# If DEBUG is True, analyzes only 1 run, complutes only 1 flux point and does
+# If DEBUG is True, analyzes only 1 run (in the 1D joint analysis), complutes only 1 flux point and does
 # not re-optimize the bkg during flux points computation
 DEBUG = True
 
@@ -34,7 +35,7 @@ FLUXP_EDGES = MapAxis.from_bounds(
 ).edges
 
 
-def main(analyse1d=True, analyse3d=True, plot_fluxp=False):
+def main(analyse1d=True, analyse3d=True):
     # TODO: add the rxj1713 validation
     sources = ["crab", "msh1552", "pks2155"]
     for source in sources:
@@ -42,12 +43,11 @@ def main(analyse1d=True, analyse3d=True, plot_fluxp=False):
         target_filter = filter(lambda _: _["tag"] == source, targets)
         target_dict = list(target_filter)[0]
 
+        log.info(f"Processing source: {source}")
         if analyse1d:
             run_analysis_1d(target_dict)
         if analyse3d:
             run_analysis_3d(target_dict)
-        if plot_fluxp:
-            plot_flux_points()
 
 
 def write_fit_summary(parameters, outfile):
@@ -64,15 +64,12 @@ def write_fit_summary(parameters, outfile):
         yaml.dump(fit_results_dict, f)
 
 
-def plot_flux_points():
-    raise NotImplementedError
-
 def run_analysis_1d(target_dict):
-    """Run spectral analysis for the selected target"""
+    """Run joint spectral analysis for the selected target"""
     tag = target_dict["tag"]
     name = target_dict["name"]
 
-    log.info(f"running 1d analysis, {tag}")
+    log.info(f"Running 1d analysis, {tag}")
     path_res = Path(tag + "/results/")
 
     ra = target_dict["ra"]
@@ -84,7 +81,7 @@ def run_analysis_1d(target_dict):
     on_radius = Angle(on_size * u.deg)
     containment_corr = True
 
-    # Observations selection
+    log.info(f"Running observations selection")
     data_store = DataStore.from_dir("$GAMMAPY_DATA/hess-dl3-dr1/")
     mask = data_store.obs_table["TARGET_NAME"] == name
     obs_table = data_store.obs_table[mask]
@@ -92,7 +89,7 @@ def run_analysis_1d(target_dict):
 
     if DEBUG is True:
         observations = [observations[0]]
-
+    log.info(f"Running data reduction")
     # Reflected regions background estimation
     on_region = CircleSkyRegion(center=target_pos, radius=on_radius)
     dataset_maker = SpectrumDatasetMaker(
@@ -112,205 +109,135 @@ def run_analysis_1d(target_dict):
         dataset_on_off = safe_mask_masker.run(dataset_on_off, observation)
         datasets.append(dataset_on_off)
 
-    # Fit spectrum
+    log.info(f"Running fit ...")
     model = PowerLawSpectralModel(
         index=2, amplitude=2e-11 * u.Unit("cm-2 s-1 TeV-1"), reference=e_decorr * u.TeV
     )
-
     for dataset in datasets:
         dataset.model = model
 
     fit_joint = Fit(datasets)
     result_joint = fit_joint.run()
-
     parameters = model.parameters
     parameters.covariance = result_joint.parameters.covariance
+    log.info(f"Writing {path_res}")
     write_fit_summary(parameters, str(path_res / "results-summary-fit-1d.yaml"))
 
-    # Flux points
+    log.info(f"Running flux points estimation")
     fpe = FluxPointsEstimator(datasets=datasets, e_edges=FLUXP_EDGES)
     flux_points = fpe.run()
     flux_points.table["is_ul"] = flux_points.table["ts"] < 4
-    keys = ["e_ref", "e_min", "e_max", "dnde", "dnde_errp", "dnde_errn", "is_ul"]
+    keys = [
+        "e_ref",
+        "e_min",
+        "e_max",
+        "dnde",
+        "dnde_errp",
+        "dnde_errn",
+        "is_ul",
+        "dnde_ul",
+    ]
+    log.info(f"Writing {path_res}")
     flux_points.table_formatted[keys].write(
         path_res / "flux-points-1d.ecsv", format="ascii.ecsv"
     )
 
 
 def run_analysis_3d(target_dict):
-    """Run 3D analysis for the selected target"""
+    """Run stacked 3D analysis for the selected target.
+
+    Notice that, for the sake of time saving, we run a stacked analysis, as opposed
+     to the joint analysis that is performed in the reference paper.
+    """
     tag = target_dict["tag"]
-    name = target_dict["name"]
     log.info(f"running 3d analysis, {tag}")
 
     path_res = Path(tag + "/results/")
 
-    ra = target_dict["ra"]
-    dec = target_dict["dec"]
-    e_decorr = target_dict["e_decorr"]
+    txt = Path("config_template.yaml").read_text()
+    txt = txt.format_map(target_dict)
+    config = yaml.safe_load(txt)
+    config = AnalysisConfig(config)
 
-    config_str = f"""
-    general:
-        logging:
-            level: INFO
-        outdir: .
-
-    observations:
-        datastore: $GAMMAPY_DATA/hess-dl3-dr1/
-        filters:
-            - filter_type: par_value
-              value_param: {name}
-              variable: TARGET_NAME
-
-    datasets:
-        dataset-type: MapDataset
-        stack-datasets: true
-        offset-max: 2.5 deg
-        geom:
-            skydir: [{ra}, {dec}]
-            width: [5, 5]
-            binsz: 0.02
-            coordsys: CEL
-            proj: TAN
-            axes:
-              - name: energy
-                hi_bnd: 100
-                lo_bnd: 0.1
-                nbin: 24
-                interp: log
-                node_type: edges
-                unit: TeV
-        energy-axis-true:
-            name: energy
-            hi_bnd: 100
-            lo_bnd: 0.1
-            nbin: 72
-            interp: log
-            node_type: edges
-            unit: TeV
-    """
-    print(config_str)
-    config = AnalysisConfig(config_str)
-
-    #  Observation selection
+    log.info(f"Running observations selection")
     analysis = Analysis(config)
     analysis.get_observations()
 
-    if DEBUG is True:
-        analysis.observations.list = [analysis.observations.list[0]]
-
-    # Data reduction
+    log.info(f"Running data reduction")
     analysis.get_datasets()
 
-    # Set runwise energy threshold. See reference paper, section 5.1.1.
-    for dataset in analysis.datasets:
-        # energy threshold given by the 10% edisp criterium
-        e_thr_bias = dataset.edisp.get_bias_energy(0.1)
+    dataset = analysis.datasets[0]
 
-        # energy at which the background peaks
-        background_model = dataset.background_model
-        bkg_spectrum = background_model.map.get_spectrum()
-        peak = bkg_spectrum.data.max()
-        idx = list(bkg_spectrum.data).index(peak)
-        e_thr_bkg = bkg_spectrum.energy.center[idx]
+    # TODO: Apply the safe energy threshold run-by-run
+    # See reference paper, section 5.1.1.
+    # 1) energy threshold given by the 10% edisp criterium
+    e_thr_bias = dataset.edisp.get_bias_energy(0.1)
 
-        esafe = max(e_thr_bias, e_thr_bkg)
-        dataset.mask_fit = dataset.counts.geom.energy_mask(emin=esafe)
+    # 2) energy at which the background peaks
+    background_model = dataset.background_model
+    bkg_spectrum = background_model.map.get_spectrum()
+    peak = bkg_spectrum.data.max()
+    idx = list(bkg_spectrum.data).index(peak)
+    e_thr_bkg = bkg_spectrum.energy.center[idx]
 
-    # Model fitting
-    spatial_model = target_dict["spatial_model"]
-    model_config = f"""
-    components:
-        - name: {tag}
-          type: SkyModel
-          spatial:
-            type: {spatial_model}
-            frame: icrs
-            parameters:
-            - name: lon_0
-              value: {ra}
-              unit: deg
-            - name: lat_0 
-              value: {dec}    
-              unit: deg
-          spectral:
-            type: PowerLawSpectralModel
-            parameters:
-            - name: amplitude      
-              value: 1.0e-12
-              unit: cm-2 s-1 TeV-1
-            - name: index
-              value: 2.0
-              unit: ''
-            - name: reference
-              value: {e_decorr}
-              unit: TeV
-              frozen: true
-    """
-    model_npars = 5
-    if spatial_model == "DiskSpatialModel":
-        model_config = yaml.load(model_config)
-        parameters = model_config["components"][0]["spatial"]["parameters"]
-        parameters.append(
-            {
-                "name": "r_0",
-                "value": 0.2,
-                "unit": "deg",
-                "frozen": False
-            }
-        )
-        parameters.append(
-            {
-                "name": "e",
-                "value": 0.8,
-                "unit": "",
-                "frozen": False
-            }
-        )
-        parameters.append(
-            {
-                "name": "phi",
-                "value": 150,
-                "unit": "deg",
-                "frozen": False
-            }
-        )
-        parameters.append(
-            {
-                "name": "edge",
-                "value": 0.01,
-                "unit": "deg",
-                "frozen": True
-            }
-        )
-        model_npars += 4
-    analysis.set_model(model=model_config)
+    esafe = max(e_thr_bias, e_thr_bkg)
+    dataset.mask_fit = dataset.counts.geom.energy_mask(emin=esafe)
 
-    for dataset in analysis.datasets:
-        dataset.background_model.norm.frozen = False
+    log.info(f"Running fit ...")
+    ra = target_dict["ra"]
+    dec = target_dict["dec"]
+    e_decorr = target_dict["e_decorr"]
+    spectral_model = Model.create("PowerLawSpectralModel", reference=e_decorr * u.TeV)
+    spatial_model = Model.create(
+        target_dict["spatial_model"], lon_0=f"{ra} deg", lat_0=f"{dec} deg"
+    )
+    if target_dict["spatial_model"] == "DiskSpatialModel":
+        spatial_model.e.frozen = False
+    sky_model = SkyModel(
+        spatial_model=spatial_model, spectral_model=spectral_model, name=tag
+    )
 
+    # TODO: Get rid of this workaround, as soon as it's possible to set a SkyModel on analysis
+    model = {}
+    model["components"] = []
+    model["components"].append(sky_model.to_dict())
+    analysis.set_model(model=model)
+
+    dataset.background_model.norm.frozen = False
     analysis.run_fit()
 
     parameters = analysis.model.parameters
-    parameters.covariance = analysis.fit_result.parameters.covariance[0:model_npars, 0:model_npars]
+    model_npars = len(sky_model.parameters.names)
+    parameters.covariance = analysis.fit_result.parameters.covariance[
+        0:model_npars, 0:model_npars
+    ]
+    log.info(f"Writing {path_res}")
     write_fit_summary(parameters, str(path_res / "results-summary-fit-3d.yaml"))
 
-    # Flux points
-    # TODO: This is a workaround to re-optimize the bkg in each energy bin. Add has to be added to the Analysis class
-    datasets = analysis.datasets.copy()
-    for dataset in datasets:
-        for par in dataset.parameters:
-            if par is not dataset.background_model.norm:
-                par.frozen = True
+    log.info("Running flux points estimation")
+    # TODO: This is a workaround to re-optimize the bkg. Remove it once it's added to the Analysis class
+    for par in dataset.parameters:
+        if par is not dataset.background_model.norm:
+            par.frozen = True
 
     reoptimize = True if DEBUG is False else False
     fpe = FluxPointsEstimator(
-        datasets=datasets, e_edges=FLUXP_EDGES, source=tag, reoptimize=reoptimize
+        datasets=[dataset], e_edges=FLUXP_EDGES, source=tag, reoptimize=reoptimize
     )
 
     flux_points = fpe.run()
     flux_points.table["is_ul"] = flux_points.table["ts"] < 4
-    keys = ["e_ref", "e_min", "e_max", "dnde", "dnde_errp", "dnde_errn"]
+    keys = [
+        "e_ref",
+        "e_min",
+        "e_max",
+        "dnde",
+        "dnde_errp",
+        "dnde_errn",
+        "is_ul",
+        "dnde_ul",
+    ]
+    log.info(f"Writing {path_res}")
     flux_points.table_formatted[keys].write(
         path_res / "flux-points-3d.ecsv", format="ascii.ecsv"
     )

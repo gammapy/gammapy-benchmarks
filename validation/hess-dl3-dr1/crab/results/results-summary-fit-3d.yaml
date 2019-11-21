@@ -1,5 +1,5 @@
-amplitude: nan +- nan 1 / (cm2 s TeV)
-index: 'nan +- nan '
-lat_0: nan +- nan deg
-lon_0: nan +- nan deg
+amplitude: 1.00e-12 +- nan 1 / (cm2 s TeV)
+index: '2.00e+00 +- nan '
+lat_0: 2.20e+01 +- nan deg
+lon_0: 8.36e+01 +- nan deg
 reference: 1.45e+00 +- 0.00e+00 TeV
