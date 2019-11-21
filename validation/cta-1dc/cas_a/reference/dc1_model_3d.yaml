@@ -1,0 +1,26 @@
+components:
+- name: cas_a
+  type: SkyModel
+  spatial:
+    type: PointSpatialModel
+    frame: galactic
+    parameters:
+    - name: lon_0
+      value: 111.734
+      unit: deg
+    - name: lat_0 
+      value: -2.129
+      unit: deg
+  spectral:
+    type: PowerLawSpectralModel
+    parameters:
+    - name: amplitude      
+      value: 1.45e-12
+      unit: cm-2 s-1 TeV-1
+    - name: index
+      value: 2.75
+      unit: ''
+    - name: reference
+      value: 1.0
+      unit: TeV
+      frozen: true

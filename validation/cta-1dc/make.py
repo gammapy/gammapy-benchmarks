@@ -6,7 +6,10 @@ from pathlib import Path
 import yaml
 import astropy.units as u
 from astropy.coordinates import Angle
+from astropy.table import Table
 from gammapy.analysis import Analysis, AnalysisConfig
+from gammapy.modeling.models import SkyModels
+
 
 log = logging.getLogger(__name__)
 
@@ -62,9 +65,9 @@ def analysis_3d_data_reduction(target):
     logging.info(analysis.model)
     analysis.run_fit()
     logging.info(analysis.fit_result.parameters.to_table())
-    path = f"{target}/{target}_3d_bestfit.dat"
+    path = f"{target}/{target}_3d_bestfit.rst"
     log.info(f"Writing {path}")
-    analysis.fit_result.parameters.to_table().write(path, format="ascii", overwrite=True)
+    analysis.fit_result.parameters.to_table().write(path, format="ascii.rst", overwrite=True)
 
     analysis.get_flux_points(source=f"{target}")
     path = f"{target}/{target}_3d_fluxpoints.fits"
@@ -80,6 +83,30 @@ def analysis_3d_summary(target):
     log.info(f"analysis_3d_summary: {target}")
     # TODO: make plots
     # TODO: summarise results to `results.md`? Necessary?
+
+    path = f"{target}/{target}_3d_bestfit.rst"
+    tab=Table.read(path, format='ascii')
+    tab.add_index('name')
+    dt = 'U30'
+    comp_tab = Table( names=('Param', 'DC1 Ref', 'gammapy 3d'), dtype=[dt,dt,dt] )
+
+    path = f"{target}/reference/dc1_model_3d.yaml"
+    ref_model = SkyModels.from_yaml('cas_a/reference/dc1_model_3d.yaml')
+    pars = ref_model.parameters.names
+    pars.remove('reference') #need to find a better way to handle this
+
+    for par in pars :
+    
+        ref = ref_model.parameters[par].value
+        value =tab.loc[par]['value']
+        name =tab.loc[par]['name']
+        error =tab.loc[par]['error']
+        comp_tab.add_row([name, ref, f"{value}±{error}"], )
+
+
+    path = f"{target}/README.md"
+    comp_tab.write(path,format="ascii.html", overwrite=True)
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
