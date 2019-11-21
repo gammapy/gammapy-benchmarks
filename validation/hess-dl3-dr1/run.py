@@ -1,5 +1,7 @@
 import logging
 import yaml
+import click
+import warnings
 from pathlib import Path
 import astropy.units as u
 from astropy.coordinates import SkyCoord, Angle
@@ -19,25 +21,58 @@ from gammapy.spectrum import (
 
 log = logging.getLogger(__name__)
 
-with open("targets.yaml", "r") as stream:
-    targets = yaml.safe_load(stream)
-
-# If DEBUG is True, analyzes only 1 run (in the 1D joint analysis), complutes only 1 flux point and does
-# not re-optimize the bkg during flux points computation
-DEBUG = True
-
-E_RECO = MapAxis.from_bounds(
-    0.1, 100, nbin=72, unit="TeV", name="energy", interp="log"
-).edges
-NBIN = 24 if DEBUG is False else 1
-FLUXP_EDGES = MapAxis.from_bounds(
-    0.1, 100, nbin=NBIN, unit="TeV", name="energy", interp="log"
-).edges
+AVAILABLE_SOURCES = ["crab", "pks2155", "msh1552"]
 
 
-def main(analyse1d=True, analyse3d=True):
-    # TODO: add the rxj1713 validation
-    sources = ["crab", "msh1552", "pks2155"]
+@click.group()
+@click.option(
+    "--log-level",
+    default="info",
+    type=click.Choice(["debug", "info", "warning", "error", "critical"]),
+)
+@click.option("--show-warnings", is_flag=True, help="Show warnings?")
+def cli(log_level, show_warnings):
+    """
+    Run validation of DL3 data analysis.
+    """
+    levels = dict(
+        debug=logging.DEBUG,
+        info=logging.INFO,
+        warning=logging.WARNING,
+        error=logging.ERROR,
+        critical=logging.CRITICAL,
+    )
+    logging.basicConfig(level=levels[log_level])
+    log.setLevel(level=levels[log_level])
+
+    if not show_warnings:
+        warnings.simplefilter("ignore")
+
+
+@cli.command("run-analyses", help="Run DL3 analysis validation")
+@click.option(
+    "--debug", is_flag=True,
+    help="If True, runs faster. In the 1D joint analysis, analyzes only 1 run."
+         "For both 1d and 3d, complutes only 1 flux point and does not re-optimize the bkg"
+)
+@click.argument("sources", type=click.Choice(list(AVAILABLE_SOURCES) + ["all"]))
+def run_analyses(debug, sources, analyse1d=True, analyse3d=True):
+    if sources == "all":
+        sources = list(AVAILABLE_SOURCES)
+    else:
+        sources = [sources]
+
+    e_reco = MapAxis.from_bounds(
+        0.1, 100, nbin=72, unit="TeV", name="energy", interp="log"
+    ).edges
+    nbin = 24 if debug is False else 1
+    fluxp_edges = MapAxis.from_bounds(
+        0.1, 100, nbin=nbin, unit="TeV", name="energy", interp="log"
+    ).edges
+
+    with open("targets.yaml", "r") as stream:
+        targets = yaml.safe_load(stream)
+
     for source in sources:
         # read config for the target
         target_filter = filter(lambda _: _["tag"] == source, targets)
@@ -45,9 +80,9 @@ def main(analyse1d=True, analyse3d=True):
 
         log.info(f"Processing source: {source}")
         if analyse1d:
-            run_analysis_1d(target_dict)
+            run_analysis_1d(target_dict, e_reco, fluxp_edges, debug)
         if analyse3d:
-            run_analysis_3d(target_dict)
+            run_analysis_3d(target_dict, fluxp_edges, debug)
 
 
 def write_fit_summary(parameters, outfile):
@@ -64,7 +99,7 @@ def write_fit_summary(parameters, outfile):
         yaml.dump(fit_results_dict, f)
 
 
-def run_analysis_1d(target_dict):
+def run_analysis_1d(target_dict, e_reco, fluxp_edges, debug):
     """Run joint spectral analysis for the selected target"""
     tag = target_dict["tag"]
     name = target_dict["name"]
@@ -87,15 +122,15 @@ def run_analysis_1d(target_dict):
     obs_table = data_store.obs_table[mask]
     observations = data_store.get_observations(obs_table["OBS_ID"])
 
-    if DEBUG is True:
+    if debug is True:
         observations = [observations[0]]
     log.info(f"Running data reduction")
     # Reflected regions background estimation
     on_region = CircleSkyRegion(center=target_pos, radius=on_radius)
     dataset_maker = SpectrumDatasetMaker(
         region=on_region,
-        e_reco=E_RECO,
-        e_true=E_RECO,
+        e_reco=e_reco,
+        e_true=e_reco,
         containment_correction=containment_corr,
     )
     bkg_maker = ReflectedRegionsBackgroundMaker()
@@ -124,7 +159,7 @@ def run_analysis_1d(target_dict):
     write_fit_summary(parameters, str(path_res / "results-summary-fit-1d.yaml"))
 
     log.info(f"Running flux points estimation")
-    fpe = FluxPointsEstimator(datasets=datasets, e_edges=FLUXP_EDGES)
+    fpe = FluxPointsEstimator(datasets=datasets, e_edges=fluxp_edges)
     flux_points = fpe.run()
     flux_points.table["is_ul"] = flux_points.table["ts"] < 4
     keys = [
@@ -143,7 +178,7 @@ def run_analysis_1d(target_dict):
     )
 
 
-def run_analysis_3d(target_dict):
+def run_analysis_3d(target_dict, fluxp_edges, debug):
     """Run stacked 3D analysis for the selected target.
 
     Notice that, for the sake of time saving, we run a stacked analysis, as opposed
@@ -209,8 +244,8 @@ def run_analysis_3d(target_dict):
     parameters = analysis.model.parameters
     model_npars = len(sky_model.parameters.names)
     parameters.covariance = analysis.fit_result.parameters.covariance[
-        0:model_npars, 0:model_npars
-    ]
+                            0:model_npars, 0:model_npars
+                            ]
     log.info(f"Writing {path_res}")
     write_fit_summary(parameters, str(path_res / "results-summary-fit-3d.yaml"))
 
@@ -220,9 +255,9 @@ def run_analysis_3d(target_dict):
         if par is not dataset.background_model.norm:
             par.frozen = True
 
-    reoptimize = True if DEBUG is False else False
+    reoptimize = True if debug is False else False
     fpe = FluxPointsEstimator(
-        datasets=[dataset], e_edges=FLUXP_EDGES, source=tag, reoptimize=reoptimize
+        datasets=[dataset], e_edges=fluxp_edges, source=tag, reoptimize=reoptimize
     )
 
     flux_points = fpe.run()
@@ -245,4 +280,4 @@ def run_analysis_3d(target_dict):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    main()
+    cli()
