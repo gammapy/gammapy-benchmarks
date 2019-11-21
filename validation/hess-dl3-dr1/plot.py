@@ -15,7 +15,7 @@ def main():
         path_res = Path(str(target) + "/results/")
         path_plot = Path(str(target) + "/plots/")
 
-        for ndim in [1]:
+        for ndim in [1, 3]:
             reference = (
                 str(path_ref) + f"/gammapy_{target}_{ndim}d_spectral_points.ecsv"
             )
