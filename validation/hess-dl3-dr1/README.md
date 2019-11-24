@@ -4,7 +4,7 @@ Validation of high-level analysis of HESS DL3 data.
 
 ## Analyses
 
-- Implemented analyses: 1d (joint analysis) 3d (stacked analysis) / [script](run.py)
+- Implemented analyses: 1d (joint analysis) 3d (stacked analysis) / [script](make.py)
 - Plotting: [script](plot.py)
 
 ## Results:
