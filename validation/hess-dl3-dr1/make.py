@@ -51,12 +51,13 @@ def cli(log_level, show_warnings):
 
 @cli.command("run-analyses", help="Run DL3 analysis validation")
 @click.option(
-    "--debug", is_flag=True,
+    "--debug",
+    is_flag=True,
     help="If True, runs faster. In the 1D joint analysis, analyzes only 1 run."
-         "For both 1d and 3d, complutes only 1 flux point and does not re-optimize the bkg"
+    "For both 1d and 3d, complutes only 1 flux point and does not re-optimize the bkg",
 )
 @click.argument("sources", type=click.Choice(list(AVAILABLE_SOURCES) + ["all"]))
-def run_analyses(debug, sources, analyse1d=True, analyse3d=True):
+def run_analyses(debug, sources):
     if sources == "all":
         sources = list(AVAILABLE_SOURCES)
     else:
@@ -82,7 +83,7 @@ def run_analyses(debug, sources, analyse1d=True, analyse3d=True):
         if analyse1d:
             run_analysis_1d(target_dict, e_reco, fluxp_edges, debug)
         if analyse3d:
-            run_analysis_3d(target_dict, fluxp_edges, debug)
+            run_analysis_3d(target_dict, e_reco, fluxp_edges, debug)
 
 
 def write_fit_summary(parameters, outfile):
@@ -149,7 +150,7 @@ def run_analysis_1d(target_dict, e_reco, fluxp_edges, debug):
         index=2, amplitude=2e-11 * u.Unit("cm-2 s-1 TeV-1"), reference=e_decorr * u.TeV
     )
     for dataset in datasets:
-        dataset.model = model
+        dataset.model = SkyModel(spectral_model=model)
 
     fit_joint = Fit(datasets)
     result_joint = fit_joint.run()
@@ -178,7 +179,7 @@ def run_analysis_1d(target_dict, e_reco, fluxp_edges, debug):
     )
 
 
-def run_analysis_3d(target_dict, fluxp_edges, debug):
+def run_analysis_3d(target_dict, e_reco, fluxp_edges, debug):
     """Run stacked 3D analysis for the selected target.
 
     Notice that, for the sake of time saving, we run a stacked analysis, as opposed
@@ -203,10 +204,12 @@ def run_analysis_3d(target_dict, fluxp_edges, debug):
 
     dataset = analysis.datasets[0]
 
-    # TODO: Apply the safe energy threshold run-by-run
+    # TODO: Apply the safe energy threshold run-by-run. Move this code to SafeMaskMaker
     # See reference paper, section 5.1.1.
     # 1) energy threshold given by the 10% edisp criterium
-    e_thr_bias = dataset.edisp.get_bias_energy(0.1)
+    skydir = SkyCoord(target_dict["ra"], target_dict["dec"], unit="deg", frame="icrs")
+    edisp1d = dataset.edisp.get_energy_dispersion(skydir, e_reco)
+    e_thr_bias = edisp1d.get_bias_energy(0.1)
 
     # 2) energy at which the background peaks
     background_model = dataset.background_model
@@ -244,8 +247,8 @@ def run_analysis_3d(target_dict, fluxp_edges, debug):
     parameters = analysis.model.parameters
     model_npars = len(sky_model.parameters.names)
     parameters.covariance = analysis.fit_result.parameters.covariance[
-                            0:model_npars, 0:model_npars
-                            ]
+        0:model_npars, 0:model_npars
+    ]
     log.info(f"Writing {path_res}")
     write_fit_summary(parameters, str(path_res / "results-summary-fit-3d.yaml"))
 
