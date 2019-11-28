@@ -14,22 +14,37 @@
    </thead>
    <tr>
     <td>lon_0</td>
-    <td>111.734</td>
+    <td>344.3</td>
     <td>344.3±0.003411</td>
    </tr>
    <tr>
     <td>lat_0</td>
-    <td>-2.129</td>
+    <td>-0.1847</td>
     <td>-0.1707±0.003251</td>
    </tr>
    <tr>
+    <td>sigma</td>
+    <td>0.3</td>
+    <td>0.3472±0.0025</td>
+   </tr>
+   <tr>
+    <td>e</td>
+    <td>0.0</td>
+    <td>0.0±0.0</td>
+   </tr>
+   <tr>
+    <td>phi</td>
+    <td>0.0</td>
+    <td>0.0±0.0</td>
+   </tr>
+   <tr>
     <td>index</td>
-    <td>2.75</td>
+    <td>2.07</td>
     <td>2.111±0.006006</td>
    </tr>
    <tr>
     <td>amplitude</td>
-    <td>1.45e-12</td>
+    <td>9.1e-12</td>
     <td>1.234e-11±1.431e-13</td>
    </tr>
   </table>
