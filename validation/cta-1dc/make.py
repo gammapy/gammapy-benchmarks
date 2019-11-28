@@ -16,13 +16,16 @@ log = logging.getLogger(__name__)
 
 AVAILABLE_SOURCES = ["cas_a", "hess_J1702"]
 
+
 def get_config(target):
     config = yaml.safe_load(open("targets.yaml"))
     return config[target]
 
+
 # TODO
-#@cli.command("run", help="Run 1dc analysis validation")
-#@click.argument("targets", type=click.Choice(list(AVAILABLE_SOURCES) + ["all"]))
+# @cli.command("run", help="Run 1dc analysis validation")
+# @click.argument("targets", type=click.Choice(list(AVAILABLE_SOURCES) + ["all"]))
+
 
 def cli():
     targets = "all"
@@ -72,18 +75,22 @@ def analysis_3d_data_reduction(target):
     logging.info(analysis.fit_result.parameters.to_table())
     path = f"{target}/{target}_3d_bestfit.rst"
     log.info(f"Writing {path}")
-    analysis.fit_result.parameters.to_table().write(path, format="ascii.rst", overwrite=True)
+    analysis.fit_result.parameters.to_table().write(
+        path, format="ascii.rst", overwrite=True
+    )
 
-#    analysis.get_flux_points(source=f"{target}")
-#    path = f"{target}/{target}_3d_fluxpoints.fits"
-#    log.info(f"Writing {path}")
-#    analysis.flux_points.write(path, overwrite=True)
+    #    analysis.get_flux_points(source=f"{target}")
+    #    path = f"{target}/{target}_3d_fluxpoints.fits"
+    #    log.info(f"Writing {path}")
+    #    analysis.flux_points.write(path, overwrite=True)
 
     analysis.get_flux_points(source=f"{target}")
     path = f"{target}/{target}_3d_fluxpoints.ecsv"
     log.info(f"Writing {path}")
     keys = ["e_ref", "e_min", "e_max", "dnde", "dnde_errp", "dnde_errn", "is_ul"]
-    analysis.flux_points.data.table_formatted[keys].write(path, format="ascii.ecsv", overwrite=True)
+    analysis.flux_points.data.table_formatted[keys].write(
+        path, format="ascii.ecsv", overwrite=True
+    )
 
 
 def analysis_3d_modeling(target):
@@ -96,30 +103,28 @@ def analysis_3d_summary(target):
     # TODO: summarise results to `results.md`? Necessary?
 
     path = f"{target}/{target}_3d_bestfit.rst"
-    tab=Table.read(path, format="ascii")
+    tab = Table.read(path, format="ascii")
     tab.add_index("name")
     dt = "U30"
-    comp_tab = Table( names=("Param", "DC1 Ref", "gammapy 3d"), dtype=[dt,dt,dt] )
+    comp_tab = Table(names=("Param", "DC1 Ref", "gammapy 3d"), dtype=[dt, dt, dt])
 
     path = f"{target}/reference/dc1_model_3d.yaml"
     ref_model = SkyModels.from_yaml(f"{target}/reference/dc1_model_3d.yaml")
     pars = ref_model.parameters.names
-    pars.remove("reference") #need to find a better way to handle this
+    pars.remove("reference")  # need to find a better way to handle this
 
-    for par in pars :
-    
+    for par in pars:
+
         ref = ref_model.parameters[par].value
-        value =tab.loc[par]["value"]
-        name =tab.loc[par]["name"]
-        error =tab.loc[par]["error"]
-        comp_tab.add_row([name, ref, f"{value}±{error}"], )
-
+        value = tab.loc[par]["value"]
+        name = tab.loc[par]["name"]
+        error = tab.loc[par]["error"]
+        comp_tab.add_row([name, ref, f"{value}±{error}"],)
 
     path = f"{target}/README.md"
-    comp_tab.write(path,format="ascii.html", overwrite=True)
+    comp_tab.write(path, format="ascii.html", overwrite=True)
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     cli()
-
