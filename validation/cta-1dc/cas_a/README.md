@@ -23,14 +23,14 @@
     <td>-2.127±0.001522</td>
    </tr>
    <tr>
-    <td>amplitude</td>
-    <td>1.45e-12</td>
-    <td>1.454e-12±6.098e-14</td>
-   </tr>
-   <tr>
     <td>index</td>
     <td>2.75</td>
-    <td>2.778±0.02997</td>
+    <td>2.778±0.02996</td>
+   </tr>
+   <tr>
+    <td>amplitude</td>
+    <td>1.45e-12</td>
+    <td>1.454e-12±6.094e-14</td>
    </tr>
   </table>
  </body>

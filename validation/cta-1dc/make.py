@@ -69,10 +69,16 @@ def analysis_3d_data_reduction(target):
     log.info(f"Writing {path}")
     analysis.fit_result.parameters.to_table().write(path, format="ascii.rst", overwrite=True)
 
+#    analysis.get_flux_points(source=f"{target}")
+#    path = f"{target}/{target}_3d_fluxpoints.fits"
+#    log.info(f"Writing {path}")
+#    analysis.flux_points.write(path, overwrite=True)
+
     analysis.get_flux_points(source=f"{target}")
-    path = f"{target}/{target}_3d_fluxpoints.fits"
+    path = f"{target}/{target}_3d_fluxpoints.ecsv"
     log.info(f"Writing {path}")
-    analysis.flux_points.write(path, overwrite=True)
+    keys = ["e_ref", "e_min", "e_max", "dnde", "dnde_errp", "dnde_errn", "is_ul"]
+    analysis.flux_points.data.table_formatted[keys].write(path, format="ascii.ecsv")
 
 
 def analysis_3d_modeling(target):

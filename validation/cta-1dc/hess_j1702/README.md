@@ -20,17 +20,17 @@
    <tr>
     <td>lat_0</td>
     <td>-2.129</td>
-    <td>-0.1707±0.00325</td>
-   </tr>
-   <tr>
-    <td>amplitude</td>
-    <td>1.45e-12</td>
-    <td>1.234e-11±1.431e-13</td>
+    <td>-0.1707±0.003251</td>
    </tr>
    <tr>
     <td>index</td>
     <td>2.75</td>
     <td>2.111±0.006006</td>
+   </tr>
+   <tr>
+    <td>amplitude</td>
+    <td>1.45e-12</td>
+    <td>1.234e-11±1.431e-13</td>
    </tr>
   </table>
  </body>
