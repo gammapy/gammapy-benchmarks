@@ -12,12 +12,12 @@ the following test cases were chosen for the validation:
 * [agn_j1224](agn_j1224) - TeV J1224+212
 
 **CasA**
-- Spectrum :
-- Position :
+- Spectrum : norm spot on, index within 1 sigma
+- Position : ok
 
 **J1702**
 
-Need to add extra sources on top of J1702
+Param not yet relevant, needs to add extra sources on top of J1702 to have a good model
 
 ## Current status and thoughts (this section will be removed later) 
 
