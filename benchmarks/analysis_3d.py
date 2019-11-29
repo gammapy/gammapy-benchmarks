@@ -4,13 +4,12 @@ import time
 import yaml
 import os
 from pathlib import Path
-from astropy.coordinates import SkyCoord
 from gammapy.modeling.models import (
     SkyModel,
     ExpCutoffPowerLawSpectralModel,
     PointSpatialModel,
 )
-from gammapy.modeling import Fit
+from gammapy.modeling import Fit, Datasets
 from gammapy.spectrum import FluxPointsEstimator
 from gammapy.data import DataStore
 from gammapy.maps import MapAxis, WcsGeom
@@ -40,36 +39,12 @@ def data_prep():
     )
 
     stacked = MapDataset.create(geom)
-    maker = MapDatasetMaker(offset_max=4.0 * u.deg)
+    maker = MapDatasetMaker()
     safe_mask_maker = SafeMaskMaker(methods=["offset-max"], offset_max="4 deg")
     for obs in observations:
         dataset = maker.run(stacked, obs)
         dataset = safe_mask_maker.run(dataset, obs)
         stacked.stack(dataset)
-
-    stacked.edisp = stacked.edisp.get_energy_dispersion(
-        position=SkyCoord(0, 0, unit="deg", frame="galactic"), e_reco=energy_axis.edges
-    )
-
-    stacked.psf = stacked.psf.get_psf_kernel(
-        position=SkyCoord(0, 0, unit="deg", frame="galactic"),
-        geom=geom,
-        max_radius="0.3 deg",
-    )
-
-    return stacked
-
-
-def write(stacked, filename):
-    stacked.write(filename, overwrite=True)
-
-
-def read(filename):
-    return MapDataset.read(filename)
-
-
-def data_fit(stacked):
-    # Data fitting
 
     spatial_model = PointSpatialModel(
         lon_0="0.01 deg", lat_0="0.01 deg", frame="galactic"
@@ -86,19 +61,32 @@ def data_fit(stacked):
 
     stacked.model = model
 
-    fit = Fit([stacked])
+    return Datasets([stacked])
+
+
+def write(stacked, filename):
+    stacked.write(path=os.getcwd(), prefix=filename)
+
+
+def read(filename):
+    return Datasets.read(f"{filename}_datasets.yaml",f"{filename}_models.yaml")
+
+
+def data_fit(stacked):
+    # Data fitting
+    fit = Fit(stacked)
     result = fit.run(optimize_opts={"print_level": 1})
 
 
 def flux_point(stacked):
     e_edges = [0.3, 1, 3, 10] * u.TeV
-    fpe = FluxPointsEstimator(datasets=[stacked], e_edges=e_edges, source="gc-source")
+    fpe = FluxPointsEstimator(datasets=stacked, e_edges=e_edges, source="gc-source")
     fpe.run()
 
 
 def run_benchmark():
     info = {"n_obs": N_OBS}
-    filename = "stacked_3d.fits.gz"
+    filename = "stacked"
 
     t = time.time()
 
