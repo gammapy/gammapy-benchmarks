@@ -140,10 +140,10 @@ class Validation_3FHL:
         for key in keys:
             self.diags["params"][key] = []
 
-    def run_all(self, run_fit=True, get_diags=True):
+    def run_all(self, run_fit=True, get_diags=True, processes=4):
         log.info("Executing run_all()")
         if run_fit:
-            self.parallel_regions()
+            self.parallel_regions(processes)
 
         orig_stdout = sys.stdout
         f = open(self.resdir / "results.md", "w")
@@ -154,7 +154,7 @@ class Validation_3FHL:
         sys.stdout = orig_stdout
         f.close()
 
-    def parallel_regions(self):
+    def parallel_regions(self, processes):
         log.info("Executing parallel_regions()")
         args = [
             (
@@ -165,7 +165,7 @@ class Validation_3FHL:
             )
             for kr in self.ROIs_sel
         ]
-        with mp.Pool(processes=4) as pool:
+        with mp.Pool(processes=processes) as pool:
             pool.starmap(self.run_region, args)
 
     def run_region(self, kr, lon, lat, radius):
@@ -679,7 +679,17 @@ def extrapolate_iem_model(logEc_extra):
     type=click.Choice(["debug", "short", "long"]),
     default="short",
 )
-def cli(selection):
+@click.option(
+    "--processes",
+    type=int,
+    default=4,
+)
+@click.option(
+    "--fit",
+    type=bool,
+    default=True,
+)
+def cli(selection, processes, fit):
     logging.basicConfig(level=logging.INFO)
     get_data()
 
@@ -692,7 +702,7 @@ def cli(selection):
     extrapolate_iem_model(logEc_extra)
 
     validation = Validation_3FHL(selection=selection, savefig=True)
-    validation.run_all(run_fit=True, get_diags=True)
+    validation.run_all(run_fit=fit, get_diags=True, processes=processes)
 
 
 if __name__ == "__main__":
