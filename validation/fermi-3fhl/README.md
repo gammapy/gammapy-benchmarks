@@ -20,7 +20,40 @@ We fit a selection of ROIs defined in the 3FHL catalog (starting by the ones con
 - Spatial bins : 1/8 deg
 - Energy bins : 10 per decade
 
+## Usage
+
+Run python make.py
+```
+options :
+	selection : {debug, short, long}
+		debug : run only Vela region
+		short : run 8 regions (including Vela and Crab), default
+		long :  run 100 regions
+	processess : int
+		number of processes to run regions in parallel, default is 4
+	fit : bool
+		run fit if True otherwise try to read results from disk, default is True
+
+```
+Examples:
+```
+python make.py --selection debug  --processes 1
+python make.py --selection long  --processes 6
+```
+
+
 ## Results 
+
+### First trial outcomes
+
+- Spectral parameters are compatibles at ~97% and relative relative errors on parameters remain lower than 10% for most of the sources tested.
+- Flux points are compatibles despite a small systematic effect for  ~8% lower flux points values.
+ This is possibly related to current spectral model evaluation in bin centers, have to check again once improved.
+- We pre-computed background models extrapolation, have to check SkyDiffuseCube and TemplateSpectralModel evaluation when extrapolating.
+- Projections effects: map discontinuity at 180°, high latitude distortion.
+- Minuit related issues: the default Minuit tolerance of tol=0.1 is likely too small (internally Minuit use 1e-4*tol), so we used the following options :
+`optimize_opts = {"backend": "minuit", "tol": 10.0, "strategy": 2}`
+Increasing tol allows to reach convergence in a reasonable time, strategy=2 is slower than default (1) but more precise.
 
 ### Global Diagnostics
 
