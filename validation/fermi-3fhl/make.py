@@ -292,7 +292,7 @@ class Validation_3FHL:
         if results.message == "Optimization failed.":
             pass
         else:
-            datasets.to_yaml(
+            datasets.write(
                 path=Path(self.resdir), prefix=dataset.name, overwrite=True
             )
             np.save(
@@ -330,7 +330,7 @@ class Validation_3FHL:
             filedata = self.resdir / f"3FHL_ROI_num{kr}_datasets.yaml"
             filemodel = self.resdir / f"3FHL_ROI_num{kr}_models.yaml"
             try:
-                dataset = list(Datasets.from_yaml(filedata, filemodel))[0]
+                dataset = list(Datasets.read(filedata, filemodel))[0]
             except (FileNotFoundError, IOError):
                 continue
 
