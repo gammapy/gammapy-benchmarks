@@ -23,7 +23,8 @@ from gammapy.modeling.models import (
     create_fermi_isotropic_diffuse_model,
 )
 from gammapy.spectrum import FluxPoints, FluxPointsEstimator
-from gammapy.cube import MapDataset, PSFKernel, MapEvaluator
+from gammapy.cube import MapDataset, PSFKernel
+from gammapy.cube.fit import MapEvaluator
 from gammapy.catalog import SourceCatalog3FHL
 from matplotlib import cm
 from matplotlib.colors import LogNorm
