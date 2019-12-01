@@ -45,15 +45,19 @@ Validation of high-level analysis of HESS DL3 data.
 
 To run a all analyses use
 
-    python run.py run-analyses all 
+    python make.py run-analyses all 
     
 To run the analysis (both 1d and 3d) for a specific source:
 
-    python run.py run-analyses 'crab'
+    python make.py run-analyses 'crab'
 
 To run in debug mode (quickly):
 
-    python run.py run-analyses all --debug
+    python make.py run-analyses all --debug
+    
+To produce the plots (for now, only spectral points are plotted):
+    
+    python plot.py
 
 ## References
 
