@@ -273,7 +273,7 @@ class Validation_3FHL:
 
         # Dataset
         dataset = MapDataset(
-            model=model_total,
+            models=model_total,
             counts=counts,
             exposure=exposure,
             psf=psf_kernel,
@@ -345,7 +345,7 @@ class Validation_3FHL:
             if self.savefig:
                 self.plot_maps(dataset)
 
-            for model in list(dataset.model):
+            for model in dataset.models:
                 if (
                     self.FHL3[model.name].data["ROI_num"] == kr
                     and self.FHL3[model.name].data["Signif_Avg"] >= self.sig_cut
