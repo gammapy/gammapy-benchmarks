@@ -26,9 +26,7 @@ AVAILABLE_TARGETS = ["crab", "pks2155", "msh1552"]
 
 @click.group()
 @click.option(
-    "--log-level",
-    default="info",
-    type=click.Choice(["DEBUG", "INFO", "WARNING"]),
+    "--log-level", default="info", type=click.Choice(["DEBUG", "INFO", "WARNING"])
 )
 @click.option("--show-warnings", is_flag=True, help="Show warnings?")
 def cli(log_level, show_warnings):
@@ -39,10 +37,7 @@ def cli(log_level, show_warnings):
 
 
 @cli.command("run-analyses", help="Run DL3 analysis validation")
-@click.option(
-    "--debug",
-    is_flag=True,
-)
+@click.option("--debug", is_flag=True)
 @click.argument("targets", type=click.Choice(list(AVAILABLE_TARGETS) + ["all"]))
 def run_analyses(debug, targets):
     if targets == "all":
@@ -114,10 +109,7 @@ def run_analysis_1d(target_dict, e_reco, fluxp_edges, debug):
     # Reflected regions background estimation
     on_region = CircleSkyRegion(center=target_pos, radius=on_radius)
     dataset_maker = SpectrumDatasetMaker(
-        region=on_region,
-        e_reco=e_reco,
-        e_true=e_reco,
-        containment_correction=True,
+        region=on_region, e_reco=e_reco, e_true=e_reco, containment_correction=True
     )
     bkg_maker = ReflectedRegionsBackgroundMaker()
     safe_mask_masker = SafeMaskMaker(methods=["edisp-bias"], bias_percent=10)
@@ -195,9 +187,7 @@ def run_analysis_3d(target_dict, fluxp_edges, debug):
     dec = target_dict["dec"]
     e_decorr = target_dict["e_decorr"]
     spectral_model = Model.create("PowerLawSpectralModel", reference=e_decorr)
-    spatial_model = Model.create(
-        target_dict["spatial_model"], lon_0=ra, lat_0=dec
-    )
+    spatial_model = Model.create(target_dict["spatial_model"], lon_0=ra, lat_0=dec)
     if target_dict["spatial_model"] == "DiskSpatialModel":
         spatial_model.e.frozen = False
     sky_model = SkyModel(
@@ -211,9 +201,7 @@ def run_analysis_3d(target_dict, fluxp_edges, debug):
 
     parameters = stacked.models.parameters
     model_npars = len(sky_model.parameters.names)
-    parameters.covariance = result.parameters.covariance[
-        0:model_npars, 0:model_npars
-    ]
+    parameters.covariance = result.parameters.covariance[0:model_npars, 0:model_npars]
     log.info(f"Writing {path_res}")
     write_fit_summary(parameters, str(path_res / "results-summary-fit-3d.yaml"))
 

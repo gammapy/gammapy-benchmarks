@@ -293,9 +293,7 @@ class Validation_3FHL:
         if results.message == "Optimization failed.":
             pass
         else:
-            datasets.write(
-                path=Path(self.resdir), prefix=dataset.name, overwrite=True
-            )
+            datasets.write(path=Path(self.resdir), prefix=dataset.name, overwrite=True)
             np.save(
                 self.resdir / f"3FHL_ROI_num{kr}_covariance.npy",
                 results.parameters.covariance,
@@ -676,20 +674,10 @@ def extrapolate_iem_model(logEc_extra):
 
 @click.command()
 @click.option(
-    "--selection",
-    type=click.Choice(["debug", "short", "long"]),
-    default="short",
+    "--selection", type=click.Choice(["debug", "short", "long"]), default="short"
 )
-@click.option(
-    "--processes",
-    type=int,
-    default=4,
-)
-@click.option(
-    "--fit",
-    type=bool,
-    default=True,
-)
+@click.option("--processes", type=int, default=4)
+@click.option("--fit", type=bool, default=True)
 def cli(selection, processes, fit):
     logging.basicConfig(level=logging.INFO)
     get_data()

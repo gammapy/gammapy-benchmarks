@@ -69,7 +69,7 @@ def write(stacked, filename):
 
 
 def read(filename):
-    return Datasets.read(f"{filename}_datasets.yaml",f"{filename}_models.yaml")
+    return Datasets.read(f"{filename}_datasets.yaml", f"{filename}_models.yaml")
 
 
 def data_fit(stacked):
