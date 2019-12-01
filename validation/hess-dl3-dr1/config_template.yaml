@@ -1,38 +1,37 @@
-general:
-    logging:
-        level: INFO
-    outdir: .
-
 observations:
-    datastore: $GAMMAPY_DATA/hess-dl3-dr1/
-    filters:
-        - filter_type: par_value
-          value_param: {name}
-          variable: TARGET_NAME
+  datastore: $GAMMAPY_DATA/hess-dl3-dr1
+  obs_cone:
+    frame: icrs
+    lon: {ra}
+    lat: {dec}
+    radius: 5 deg
 
 datasets:
-    dataset-type: MapDataset
-    stack-datasets: true
-    offset-max: 2.5 deg
-    geom:
-        skydir: [{ra}, {dec}]
-        width: [3, 3]
-        binsz: 0.02
-        coordsys: CEL
-        proj: TAN
-        axes:
-          - name: energy
-            hi_bnd: 100
-            lo_bnd: 0.1
-            nbin: 24
-            interp: log
-            node_type: edges
-            unit: TeV
-    energy-axis-true:
-        name: energy
-        hi_bnd: 100
-        lo_bnd: 0.1
-        nbin: 72
-        interp: log
-        node_type: edges
-        unit: TeV
+  type: 3d
+  stack: true
+  geom:
+    wcs:
+      skydir:
+        frame: icrs
+        lon: {ra}
+        lat: {dec}
+      binsize: 0.02 deg
+      fov:
+        width: 5 deg
+        height: 5 deg
+      binsize_irf: 0.2 deg
+      margin_irf: 0.5 deg
+    selection:
+      offset_max: 2.5 deg
+    axes:
+      energy:
+        min: 0.1 TeV
+        max: 90 TeV
+        nbins: 24
+      energy_true:
+        min: 0.1 TeV
+        max: 100 TeV
+        nbins: 72
+  map_selection: ['counts', 'exposure', 'background', 'psf', 'edisp']
+
+

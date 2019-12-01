@@ -21,7 +21,7 @@ from gammapy.spectrum import (
 
 log = logging.getLogger(__name__)
 
-AVAILABLE_SOURCES = ["crab", "pks2155", "msh1552"]
+AVAILABLE_TARGETS = ["crab", "pks2155", "msh1552"]
 
 
 @click.group()
@@ -56,34 +56,32 @@ def cli(log_level, show_warnings):
     help="If True, runs faster. In the 1D joint analysis, analyzes only 1 run."
     "For both 1d and 3d, complutes only 1 flux point and does not re-optimize the bkg",
 )
-@click.argument("sources", type=click.Choice(list(AVAILABLE_SOURCES) + ["all"]))
-def run_analyses(debug, sources):
-    if sources == "all":
-        sources = list(AVAILABLE_SOURCES)
+@click.argument("targets", type=click.Choice(list(AVAILABLE_TARGETS) + ["all"]))
+def run_analyses(debug, targets):
+    if targets == "all":
+        targets = list(AVAILABLE_TARGETS)
     else:
-        sources = [sources]
+        targets = [targets]
 
     e_reco = MapAxis.from_bounds(
-        0.1, 100, nbin=72, unit="TeV", name="energy", interp="log"
+        0.1, 100, nbin=24, unit="TeV", name="energy", interp="log"
     ).edges
-    nbin = 24 if debug is False else 1
+    nbin = 12 if debug is False else 1
     fluxp_edges = MapAxis.from_bounds(
         0.1, 100, nbin=nbin, unit="TeV", name="energy", interp="log"
     ).edges
 
     with open("targets.yaml", "r") as stream:
-        targets = yaml.safe_load(stream)
+        targets_file = yaml.safe_load(stream)
 
-    for source in sources:
+    for target in targets:
         # read config for the target
-        target_filter = filter(lambda _: _["tag"] == source, targets)
+        target_filter = filter(lambda _: _["tag"] == target, targets_file)
         target_dict = list(target_filter)[0]
 
-        log.info(f"Processing source: {source}")
-        if analyse1d:
-            run_analysis_1d(target_dict, e_reco, fluxp_edges, debug)
-        if analyse3d:
-            run_analysis_3d(target_dict, e_reco, fluxp_edges, debug)
+        log.info(f"Processing source: {target}")
+        run_analysis_1d(target_dict, e_reco, fluxp_edges, debug)
+        run_analysis_3d(target_dict, fluxp_edges, debug)
 
 
 def write_fit_summary(parameters, outfile):
@@ -113,9 +111,8 @@ def run_analysis_1d(target_dict, e_reco, fluxp_edges, debug):
     on_size = target_dict["on_size"]
     e_decorr = target_dict["e_decorr"]
 
-    target_pos = SkyCoord(ra, dec, unit="deg", frame="icrs")
-    on_radius = Angle(on_size * u.deg)
-    containment_corr = True
+    target_pos = SkyCoord(ra, dec, frame="icrs")
+    on_radius = Angle(on_size)
 
     log.info(f"Running observations selection")
     data_store = DataStore.from_dir("$GAMMAPY_DATA/hess-dl3-dr1/")
@@ -132,7 +129,7 @@ def run_analysis_1d(target_dict, e_reco, fluxp_edges, debug):
         region=on_region,
         e_reco=e_reco,
         e_true=e_reco,
-        containment_correction=containment_corr,
+        containment_correction=True,
     )
     bkg_maker = ReflectedRegionsBackgroundMaker()
     safe_mask_masker = SafeMaskMaker(methods=["edisp-bias"], bias_percent=10)
@@ -147,7 +144,7 @@ def run_analysis_1d(target_dict, e_reco, fluxp_edges, debug):
 
     log.info(f"Running fit ...")
     model = PowerLawSpectralModel(
-        index=2, amplitude=2e-11 * u.Unit("cm-2 s-1 TeV-1"), reference=e_decorr * u.TeV
+        index=2, amplitude=2e-11 * u.Unit("cm-2 s-1 TeV-1"), reference=e_decorr
     )
     for dataset in datasets:
         dataset.model = SkyModel(spectral_model=model)
@@ -179,7 +176,7 @@ def run_analysis_1d(target_dict, e_reco, fluxp_edges, debug):
     )
 
 
-def run_analysis_3d(target_dict, e_reco, fluxp_edges, debug):
+def run_analysis_3d(target_dict, fluxp_edges, debug):
     """Run stacked 3D analysis for the selected target.
 
     Notice that, for the sake of time saving, we run a stacked analysis, as opposed
@@ -192,8 +189,7 @@ def run_analysis_3d(target_dict, e_reco, fluxp_edges, debug):
 
     txt = Path("config_template.yaml").read_text()
     txt = txt.format_map(target_dict)
-    config = yaml.safe_load(txt)
-    config = AnalysisConfig(config)
+    config = AnalysisConfig.from_yaml(txt)
 
     log.info(f"Running observations selection")
     analysis = Analysis(config)
@@ -202,32 +198,18 @@ def run_analysis_3d(target_dict, e_reco, fluxp_edges, debug):
     log.info(f"Running data reduction")
     analysis.get_datasets()
 
-    dataset = analysis.datasets[0]
 
-    # TODO: Apply the safe energy threshold run-by-run. Move this code to SafeMaskMaker
-    # See reference paper, section 5.1.1.
-    # 1) energy threshold given by the 10% edisp criterium
-    skydir = SkyCoord(target_dict["ra"], target_dict["dec"], unit="deg", frame="icrs")
-    edisp1d = dataset.edisp.get_energy_dispersion(skydir, e_reco)
-    e_thr_bias = edisp1d.get_bias_energy(0.1)
-
-    # 2) energy at which the background peaks
-    background_model = dataset.background_model
-    bkg_spectrum = background_model.map.get_spectrum()
-    peak = bkg_spectrum.data.max()
-    idx = list(bkg_spectrum.data).index(peak)
-    e_thr_bkg = bkg_spectrum.energy.center[idx]
-
-    esafe = max(e_thr_bias, e_thr_bkg)
-    dataset.mask_fit = dataset.counts.geom.energy_mask(emin=esafe)
+    # TODO: Improve safe mask handling in Analysis. the mask should be applied run-by-run
+    maker_safe_mask = SafeMaskMaker(methods=["edisp-bias", "bkg-peak"])
+    stacked = maker_safe_mask.run(analysis.datasets[0])
 
     log.info(f"Running fit ...")
     ra = target_dict["ra"]
     dec = target_dict["dec"]
     e_decorr = target_dict["e_decorr"]
-    spectral_model = Model.create("PowerLawSpectralModel", reference=e_decorr * u.TeV)
+    spectral_model = Model.create("PowerLawSpectralModel", reference=e_decorr)
     spatial_model = Model.create(
-        target_dict["spatial_model"], lon_0=f"{ra} deg", lat_0=f"{dec} deg"
+        target_dict["spatial_model"], lon_0=ra, lat_0=dec
     )
     if target_dict["spatial_model"] == "DiskSpatialModel":
         spatial_model.e.frozen = False
@@ -235,18 +217,14 @@ def run_analysis_3d(target_dict, e_reco, fluxp_edges, debug):
         spatial_model=spatial_model, spectral_model=spectral_model, name=tag
     )
 
-    # TODO: Get rid of this workaround, as soon as it's possible to set a SkyModel on analysis
-    model = {}
-    model["components"] = []
-    model["components"].append(sky_model.to_dict())
-    analysis.set_model(model=model)
+    stacked.model = sky_model
+    stacked.background_model.norm.frozen = False
+    fit = Fit([stacked])
+    result = fit.run()
 
-    dataset.background_model.norm.frozen = False
-    analysis.run_fit()
-
-    parameters = analysis.model.parameters
+    parameters = stacked.model.parameters
     model_npars = len(sky_model.parameters.names)
-    parameters.covariance = analysis.fit_result.parameters.covariance[
+    parameters.covariance = result.parameters.covariance[
         0:model_npars, 0:model_npars
     ]
     log.info(f"Writing {path_res}")
@@ -254,13 +232,13 @@ def run_analysis_3d(target_dict, e_reco, fluxp_edges, debug):
 
     log.info("Running flux points estimation")
     # TODO: This is a workaround to re-optimize the bkg. Remove it once it's added to the Analysis class
-    for par in dataset.parameters:
-        if par is not dataset.background_model.norm:
+    for par in stacked.parameters:
+        if par is not stacked.background_model.norm:
             par.frozen = True
 
     reoptimize = True if debug is False else False
     fpe = FluxPointsEstimator(
-        datasets=[dataset], e_edges=fluxp_edges, source=tag, reoptimize=reoptimize
+        datasets=[stacked], e_edges=fluxp_edges, source=tag, reoptimize=reoptimize
     )
 
     flux_points = fpe.run()
