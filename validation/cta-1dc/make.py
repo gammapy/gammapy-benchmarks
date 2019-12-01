@@ -6,12 +6,9 @@ from pathlib import Path
 import yaml
 import click
 import warnings
-import astropy.units as u
-from astropy.coordinates import Angle
 from astropy.table import Table
 from gammapy.analysis import Analysis, AnalysisConfig
 from gammapy.modeling.models import SkyModels
-
 
 log = logging.getLogger(__name__)
 
@@ -46,6 +43,7 @@ def cli(log_level, show_warnings):
 
     if not show_warnings:
         warnings.simplefilter("ignore")
+
 
 @cli.command("run-analyses", help="Run Gammapy validation: CTA 1DC")
 @click.argument("targets", type=click.Choice(list(AVAILABLE_TARGETS) + ["all"]))
@@ -128,12 +126,11 @@ def analysis_3d_summary(target):
     pars.remove("reference")  # need to find a better way to handle this
 
     for par in pars:
-
         ref = ref_model.parameters[par].value
         value = tab.loc[par]["value"]
         name = tab.loc[par]["name"]
         error = tab.loc[par]["error"]
-        comp_tab.add_row([name, ref, f"{value}±{error}"],)
+        comp_tab.add_row([name, ref, f"{value}±{error}"])
 
     path = f"{target}/README.md"
     comp_tab.write(path, format="ascii.html", overwrite=True)
