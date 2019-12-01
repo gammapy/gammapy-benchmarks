@@ -19,6 +19,17 @@ the following test cases were chosen for the validation:
 
 Param not yet relevant, needs to add extra sources on top of J1702 to have a good model
 
+## Execution
+
+To run a all analyses use
+
+    python make.py run-analyses all 
+    
+To run the analysis for a specific source:
+
+    python make.py run-analyses 'cas_a'
+
+
 ## 1DC model
 
 
