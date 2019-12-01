@@ -31,8 +31,9 @@ def make_plots(reference, result):
 
     fig = plt.figure(figsize=(7, 5))
     opts = {"energy_power": 2}
-    fpoints_ref.plot(**opts)
+    fpoints_ref.plot(**opts, label="reference")
     fpoints_res.plot(**opts)
+    plt.legend()
 
     return fig
 
