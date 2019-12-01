@@ -26,7 +26,7 @@ AVAILABLE_TARGETS = ["crab", "pks2155", "msh1552"]
 
 @click.group()
 @click.option(
-    "--log-level", default="info", type=click.Choice(["DEBUG", "INFO", "WARNING"])
+    "--log-level", default="INFO", type=click.Choice(["DEBUG", "INFO", "WARNING"])
 )
 @click.option("--show-warnings", is_flag=True, help="Show warnings?")
 def cli(log_level, show_warnings):

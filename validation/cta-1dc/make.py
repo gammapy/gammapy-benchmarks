@@ -2,7 +2,6 @@
 """Run Gammapy validation: CTA 1DC"""
 import logging
 from pathlib import Path
-
 import yaml
 import click
 import warnings
@@ -15,31 +14,16 @@ log = logging.getLogger(__name__)
 AVAILABLE_TARGETS = ["cas_a", "hess_J1702"]
 
 
-def get_config(target):
-    config = yaml.safe_load(open("targets.yaml"))
-    return config[target]
-
-
 @click.group()
 @click.option(
     "--log-level",
-    default="info",
-    type=click.Choice(["debug", "info", "warning", "error", "critical"]),
+    default="INFO",
+    type=click.Choice(["DEBUG", "INFO", "WARNING"]),
 )
 @click.option("--show-warnings", is_flag=True, help="Show warnings?")
 def cli(log_level, show_warnings):
-    """
-    Run validation of DL3 data analysis.
-    """
-    levels = dict(
-        debug=logging.DEBUG,
-        info=logging.INFO,
-        warning=logging.WARNING,
-        error=logging.ERROR,
-        critical=logging.CRITICAL,
-    )
-    logging.basicConfig(level=levels[log_level])
-    log.setLevel(level=levels[log_level])
+    logging.basicConfig(level=log_level)
+    log.setLevel(level=log_level)
 
     if not show_warnings:
         warnings.simplefilter("ignore")
@@ -67,7 +51,7 @@ def analysis_3d(target):
 def analysis_3d_data_reduction(target):
     log.info(f"analysis_3d_data_reduction: {target}")
 
-    opts = get_config(target)
+    opts = yaml.safe_load(open("targets.yaml"))[target]
 
     txt = Path("config_template.yaml").read_text()
     txt = txt.format_map(opts)
