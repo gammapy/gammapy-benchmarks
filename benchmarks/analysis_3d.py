@@ -59,7 +59,8 @@ def data_prep():
         spatial_model=spatial_model, spectral_model=spectral_model, name="gc-source"
     )
 
-    stacked.model = model
+    stacked.models = model
+    stacked.name = "stacked_ds"
 
     return Datasets([stacked])
 
