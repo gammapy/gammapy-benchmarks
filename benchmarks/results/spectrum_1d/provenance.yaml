@@ -4,7 +4,7 @@ env:
   user: asinha
 software:
   astropy: 3.2.3
-  gammapy: 0.15.dev373+g74763d09f
+  gammapy: 0.15.dev849+g64c664613.d20191122
   numpy: 1.17.3
   python_executable: //anaconda3/envs/gammapy-dev/bin/python
   python_version: 3.7.0
