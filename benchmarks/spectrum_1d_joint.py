@@ -8,9 +8,9 @@ import yaml
 from astropy.coordinates import SkyCoord, Angle
 from regions import CircleSkyRegion
 from gammapy.maps import Map, MapAxis
-from gammapy.modeling import Fit
+from gammapy.modeling import Fit, Datasets
 from gammapy.data import DataStore
-from gammapy.modeling.models import PowerLawSpectralModel
+from gammapy.modeling.models import PowerLawSpectralModel, PointSpatialModel, SkyModel
 from gammapy.spectrum import (
     SpectrumDatasetMaker,
     SpectrumDatasetOnOff,
@@ -54,6 +54,19 @@ def data_prep():
     bkg_maker = ReflectedRegionsBackgroundMaker(exclusion_mask=exclusion_mask)
     safe_mask_masker = SafeMaskMaker(methods=["aeff-max"], aeff_percent=10)
 
+    spectral_model = PowerLawSpectralModel(
+        index=2, amplitude=2e-11 * u.Unit("cm-2 s-1 TeV-1"), reference=1 * u.TeV
+    )
+    spatial_model = PointSpatialModel(
+        lon_0=target_position.ra, lat_0=target_position.dec, frame="icrs"
+    )
+    spatial_model.lon_0.frozen = True
+    spatial_model.lat_0.frozen = True
+
+    sky_model = SkyModel(
+        spatial_model=spatial_model, spectral_model=spectral_model, name=""
+    )
+
     # Data preparation
     datasets = []
 
@@ -61,43 +74,35 @@ def data_prep():
         dataset = dataset_maker.run(observation, selection=["counts", "aeff", "edisp"])
         dataset_on_off = bkg_maker.run(dataset, observation)
         dataset_on_off = safe_mask_masker.run(dataset_on_off, observation)
-        dataset_on_off.name = str(ind)
+        dataset_on_off.name = f"dataset{ind}"
+        dataset_on_off.model = sky_model
         datasets.append(dataset_on_off)
-    return datasets
+
+    return Datasets(datasets)
 
 
-def write(datasets):
-    for ind, dataset in enumerate(datasets):
-        dataset.to_ogip_files(overwrite=True)
+def write(datasets, filename):
+    datasets.write(path=os.getcwd(), prefix=filename, overwrite=True)
 
 
-def read():
-    datasets = []
-    model = PowerLawSpectralModel(
-        index=2, amplitude=2e-11 * u.Unit("cm-2 s-1 TeV-1"), reference=1 * u.TeV
-    )
-
-    for ind in range(N_OBS):
-        dataset = SpectrumDatasetOnOff.from_ogip_files(filename=f"pha_obs{ind}.fits")
-        dataset.model = model
-        datasets.append(dataset)
-
-    return datasets
+def read(filename):
+    return Datasets.read(f"{filename}_datasets.yaml", f"{filename}_models.yaml")
 
 
 def data_fit(datasets):
     fit = Fit(datasets)
-    result = fit.run()
+    result = fit.run(optimize_opts={"print_level": 1})
 
 
 def flux_point(datasets):
     e_edges = MapAxis.from_bounds(0.7, 30, nbin=11, interp="log", unit="TeV").edges
-    fpe = FluxPointsEstimator(datasets=datasets, e_edges=e_edges, source="gc-source")
+    fpe = FluxPointsEstimator(datasets=datasets, e_edges=e_edges)
     fpe.run()
 
 
 def run_benchmark():
     info = {"n_obs": N_OBS}
+    filename = "joint"
 
     t = time.time()
 
@@ -105,11 +110,11 @@ def run_benchmark():
     info["data_preparation"] = time.time() - t
     t = time.time()
 
-    write(datasets)
+    write(datasets, filename)
     info["writing"] = time.time() - t
     t = time.time()
 
-    datasets = read()
+    datasets = read(filename)
     info["reading"] = time.time() - t
     t = time.time()
 

@@ -9,6 +9,7 @@ from gammapy.maps import Map
 
 N_OBS = int(os.environ.get("GAMMAPY_BENCH_N_OBS", 10))
 
+
 def run_benchmark():
     info = {"n_obs": N_OBS}
 

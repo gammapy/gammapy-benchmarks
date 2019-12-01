@@ -11,7 +11,7 @@ from gammapy.modeling.models import (
     PointSpatialModel,
 )
 from gammapy.spectrum import FluxPointsEstimator
-from gammapy.modeling import Fit
+from gammapy.modeling import Fit, Datasets
 from gammapy.data import DataStore
 from gammapy.maps import MapAxis, WcsGeom
 from gammapy.cube import MapDatasetMaker, MapDataset, SafeMaskMaker
@@ -39,33 +39,10 @@ def data_prep():
 
     src_pos = SkyCoord(0, 0, unit="deg", frame="galactic")
     offset_max = 4 * u.deg
-    maker = MapDatasetMaker(offset_max=offset_max)
+    maker = MapDatasetMaker()
     safe_mask_maker = SafeMaskMaker(methods=["offset-max"], offset_max="4 deg")
     stacked = MapDataset.create(geom=geom)
 
-    datasets = []
-    for obs in observations:
-        dataset = maker.run(stacked, obs)
-        dataset = safe_mask_maker.run(dataset, obs)
-        dataset.edisp = dataset.edisp.get_energy_dispersion(
-            position=src_pos, e_reco=energy_axis.edges
-        )
-        dataset.psf = dataset.psf.get_psf_kernel(
-            position=src_pos, geom=geom, max_radius="0.3 deg"
-        )
-
-        datasets.append(dataset)
-    return datasets
-
-
-def write(datasets):
-    for ind, dataset in enumerate(datasets):
-        dataset.write(f"dataset-{ind}.fits", overwrite=True)
-
-
-def read():
-
-    datasets = []
     spatial_model = PointSpatialModel(
         lon_0="-0.05 deg", lat_0="-0.05 deg", frame="galactic"
     )
@@ -78,12 +55,23 @@ def read():
     model = SkyModel(
         spatial_model=spatial_model, spectral_model=spectral_model, name="gc-source"
     )
-    for ind in range(N_OBS):
-        dataset = MapDataset.read(f"dataset-{ind}.fits")
-        dataset.model = model
-        datasets.append(dataset)
 
-    return datasets
+    datasets = []
+    for i, obs in enumerate(observations):
+        dataset = maker.run(stacked, obs)
+        dataset = safe_mask_maker.run(dataset, obs)
+        dataset.model = model
+        dataset.name = f"dataset{i}"
+        datasets.append(dataset)
+    return Datasets(datasets)
+
+
+def write(datasets, filename):
+    datasets.write(path=os.getcwd(), prefix=filename, overwrite=True)
+
+
+def read(filename):
+    return Datasets.read(f"{filename}_datasets.yaml", f"{filename}_models.yaml")
 
 
 def data_fit(datasets):
@@ -100,6 +88,7 @@ def flux_point(datasets):
 
 def run_benchmark():
     info = {"n_obs": N_OBS}
+    filename = "joint"
 
     t = time.time()
 
@@ -107,11 +96,11 @@ def run_benchmark():
     info["data_preparation"] = time.time() - t
     t = time.time()
 
-    write(datasets)
+    write(datasets, filename)
     info["writing"] = time.time() - t
     t = time.time()
 
-    datasets = read()
+    datasets = read(filename)
     info["reading"] = time.time() - t
     t = time.time()
 
