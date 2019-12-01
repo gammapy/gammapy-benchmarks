@@ -75,7 +75,7 @@ def data_prep():
         dataset_on_off = bkg_maker.run(dataset, observation)
         dataset_on_off = safe_mask_masker.run(dataset_on_off, observation)
         dataset_on_off.name = f"dataset{ind}"
-        dataset_on_off.model = sky_model
+        dataset_on_off.models = sky_model
         datasets.append(dataset_on_off)
 
     return Datasets(datasets)

@@ -76,7 +76,7 @@ def data_prep():
         dataset_on_off = safe_mask_masker.run(dataset_on_off, observation)
         stacked.stack(dataset_on_off)
 
-    stacked.model = sky_model
+    stacked.models = sky_model
     return Datasets([stacked])
 
 

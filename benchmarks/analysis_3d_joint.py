@@ -40,7 +40,7 @@ def data_prep():
     src_pos = SkyCoord(0, 0, unit="deg", frame="galactic")
     offset_max = 4 * u.deg
     maker = MapDatasetMaker()
-    safe_mask_maker = SafeMaskMaker(methods=["offset-max"], offset_max="4 deg")
+    safe_mask_maker = SafeMaskMaker(methods=["offset-max"], offset_max=offset_max)
     stacked = MapDataset.create(geom=geom)
 
     spatial_model = PointSpatialModel(
@@ -60,7 +60,7 @@ def data_prep():
     for i, obs in enumerate(observations):
         dataset = maker.run(stacked, obs)
         dataset = safe_mask_maker.run(dataset, obs)
-        dataset.model = model
+        dataset.models = model
         dataset.name = f"dataset{i}"
         datasets.append(dataset)
     return Datasets(datasets)
