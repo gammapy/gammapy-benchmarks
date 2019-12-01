@@ -28,22 +28,11 @@ AVAILABLE_TARGETS = ["crab", "pks2155", "msh1552"]
 @click.option(
     "--log-level",
     default="info",
-    type=click.Choice(["debug", "info", "warning", "error", "critical"]),
+    type=click.Choice(["DEBUG", "INFO", "WARNING"]),
 )
 @click.option("--show-warnings", is_flag=True, help="Show warnings?")
 def cli(log_level, show_warnings):
-    """
-    Run validation of DL3 data analysis.
-    """
-    levels = dict(
-        debug=logging.DEBUG,
-        info=logging.INFO,
-        warning=logging.WARNING,
-        error=logging.ERROR,
-        critical=logging.CRITICAL,
-    )
-    logging.basicConfig(level=levels[log_level])
-    log.setLevel(level=levels[log_level])
+    logging.basicConfig(level=log_level)
 
     if not show_warnings:
         warnings.simplefilter("ignore")
@@ -53,8 +42,6 @@ def cli(log_level, show_warnings):
 @click.option(
     "--debug",
     is_flag=True,
-    help="If True, runs faster. In the 1D joint analysis, analyzes only 1 run."
-    "For both 1d and 3d, complutes only 1 flux point and does not re-optimize the bkg",
 )
 @click.argument("targets", type=click.Choice(list(AVAILABLE_TARGETS) + ["all"]))
 def run_analyses(debug, targets):
@@ -122,6 +109,7 @@ def run_analysis_1d(target_dict, e_reco, fluxp_edges, debug):
 
     if debug is True:
         observations = [observations[0]]
+
     log.info(f"Running data reduction")
     # Reflected regions background estimation
     on_region = CircleSkyRegion(center=target_pos, radius=on_radius)
@@ -147,7 +135,7 @@ def run_analysis_1d(target_dict, e_reco, fluxp_edges, debug):
         index=2, amplitude=2e-11 * u.Unit("cm-2 s-1 TeV-1"), reference=e_decorr
     )
     for dataset in datasets:
-        dataset.model = SkyModel(spectral_model=model)
+        dataset.models = SkyModel(spectral_model=model)
 
     fit_joint = Fit(datasets)
     result_joint = fit_joint.run()
@@ -198,7 +186,6 @@ def run_analysis_3d(target_dict, fluxp_edges, debug):
     log.info(f"Running data reduction")
     analysis.get_datasets()
 
-
     # TODO: Improve safe mask handling in Analysis. the mask should be applied run-by-run
     maker_safe_mask = SafeMaskMaker(methods=["edisp-bias", "bkg-peak"])
     stacked = maker_safe_mask.run(analysis.datasets[0])
@@ -217,12 +204,12 @@ def run_analysis_3d(target_dict, fluxp_edges, debug):
         spatial_model=spatial_model, spectral_model=spectral_model, name=tag
     )
 
-    stacked.model = sky_model
+    stacked.models = sky_model
     stacked.background_model.norm.frozen = False
     fit = Fit([stacked])
     result = fit.run()
 
-    parameters = stacked.model.parameters
+    parameters = stacked.models.parameters
     model_npars = len(sky_model.parameters.names)
     parameters.covariance = result.parameters.covariance[
         0:model_npars, 0:model_npars
