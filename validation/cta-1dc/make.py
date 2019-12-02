@@ -11,7 +11,7 @@ from gammapy.modeling.models import SkyModels
 
 log = logging.getLogger(__name__)
 
-AVAILABLE_TARGETS = ["cas_a", "hess_J1702"]
+AVAILABLE_TARGETS = ["cas_a", "hess_j1702"]
 
 
 @click.group()
@@ -57,9 +57,9 @@ def analysis_3d_data_reduction(target):
     txt = txt.format_map(opts)
     config = AnalysisConfig.from_yaml(txt)
 
+
     analysis = Analysis(config)
     analysis.get_observations()
-
     log.info("Running data reduction")
     analysis.get_datasets()
 

@@ -1,5 +1,5 @@
 observations:
-    datastore: $GAMMAPY_DATA/cta-1dc/index/gps/
+    datastore: $CTADATA/index/gps/
     obs_cone:
       frame: galactic
       lon: {lon}
