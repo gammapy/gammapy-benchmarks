@@ -41,13 +41,6 @@ def run_analyses(targets):
         analysis_3d(target)
 
 
-def analysis_3d(target):
-    log.info(f"analysis_3d: {target}")
-    analysis_3d_data_reduction(target)
-    analysis_3d_modeling(target)
-    analysis_3d_summary(target)
-
-
 def analysis_3d_data_reduction(target):
     log.info(f"analysis_3d_data_reduction: {target}")
 
@@ -66,8 +59,8 @@ def analysis_3d_data_reduction(target):
     # TODO: write datasets and separate fitting to next function
     # Not implemented in Gammapy yet, coming very soon.
     log.info("Running fit ...")
-    analysis.set_model(filename=f"{target}/model_3d.yaml")
-    logging.info(analysis.model)
+    analysis.read_models(f"{target}/model_3d.yaml")
+    logging.info(analysis.models)
     analysis.run_fit()
     logging.info(analysis.fit_result.parameters.to_table())
     path = f"{target}/{target}_3d_bestfit.rst"
@@ -105,7 +98,7 @@ def analysis_3d_summary(target):
     dt = "U30"
     comp_tab = Table(names=("Param", "DC1 Ref", "gammapy 3d"), dtype=[dt, dt, dt])
 
-    ref_model = SkyModels.from_yaml(f"{target}/reference/dc1_model_3d.yaml")
+    ref_model = SkyModels.read(f"{target}/reference/dc1_model_3d.yaml")
     pars = ref_model.parameters.names
     pars.remove("reference")  # need to find a better way to handle this
 
@@ -119,6 +112,11 @@ def analysis_3d_summary(target):
     path = f"{target}/README.md"
     comp_tab.write(path, format="ascii.html", overwrite=True)
 
+def analysis_3d(target):
+    log.info(f"analysis_3d: {target}")
+    analysis_3d_data_reduction(target)
+    analysis_3d_modeling(target)
+    analysis_3d_summary(target)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
