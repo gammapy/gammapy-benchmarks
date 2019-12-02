@@ -4,7 +4,7 @@ cas_a:
   frame: galactic
   lon: 111.7 deg
   lat: -2.1 deg
-  radius: 1 deg
+  radius: 2 deg
   emin: 0.1 TeV
   emax: 50 TeV
   nbin: 25
@@ -16,7 +16,7 @@ hess_j1702:
   frame: galactic
   lon: 344.3 deg
   lat: -0.18 deg
-  radius: 1 deg
+  radius: 2 deg
   emin: 0.1 TeV
   emax: 160 TeV
   nbin: 35
