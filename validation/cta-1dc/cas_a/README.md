@@ -37,6 +37,6 @@
 </html>
 
 
- ![Spectra][cas_a_fluxpoints.png]
- ![Excess map][cas_a_counts.png]
- ![Residual map][cas_a_residuals.png]
+ ![Spectra](cas_a_fluxpoints.png)
+ ![Excess map](cas_a_counts.png)
+ ![Residual map](cas_a_residuals.png)
