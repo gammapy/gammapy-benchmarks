@@ -143,9 +143,9 @@ def analysis_3d_summary(analysis, target):
     comp_tab.write(path, format="ascii.html", overwrite=True)
 
     txt = Path(f"{target}/spectral_comparison_table.md").read_text()
-    im1 = f"\n ![Spectra][{target}_fluxpoints.png]"
-    im2 = f"\n ![Excess map][{target}_counts.png]"
-    im3 = f"\n ![Residual map][{target}_residuals.png]"
+    im1 = f"\n ![Spectra]({target}_fluxpoints.png)"
+    im2 = f"\n ![Excess map]({target}_counts.png)"
+    im3 = f"\n ![Residual map]({target}_residuals.png)"
 
     out = txt+im1+im2+im3
     Path(f"{target}/README.md").write_text(out)
