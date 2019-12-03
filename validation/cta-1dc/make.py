@@ -5,9 +5,12 @@ from pathlib import Path
 import yaml
 import click
 import warnings
+import matplotlib.pyplot as plt
 from astropy.table import Table
+from astropy import units as u
 from gammapy.analysis import Analysis, AnalysisConfig
 from gammapy.modeling.models import SkyModels
+from gammapy.modeling.models import PowerLawSpectralModel
 
 log = logging.getLogger(__name__)
 
@@ -82,15 +85,18 @@ def analysis_3d_data_reduction(target):
         path, format="ascii.ecsv", overwrite=True
     )
 
+    return analysis # will write to disk when possible
 
 def analysis_3d_modeling(target):
     log.info(f"analysis_3d_modeling: {target}")
 
 
-def analysis_3d_summary(target):
+def analysis_3d_summary(analysis, target):
     log.info(f"analysis_3d_summary: {target}")
-    # TODO: make plots
-    # TODO: summarise results to `results.md`? Necessary?
+    # TODO: 
+    # - how to plot a SkyModels ?
+    # - PowerLawSpectralModel hardcoded need to find auto way
+
 
     path = f"{target}/{target}_3d_bestfit.rst"
     tab = Table.read(path, format="ascii")
@@ -109,14 +115,47 @@ def analysis_3d_summary(target):
         error = tab.loc[par]["error"]
         comp_tab.add_row([name, ref, f"{value}±{error}"])
 
-    path = f"{target}/README.md"
+
+    analysis.datasets["stacked"].counts.sum_over_axes().plot(add_cbar=True)
+    plt.savefig(f"{target}/{target}_counts.png", bbox_inches="tight")
+    plt.close()
+
+    analysis.datasets["stacked"].plot_residuals(
+        method="diff/sqrt(model)", vmin=-0.5, vmax=0.5
+    )
+    plt.savefig(f"{target}/{target}_residuals.png", bbox_inches="tight")
+    plt.close()
+
+    ax_sed, ax_residuals = analysis.flux_points.peek() # Cannot specify flux_unit outputs in cm-2 s-1 TeV-1. Default to erg 
+    ref_dict=ref_model.parameters.to_dict() 
+    spec_comp_id={'cas_a':2, 'hess_j1702':5} #REally bad hack
+    ref_dict_spectral = {'parameters': ref_dict['parameters'][spec_comp_id[target]:] } #keep only spectral parameters. Is there a better way ?
+
+    pwl = PowerLawSpectralModel.from_dict( ref_dict_spectral ) #need to find a way to find spectral model auto
+    ax_sed=pwl.plot((0.1,50)*u.TeV, ax=ax_sed, energy_power=2, flux_unit='cm-2 s-1 erg-1', label='Reference', ls='--')
+    ax_sed.legend()
+    plt.savefig(f"{target}/{target}_fluxpoints.png", bbox_inches="tight")
+    plt.close()
+
+
+    # Generate README.md file with table and plots
+    path = f"{target}/spectral_comparison_table.md"
     comp_tab.write(path, format="ascii.html", overwrite=True)
+
+    txt = Path(f"{target}/spectral_comparison_table.md").read_text()
+    im1 = f"\n ![Spectra][{target}_fluxpoints.png]"
+    im2 = f"\n ![Excess map][{target}_counts.png]"
+    im3 = f"\n ![Residual map][{target}_residuals.png]"
+
+    out = txt+im1+im2+im3
+    Path(f"{target}/README.md").write_text(out)
+
 
 def analysis_3d(target):
     log.info(f"analysis_3d: {target}")
-    analysis_3d_data_reduction(target)
+    analysis = analysis_3d_data_reduction(target)
     analysis_3d_modeling(target)
-    analysis_3d_summary(target)
+    analysis_3d_summary(analysis, target)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

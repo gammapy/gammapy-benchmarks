@@ -51,7 +51,3 @@
  </body>
 </html>
 
-
- ![Spectra][hess_j1702_fluxpoints.png]
- ![Excess map][hess_j1702_counts.png]
- ![Residual map][hess_j1702_residuals.png]
