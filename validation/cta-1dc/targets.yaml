@@ -2,8 +2,8 @@ cas_a:
   tag: cas_a
   name: Cassiopeia A
   frame: galactic
-  lon: 111.7 deg
-  lat: -2.1 deg
+  lon: 111.71231 deg
+  lat: -2.16343646 deg
   radius: 2 deg
   emin: 0.1 TeV
   emax: 50 TeV
@@ -21,4 +21,16 @@ hess_j1702:
   emax: 160 TeV
   nbin: 35
   fp_nbin: 25
+  
+gc:
+  tag: gc
+  name: Galactic center
+  frame: galactic
+  lon: 0 deg
+  lat: 0 deg
+  radius: 2 deg
+  emin: 0.1 TeV
+  emax: 100 TeV
+  nbin: 30
+  fp_nbin: 20
 

@@ -14,7 +14,7 @@ from gammapy.modeling.models import PowerLawSpectralModel
 
 log = logging.getLogger(__name__)
 
-AVAILABLE_TARGETS = ["cas_a", "hess_j1702"]
+AVAILABLE_TARGETS = ["cas_a", "hess_j1702", "gc"]
 
 
 @click.group()
