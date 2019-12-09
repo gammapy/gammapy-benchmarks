@@ -1,0 +1,19 @@
+general:
+    log: {level: INFO, filename: null, filemode: null, format: null, datefmt: null}
+    outdir: .
+observations:
+    datastore: $JOINT_CRAB/hess
+    obs_ids: []
+    obs_file: null
+    obs_cone: {frame: null, lon: null, lat: null, radius: null}
+    obs_time: {start: null, stop: null}
+datasets:
+    type: 1d
+    stack: false
+    geom:
+        axes:
+            energy: {min: 0.01 TeV, max: 100.0 TeV, nbins: 80}
+            energy_true: {min: 0.01 TeV, max: 100.0 TeV, nbins: 80}
+    background: {method: reflected, exclusion: null}
+    on_region: {frame: icrs, lon: 83.63 deg, lat: 22.01 deg, radius: 0.11 deg}
+    containment_correction: true
