@@ -6,13 +6,14 @@ import yaml
 import click
 import warnings
 import matplotlib.pyplot as plt
+import numpy as np
 from astropy.table import Table
 from astropy import units as u
 from gammapy.analysis import Analysis, AnalysisConfig
 from gammapy.modeling.models import SkyModel
 from gammapy.modeling.models import LogParabolaSpectralModel
 from gammapy.modeling import Fit, Datasets
-
+from gammapy.utils.scripts import make_path
 log = logging.getLogger(__name__)
 
 AVAILABLE_DATA = ["hess","magic","veritas","fact"]
@@ -94,11 +95,12 @@ def run_analyses(instruments, npoints=40):
         # First perform data reduction and save to disk
         data_reduction(instrument)
         data_fitting(instrument, npoints)
+        make_summary(instrument)
         
 def data_reduction(instrument):
     log.info(f"data_reduction: {instrument}")
     config = AnalysisConfig.read(f"config.yaml")
-    config.observations.datastore = f"$JOINT_CRAB/{instrument}"
+    config.observations.datastore = f"$JOINT_CRAB/data/{instrument}"
     config.datasets.stack = instrument_opts[instrument]['stack']
     config.datasets.containment_correction = instrument_opts[instrument]['containment']
     config.datasets.on_region.radius = instrument_opts[instrument]['on_radius']
@@ -208,34 +210,35 @@ def plot_contour_line(ax, x, y, **kwargs):
 
 
 def make_summary(instrument):
-    log.info(f"Preparing summary: {target}")
+    log.info(f"Preparing summary: {instrument}")
     path = f"results/fit_{instrument}.rst"
 
     tab = Table.read(path, format="ascii")
     tab.add_index("name")
     dt = "U30"
     comp_tab = Table(names=("Param", "joint crab paper", "gammapy"), dtype=[dt, dt, dt])
+        
+    filename = make_path("$JOINT_CRAB/results/fit/")
+    filename = filename / f"fit_{instrument}.yaml"
+    with open(filename,'r') as file:
+         paper_result = yaml.safe_load(file)
+ 
+    for par in paper_result['parameters']:
+        if par['name'] is not 'reference':
+            name = par['name']
+            ref = par['value']
+            ref_error = par['error']
+            value = tab.loc[name]["value"]*np.log(10)
+            error = tab.loc[name]["error"]*np.log(10)
+            comp_tab.add_row([name, f"{ref}±{ref_error}", f"{value}±{error}"])
 
-    ref_model = SkyModels.read(f"$JOINT_CRAB/results/")
-    pars = ref_model.parameters.names
-    pars.remove("reference")  # need to find a better way to handle this
+    # Generate README.md file with table and plots
+    path = f"{instrument}/spectral_comparison_table.md"
+    comp_tab.write(path, format="ascii.html", overwrite=True)
 
-    for par in pars:
-        ref = ref_model.parameters[par].value
-        value = tab.loc[par]["value"]
-        name = tab.loc[par]["name"]
-        error = tab.loc[par]["error"]
-        comp_tab.add_row([name, ref, f"{value}±{error}"])
-
-    pars = ref_model.parameters.names
-    pars.remove("reference")  # need to find a better way to handle this
-
-    for par in pars:
-        ref = ref_model.parameters[par].value
-        value = tab.loc[par]["value"]
-        name = tab.loc[par]["name"]
-        error = tab.loc[par]["error"]
-        comp_tab.add_row([name, ref, f"{value}±{error}"])
+    txt = Path(f"{instrument}/spectral_comparison_table.md").read_text()
+    out = txt
+    Path(f"{instrument}/README.md").write_text(out)
 
 
     
