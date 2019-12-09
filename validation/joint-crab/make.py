@@ -129,7 +129,7 @@ def make_contours(fit, result, npoints):
                                  numpoints=npoints)
     contours["contour_alpha_beta"] = {
         "alpha": contour["x"].tolist(),
-        "beta": contour["y"].tolist(),
+        "beta": (contour["y"]*np.log(10)).tolist(),
     }    
     contour = fit.minos_contour(result.parameters['amplitude'], 
                                  result.parameters['alpha'], 
@@ -144,7 +144,7 @@ def make_contours(fit, result, npoints):
                                  numpoints=npoints)
     contours["contour_amplitude_beta"] = {
         "amplitude": contour["x"].tolist(),
-        "beta": contour["y"].tolist(),
+        "beta": (contour["y"]*np.log(10)).tolist(),
     } 
 
     return contours
@@ -208,11 +208,90 @@ def plot_contour_line(ax, x, y, **kwargs):
 
     ax.plot(xs, ys, **kwargs)
 
+def plot_contours(instrument):
+    log.info(f"Plotting contours: {instrument}")
+    
+    filename = make_path("$JOINT_CRAB/results/fit/")
+    filename = filename / f"contours_{instrument}.yaml"
+    with open(filename,'r') as file:
+        paper_contours = yaml.safe_load(file)
 
+    with open(f"results/contours_{instrument}.yaml", 'r') as file:
+        contours = yaml.safe_load(file)
+
+    pars = {
+        "phi": {
+            "label": r"$\phi_0 \,/\,(10^{-11}\,{\rm TeV}^{-1} \, {\rm cm}^{-2} {\rm s}^{-1})$",
+            "lim": [2.6, 5.8],
+            "ticks": [3, 4, 5],
+        },
+        "gamma": {
+            "label": r"$\Gamma$",
+            "lim": [1.9, 3.],
+            "ticks": [2., 2.3, 2.6, 2.9],
+        },
+        "beta": {
+            "label": r"$\beta$",
+            "lim": [-0.1, 1.0],
+            "ticks": [0.0, 0.3, 0.6, 0.9],
+        },
+    }
+
+    panels = [
+        {
+            "x": "phi",
+            "y": "gamma",
+            "cx": np.array(1e11) * contours["contour_amplitude_alpha"]["amplitude"],
+            "cy": contours["contour_amplitude_alpha"]["alpha"],
+            "pcx": np.array(1e11) * paper_contours["contour_amplitude_alpha"]["amplitude"],
+            "pcy": paper_contours["contour_amplitude_alpha"]["alpha"],
+
+        },
+        {
+            "x": "phi",
+            "y": "beta",
+            "cx": np.array(1e11) * contours["contour_amplitude_beta"]["amplitude"],
+            "cy": contours["contour_amplitude_beta"]["beta"],
+            "pcx": np.array(1e11) * paper_contours["contour_amplitude_beta"]["amplitude"],
+            "pcy": paper_contours["contour_amplitude_beta"]["beta"],
+        },
+        {
+            "x": "gamma",
+            "y": "beta",
+            "cx": contours["contour_alpha_beta"]["alpha"],
+            "cy": contours["contour_alpha_beta"]["beta"],
+            "pcx": paper_contours["contour_alpha_beta"]["alpha"],
+            "pcy": paper_contours["contour_alpha_beta"]["beta"],
+        },
+    ]
+
+    fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+    
+    for p, ax in zip(panels, axes):
+        x = pars[p["x"]]
+        y = pars[p["y"]]
+        plot_contour_line(ax, p["cx"], p["cy"], ls="-", lw=2.5, color='b', label='gammapy')
+        plot_contour_line(ax, p["pcx"], p["pcy"], ls="-", lw=2.5, color='r', label='ref')
+        ax.set_xlabel(x["label"])
+        ax.set_ylabel(y["label"])
+        ax.set_xlim(x["lim"])
+        ax.set_ylim(y["lim"])
+        ax.set_xticks(x["ticks"])
+        ax.set_yticks(y["ticks"])
+        plt.legend()
+    
+    plt.savefig(f"{instrument}/contours_{instrument}.png", bbox_inches="tight")
+    plt.close()
+
+   
+    
 def make_summary(instrument):
     log.info(f"Preparing summary: {instrument}")
-    path = f"results/fit_{instrument}.rst"
 
+    # Data info
+    
+    # Fit results
+    path = f"results/fit_{instrument}.rst"
     tab = Table.read(path, format="ascii")
     tab.add_index("name")
     dt = "U30"
@@ -228,8 +307,12 @@ def make_summary(instrument):
             name = par['name']
             ref = par['value']
             ref_error = par['error']
-            value = tab.loc[name]["value"]*np.log(10)
-            error = tab.loc[name]["error"]*np.log(10)
+            if name == 'beta':
+                factor = np.log(10)
+            else:
+                factor = 1
+            value = tab.loc[name]["value"]*factor
+            error = tab.loc[name]["error"]*factor
             comp_tab.add_row([name, f"{ref}±{ref_error}", f"{value}±{error}"])
 
     # Generate README.md file with table and plots
@@ -237,70 +320,12 @@ def make_summary(instrument):
     comp_tab.write(path, format="ascii.html", overwrite=True)
 
     txt = Path(f"{instrument}/spectral_comparison_table.md").read_text()
-    out = txt
-    Path(f"{instrument}/README.md").write_text(out)
-
-
     
+    plot_contours(instrument)
+    im1 = f"\n ![Contours](contours_{instrument}.png)"
 
-def analysis_3d_summary(analysis, target):
-    log.info(f"analysis_3d_summary: {target}")
-    # TODO: 
-    # - how to plot a SkyModels ?
-    # - PowerLawSpectralModel hardcoded need to find auto way
-
-
-    path = f"{target}/{target}_3d_bestfit.rst"
-    tab = Table.read(path, format="ascii")
-    tab.add_index("name")
-    dt = "U30"
-    comp_tab = Table(names=("Param", "DC1 Ref", "gammapy 3d"), dtype=[dt, dt, dt])
-
-    ref_model = SkyModels.read(f"{target}/reference/dc1_model_3d.yaml")
-    pars = ref_model.parameters.names
-    pars.remove("reference")  # need to find a better way to handle this
-
-    for par in pars:
-        ref = ref_model.parameters[par].value
-        value = tab.loc[par]["value"]
-        name = tab.loc[par]["name"]
-        error = tab.loc[par]["error"]
-        comp_tab.add_row([name, ref, f"{value}±{error}"])
-
-
-    analysis.datasets["stacked"].counts.sum_over_axes().plot(add_cbar=True)
-    plt.savefig(f"{target}/{target}_counts.png", bbox_inches="tight")
-    plt.close()
-
-    analysis.datasets["stacked"].plot_residuals(
-        method="diff/sqrt(model)", vmin=-0.5, vmax=0.5
-    )
-    plt.savefig(f"{target}/{target}_residuals.png", bbox_inches="tight")
-    plt.close()
-
-    ax_sed, ax_residuals = analysis.flux_points.peek() # Cannot specify flux_unit outputs in cm-2 s-1 TeV-1. Default to erg 
-    ref_dict=ref_model.parameters.to_dict() 
-    spec_comp_id={'cas_a':2, 'hess_j1702':5} #REally bad hack
-    ref_dict_spectral = {'parameters': ref_dict['parameters'][spec_comp_id[target]:] } #keep only spectral parameters. Is there a better way ?
-
-    pwl = PowerLawSpectralModel.from_dict( ref_dict_spectral ) #need to find a way to find spectral model auto
-    ax_sed=pwl.plot((0.1,50)*u.TeV, ax=ax_sed, energy_power=2, flux_unit='cm-2 s-1 erg-1', label='Reference', ls='--')
-    ax_sed.legend()
-    plt.savefig(f"{target}/{target}_fluxpoints.png", bbox_inches="tight")
-    plt.close()
-
-
-    # Generate README.md file with table and plots
-    path = f"{target}/spectral_comparison_table.md"
-    comp_tab.write(path, format="ascii.html", overwrite=True)
-
-    txt = Path(f"{target}/spectral_comparison_table.md").read_text()
-    im1 = f"\n ![Spectra]({target}_fluxpoints.png)"
-    im2 = f"\n ![Excess map]({target}_counts.png)"
-    im3 = f"\n ![Residual map]({target}_residuals.png)"
-
-    out = txt+im1+im2+im3
-    Path(f"{target}/README.md").write_text(out)
+    out = txt + im1
+    Path(f"{instrument}/README.md").write_text(out)
 
 
 if __name__ == "__main__":
