@@ -1,5 +1,32 @@
 # Gammapy validation: joint Crab
 
+- Data reduction is performed with `Analysis`. See the general [config file](config.yaml)
+- Only log parabola fit is performed for now
+
+## Results
+
+### MAGIC 
+
+- See [MAGIC summary page](results/magic_summary.md)
+
+### VERITAS
+
+- See [VERITAS summary page](results/veritas_summary.md)
+
+### HESS
+
+- See [HESS summary page](results/hess_summary.md)
+
+### FACT
+
+- See [FACT summary page](results/fact_summary.md)
+
+### Fermi
+TBD
+
+### Joint
+TBD
+
 ## Task
 
 - Write a script (or notebook) to reproduce the Joint Crab analysis using the latest Gammapy
