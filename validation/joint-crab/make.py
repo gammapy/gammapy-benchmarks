@@ -82,8 +82,8 @@ def cli(log_level, show_warnings):
 
 @cli.command("run-analyses", help="Run Gammapy validation: joint Crab")
 @click.argument("instruments", type=click.Choice(list(AVAILABLE_DATA) + ["all"]))
-@click.argument("npoints", required = False, type=int, default=30)
-def run_analyses(instruments, npoints=40):    
+@click.argument("npoints", required = False, type=int, default=10)
+def run_analyses(instruments, npoints=10):    
     # Loop over instruments
     if instruments == "all":
         instruments = list(AVAILABLE_DATA)
@@ -96,7 +96,24 @@ def run_analyses(instruments, npoints=40):
         data_reduction(instrument)
         data_fitting(instrument, npoints)
         make_summary(instrument)
+
+@cli.command("run-fit", help="Run Gammapy fit: joint Crab")
+@click.argument("instruments", type=click.Choice(list(AVAILABLE_DATA) + ["all"]))
+@click.argument("npoints", required = False, type=int, default=10)
+def run_analyses(instruments, npoints=10):    
+    # Loop over instruments
+    if instruments == "all":
+        instruments = list(AVAILABLE_DATA)
+    else:
+        instruments = [instruments]
+
+    joint = []
+    for instrument in instruments:
+        data_fitting(instrument, npoints)
+        make_summary(instrument)
+
         
+    
 def data_reduction(instrument):
     log.info(f"data_reduction: {instrument}")
     config = AnalysisConfig.read(f"config.yaml")
@@ -108,7 +125,7 @@ def data_reduction(instrument):
     analysis = Analysis(config)
     analysis.get_observations()
     analysis.get_datasets() 
-    analysis.datasets.write(instrument, overwrite=True)
+    analysis.datasets.write(f"reduced_{instrument}", overwrite=True)
 
     
 def define_model():
@@ -131,15 +148,8 @@ def make_contours(fit, result, npoints):
         "alpha": contour["x"].tolist(),
         "beta": (contour["y"]*np.log(10)).tolist(),
     }    
-    contour = fit.minos_contour(result.parameters['amplitude'], 
-                                 result.parameters['alpha'], 
-                                 numpoints=npoints)
-    contours["contour_amplitude_alpha"] = {
-        "amplitude": contour["x"].tolist(),
-        "alpha": contour["y"].tolist(),
-    }     
     
-    contour_amplitude_beta = fit.minos_contour(result.parameters['amplitude'], 
+    contour = fit.minos_contour(result.parameters['amplitude'], 
                                  result.parameters['beta'], 
                                  numpoints=npoints)
     contours["contour_amplitude_beta"] = {
@@ -147,6 +157,14 @@ def make_contours(fit, result, npoints):
         "beta": (contour["y"]*np.log(10)).tolist(),
     } 
 
+    contour = fit.minos_contour(result.parameters['amplitude'], 
+                                 result.parameters['alpha'], 
+                                 numpoints=npoints)
+    contours["contour_amplitude_alpha"] = {
+        "amplitude": contour["x"].tolist(),
+        "alpha": contour["y"].tolist(),
+    }     
+   
     return contours
 
 
@@ -156,8 +174,8 @@ def data_fitting(instrument, npoints):
     crab_model = define_model()
     
     # Read from disk
-    datasets = Datasets.read(f"{instrument}/_datasets.yaml", 
-                            f"{instrument}/_models.yaml")
+    datasets = Datasets.read(f"reduced_{instrument}/_datasets.yaml", 
+                            f"reduced_{instrument}/_models.yaml")
     
     e_min = u.Quantity(instrument_opts[instrument]['emin'])
     e_max = u.Quantity(instrument_opts[instrument]['emax'])
@@ -274,13 +292,13 @@ def plot_contours(instrument):
         plot_contour_line(ax, p["pcx"], p["pcy"], ls="-", lw=2.5, color='r', label='ref')
         ax.set_xlabel(x["label"])
         ax.set_ylabel(y["label"])
-        ax.set_xlim(x["lim"])
-        ax.set_ylim(y["lim"])
+#        ax.set_xlim(x["lim"])
+#        ax.set_ylim(y["lim"])
         ax.set_xticks(x["ticks"])
         ax.set_yticks(y["ticks"])
         plt.legend()
     
-    plt.savefig(f"{instrument}/contours_{instrument}.png", bbox_inches="tight")
+    plt.savefig(f"results/contours_{instrument}.png", bbox_inches="tight")
     plt.close()
 
    
@@ -316,16 +334,16 @@ def make_summary(instrument):
             comp_tab.add_row([name, f"{ref}±{ref_error}", f"{value}±{error}"])
 
     # Generate README.md file with table and plots
-    path = f"{instrument}/spectral_comparison_table.md"
+    path = f"results/{instrument}_comparison_table.md"
     comp_tab.write(path, format="ascii.html", overwrite=True)
 
-    txt = Path(f"{instrument}/spectral_comparison_table.md").read_text()
+    txt = Path(f"results/{instrument}_comparison_table.md").read_text()
     
     plot_contours(instrument)
     im1 = f"\n ![Contours](contours_{instrument}.png)"
 
     out = txt + im1
-    Path(f"{instrument}/README.md").write_text(out)
+    Path(f"results/{instrument}_summary.md").write_text(out)
 
 
 if __name__ == "__main__":
