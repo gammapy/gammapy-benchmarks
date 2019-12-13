@@ -334,7 +334,8 @@ def make_summary(instrument):
                 factor = 1
             value = tab.loc[name]["value"]*factor
             error = tab.loc[name]["error"]*factor
-            comp_tab.add_row([name, f"{ref}±{ref_error}", f"{value}±{error}"])
+            comp_tab.add_row([name, f"{ref:.3e} ± {ref_error:.3e}",
+                                    f"{value:.3e} ± {error:.3e}"])
 
     # Generate README.md file with table and plots
     path = f"results/{instrument}_comparison_table.md"
