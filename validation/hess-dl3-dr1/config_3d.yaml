@@ -1,0 +1,55 @@
+observations:
+    datastore: $GAMMAPY_DATA/hess-dl3-dr1
+    obs_cone:
+        frame: {frame}
+        lon: {ra}
+        lat: {dec}
+        radius: {search_radius}
+    obs_time:
+        start: {tstart}
+        stop: {tstop}
+
+datasets:
+    type: 3d
+    stack: true
+    geom:
+        wcs:
+          skydir:
+              frame: icrs
+              lon: {ra}
+              lat: {dec}
+          binsize: 0.02 deg
+          fov:
+              width: 3 deg
+              height: 3 deg
+          binsize_irf: 0.2 deg
+        selection:
+            offset_max: 2.5 deg
+        axes:
+          energy:
+              min: 0.1 TeV
+              max: 10 TeV
+              nbins: 16
+          energy_true:
+              min: 0.1 TeV
+              max: 10 TeV
+              nbins: 48
+    map_selection: ['counts', 'exposure', 'background', 'psf', 'edisp']
+
+fit:
+    fit_range:
+        min: 0.1 TeV
+        max: 10 TeV
+
+flux_points:
+    energy:
+        min: 0.3 TeV # Todo: as soon as the safe mask will be properly set during data reduction, use min: 0.1 TeV
+        max: 10 TeV
+        nbins: 16
+
+
+
+
+
+
+
