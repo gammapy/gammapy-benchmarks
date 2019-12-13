@@ -143,7 +143,8 @@ def make_contours(fit, result, npoints):
     contours = dict()
     contour = fit.minos_contour(result.parameters['alpha'], 
                                  result.parameters['beta'], 
-                                 numpoints=npoints)
+                                 numpoints=npoints,
+                                 sigma=np.sqrt(2.3))
     contours["contour_alpha_beta"] = {
         "alpha": contour["x"].tolist(),
         "beta": (contour["y"]*np.log(10)).tolist(),
@@ -151,7 +152,8 @@ def make_contours(fit, result, npoints):
     
     contour = fit.minos_contour(result.parameters['amplitude'], 
                                  result.parameters['beta'], 
-                                 numpoints=npoints)
+                                 numpoints=npoints,
+                                 sigma=np.sqrt(2.3))
     contours["contour_amplitude_beta"] = {
         "amplitude": contour["x"].tolist(),
         "beta": (contour["y"]*np.log(10)).tolist(),
@@ -159,7 +161,8 @@ def make_contours(fit, result, npoints):
 
     contour = fit.minos_contour(result.parameters['amplitude'], 
                                  result.parameters['alpha'], 
-                                 numpoints=npoints)
+                                 numpoints=npoints,
+                                 sigma=np.sqrt(2.3))
     contours["contour_amplitude_alpha"] = {
         "amplitude": contour["x"].tolist(),
         "alpha": contour["y"].tolist(),
