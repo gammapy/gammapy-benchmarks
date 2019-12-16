@@ -1,4 +1,9 @@
-# simulate bright sources  
+# simulate bright sources
+from gammapy.maps import MapAxis, WcsGeom
+
+ENERGY_AXIS = MapAxis.from_bounds()
+ENERGY_AXIS_TRUE = MapAxis.from_bounds()
+WCS_GEOM = WcsGeom.create(width=(8, 8), binsz=0.02, axes=[ENERGY_AXES])
 
 
 def prepare_dataset():
