@@ -1,14 +1,14 @@
 # simulate bright sources  
 
 
-def make_dataset():
+def prepare_dataset():
     # read irfs create observation with a single pointing
     # choose some geom, rather fine energy binnning at least 10 bins / per decade
     # computed reduced dataset see e.g. https://docs.gammapy.org/0.15/notebooks/simulate_3d.html#Simulation
     # write dataset to data/dataset-{livetime}.fits.gz
     pass
 
-def simulate(model):
+def simulate_events(model):
     # read dataset using MapDataset.read()
     # read model from model.yaml using SkyModels.read()
     # set the model on the dataset write
@@ -16,7 +16,7 @@ def simulate(model):
     # optionally : bin events here and write counts map to data/models/your-model/counts-1.fits
     pass
 
-def fit(dataset, model):
+def fit_model(dataset, model):
     # read dataset using MapDataset.read()
     # read events using EventList.read()
     # bin events into datasets using WcsNDMap.fill_events(events)
@@ -24,7 +24,7 @@ def fit(dataset, model):
     # fit and write best-fit model
     pass
 
-def plot(model, best_fit_model):
+def plot_results(model, best_fit_model):
     # read model and best-fit model
     # write to results folder
     # compare the spectra
@@ -35,6 +35,7 @@ def plot(model, best_fit_model):
 
 
 if __name__ == "__main__":
-    simulate()
-    fit()
-    plot()	
+    prepare_dataset()
+    simulate_events()
+    fit_model()
+    plot_results()	
