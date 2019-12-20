@@ -57,7 +57,7 @@ instrument_opts = dict(
                'emax':'30 TeV',
                'color': "#893F45",},
     fact = {'on_radius':'0.1732 deg', 
-            'stack':True, 
+            'stack':False, 
             'containment':False,
             'emin':'0.4 TeV', 
             'emax':'30 TeV',
@@ -125,6 +125,20 @@ def data_reduction(instrument):
     analysis = Analysis(config)
     analysis.get_observations()
     analysis.get_datasets() 
+  
+    # TODO remove when safe mask can be set on config
+    if instrument is 'fact':
+        from gammapy.spectrum import SpectrumDatasetOnOff
+        stacked = SpectrumDatasetOnOff.create(
+            e_reco=analysis.datasets[0]._energy_axis.edges, 
+            e_true=analysis.datasets[0]._energy_axis.edges, 
+            region=None
+        )
+        for ds in analysis.datasets:
+            ds.mask_safe[:] = True
+            stacked.stack(ds)
+        analysis.datasets = Datasets([stacked])
+
     analysis.datasets.write(f"reduced_{instrument}", overwrite=True)
 
     
@@ -179,11 +193,7 @@ def data_fitting(instrument, npoints):
     # Read from disk
     datasets = Datasets.read(f"reduced_{instrument}/_datasets.yaml", 
                             f"reduced_{instrument}/_models.yaml")
-    
-    #TODO : remove this once HLI allows setting safe mask method properly
-    if instrument is 'fact':
-        datasets[0].mask_safe[33:]=True
-    
+       
     e_min = u.Quantity(instrument_opts[instrument]['emin'])
     e_max = u.Quantity(instrument_opts[instrument]['emax'])
     
