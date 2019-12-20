@@ -180,6 +180,10 @@ def data_fitting(instrument, npoints):
     datasets = Datasets.read(f"reduced_{instrument}/_datasets.yaml", 
                             f"reduced_{instrument}/_models.yaml")
     
+    #TODO : remove this once HLI allows setting safe mask method properly
+    if instrument is 'fact':
+        datasets[0].mask_safe[33:]=True
+    
     e_min = u.Quantity(instrument_opts[instrument]['emin'])
     e_max = u.Quantity(instrument_opts[instrument]['emax'])
     
@@ -187,6 +191,7 @@ def data_fitting(instrument, npoints):
     for ds in datasets:
         ds.models = crab_model
         ds.mask_fit = ds.counts.energy_mask(e_min, e_max)
+        print(ds.energy_range)
     # Perform fit
     fit = Fit(datasets)
     result = fit.run()
