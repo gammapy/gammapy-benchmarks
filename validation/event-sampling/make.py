@@ -33,7 +33,6 @@ src_spec = 'pwl'
 
 BASE_PATH = Path(__file__).parent
 
-
 path = "$GAMMAPY_VALIDATION/gammapy-benchmarks/validation/event-sampling/"
 
 model_path = "/Users/fabio/LAVORO/CTA/GAMMAPY/GIT/gammapy-benchmarks/validation/event-sampling/models/"+src_morph+"-"+src_spec+"/"+src_morph+"-"+src_spec+".yaml"
@@ -55,11 +54,11 @@ WCS_GEOM = WcsGeom.create(skydir=POINTING, width=(6, 6), binsz=0.02, coordsys="G
 LIVETIME = 1 * u.hr
 GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
 
-filename = "data/dataset_{value:.0f}_{unit}.fits.gz".format(value=LIVETIME.value, unit=LIVETIME.unit)
+filename = "data/dataset_{value:.0f}{unit}.fits.gz".format(value=LIVETIME.value, unit=LIVETIME.unit)
 DATASET_PATH = BASE_PATH / filename
 
-
 def prepare_dataset():
+    """Prepare dataset for a given skymodel."""
     # read irfs create observation with a single pointing
     # choose some geom, rather fine energy binnning at least 10 bins / per decade
     # computed reduced dataset see e.g. https://docs.gammapy.org/0.15/notebooks/simulate_3d.html#Simulation
@@ -76,6 +75,7 @@ def prepare_dataset():
     maker_safe_mask = SafeMaskMaker(methods=["offset-max"], offset_max=4.0 * u.deg)
     dataset = maker.run(empty, observation)
     dataset = maker_safe_mask.run(dataset, observation)
+    dataset.gti = GTI_TABLE
 
     log.info(f"Writing {DATASET_PATH}")
     dataset.write(DATASET_PATH, overwrite=True)
@@ -91,8 +91,10 @@ def simulate_events(filename_model, observation):
     # optionally : bin events here and write counts map to data/models/your-model/counts-1.fits
     
     dataset = MapDataset.read(DATASET_PATH)
+#    dataset = MapDataset.read('/Users/fabio/LAVORO/CTA/GAMMAPY/GIT/gammapy-benchmarks/validation/event-sampling/data/dataset_1h.fits.gz')
 
     models = SkyModels.read(filename_model)
+#    models = SkyModels.read('/Users/fabio/LAVORO/CTA/GAMMAPY/GIT/gammapy-benchmarks/validation/event-sampling/models/point-pwl.yaml')
     dataset.models = models
 
     events = MapDatasetEventSampler(random_state=0)
@@ -105,17 +107,18 @@ def simulate_events(filename_model, observation):
     events.table.writeto(str(path), overwrite=True)
 
 
-def fit_model(dataset, events, model):
+def fit_model(filename_events, filename_model):
+    """Fit the events using a model."""
     # read dataset using MapDataset.read()
     # read events using EventList.read()
     # bin events into datasets using WcsNDMap.fill_events(events)
     # read reference model and set it on the dataset
     # fit and write best-fit model
     
-    dataset = MapDataset.read(dataset)
-    event = EventList.read(events)
-    model_simu = SkyModels.read(model)
-    model_fit = SkyModels.read(model)
+    dataset = MapDataset.read(DATASET_PATH)
+    event = EventList.read(filename_events)
+    model_simu = SkyModels.read(filename_model)
+    model_fit = SkyModels.read(filename_model)
 
 #    model_fit = model_simu[0].copy
     dataset.models = model_fit
@@ -129,18 +132,21 @@ def fit_model(dataset, events, model):
     fit = Fit([dataset])
     result = fit.run(optimize_opts={"print_level": 1})
 
-    # TODO: use log.info() instead
-    print("True model: \n", model_simu, "\n\n Fitted model: \n", model_fit)
+    log.info(f"True model: \n {model_simu} \n\n Fitted model: \n {model_fit}")
     result.parameters.to_table()
 
     covar = result.parameters.get_subcovariance(model_fit[0].spectral_model.parameters)
     
-    model_fit.write(path+"/results/models/"+src_morph+"-"+src_spec+"/"+src_morph+"-"+src_spec+".yaml", overwrite=True)
+    model_str = filename_model.name.replace(filename_model.suffix, "")
+    filename = f"results/models/{model_str}/{model_str}/.yaml"
+    path = BASE_PATH / filename
+    log.info(f"Writing {path}")
+    model_fit.write(str(path), overwrite=True)
 
     return covar
-#    pass
 
-def plot_results(dataset, model, best_fit_model, covar_matrix):
+def plot_results(filename_model, filename_best_fit_model, covar_matrix):
+    """Plot the best-fit spectrum, the residual map and the residual significance distribution."""
     # read model and best-fit model
     # write to results folder
     # compare the spectra
@@ -148,8 +154,8 @@ def plot_results(dataset, model, best_fit_model, covar_matrix):
     # plot residual significance distribution and check for normal distribution
     # compare best fit values by writting to model.yaml
 
-    model = SkyModels.read(model)
-    best_fit_model = SkyModels.read(best_fit_model)
+    model = SkyModels.read(filename_model)
+    best_fit_model = SkyModels.read(filename_best_fit_model)
     best_fit_model[0].spectral_model.parameters.covariance = covar_matrix
 
     # plot spectral models
@@ -159,16 +165,23 @@ def plot_results(dataset, model, best_fit_model, covar_matrix):
     ax1.legend()
     ax2.legend()
     ax3.legend()
-    plt.savefig("/Users/fabio/LAVORO/CTA/GAMMAPY/GIT/gammapy-benchmarks/validation/event-sampling/results/models/"+src_morph+"-"+src_spec+"/"+src_morph+"-"+src_spec+"_"+str(int(exp))+"hr.eps", format='eps', dpi=1000)
+    model_str = filename_model.name.replace(filename_model.suffix, "")
+    filename = f"results/models/{model_str}/{model_str}/_{value:.0f}{unit}.png".format(value=LIVETIME.value, unit=LIVETIME.unit)
+    path = BASE_PATH / filename
+    log.info(f"Writing {path}")
+    plt.savefig(path, format='png', dpi=1000)
     plt.gcf().clear()
     plt.close
 
     # plot residuals
-    dataset = MapDataset.read(dataset)
+    dataset = MapDataset.read(DATASET_PATH)
     dataset.models = best_fit_model
     dataset.fake()
     dataset.plot_residuals(method="diff/sqrt(model)", vmin=-0.5, vmax=0.5)
-    plt.savefig("/Users/fabio/LAVORO/CTA/GAMMAPY/GIT/gammapy-benchmarks/validation/event-sampling/results/models/"+src_morph+"-"+src_spec+"/"+src_morph+"-"+src_spec+"_"+str(int(exp))+"hr_residuals.eps", format='eps', dpi=100)
+    filename = f"results/models/{model_str}/{model_str}/_{value:.0f}{unit}_residuals.png".format(value=LIVETIME.value, unit=LIVETIME.unit)
+    path = BASE_PATH / filename
+    log.info(f"Writing {path}")
+    plt.savefig(path, format='png', dpi=1000)
     plt.gcf().clear()
     plt.close
     
@@ -196,7 +209,11 @@ def plot_results(dataset, model, best_fit_model, covar_matrix):
     plt.ylim(1e-5, 1)
     xmin, xmax = np.min(sig_resid), np.max(sig_resid)
     plt.xlim(xmin, xmax)
-    plt.savefig("/Users/fabio/LAVORO/CTA/GAMMAPY/GIT/gammapy-benchmarks/validation/event-sampling/results/models/"+src_morph+"-"+src_spec+"/"+src_morph+"-"+src_spec+"_"+str(int(exp))+"hr_resid_distrib.eps", format='eps', dpi=100)
+    
+    filename = f"results/models/{model_str}/{model_str}/_{value:.0f}{unit}_resid_distrib.png".format(value=LIVETIME.value, unit=LIVETIME.unit)
+    path = BASE_PATH / filename
+    log.info(f"Writing {path}")
+    plt.savefig(path, format='png', dpi=1000)
     plt.gcf().clear()
     plt.close
     
@@ -208,5 +225,6 @@ if __name__ == "__main__":
 
     for filename_model in (BASE_PATH / "models").glob("*.yaml"):
         simulate_events(filename_model, observation)
-    #covar = fit_model(dataset_path, events_path, model_path)
-    #plot_results(dataset_path, model_path, model_fit_path, covar)
+#        covar = fit_model(filename_events, filename_model)
+#        filename_model_fit_path = BASE_PATH / "results/models/{model_str}/{model_str}.yaml"
+#        plot_results(filename_model, filename_model_fit_path, covar)
