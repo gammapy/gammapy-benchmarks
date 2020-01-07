@@ -2,6 +2,8 @@
 from pathlib import Path
 import logging
 
+import os
+
 import numpy as np
 import matplotlib.pyplot as plt
 import astropy.units as u
@@ -27,22 +29,6 @@ log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 ##############
-exp = 1.0
-src_morph = 'point'
-src_spec = 'pwl'
-
-BASE_PATH = Path(__file__).parent
-
-path = "$GAMMAPY_VALIDATION/gammapy-benchmarks/validation/event-sampling/"
-
-model_path = "/Users/fabio/LAVORO/CTA/GAMMAPY/GIT/gammapy-benchmarks/validation/event-sampling/models/"+src_morph+"-"+src_spec+"/"+src_morph+"-"+src_spec+".yaml"
-model_fit_path = "/Users/fabio/LAVORO/CTA/GAMMAPY/GIT/gammapy-benchmarks/validation/event-sampling/results/models/"+src_morph+"-"+src_spec+"/"+src_morph+"-"+src_spec+".yaml"
-
-
-events_path = path+"/models/"+src_morph+"-"+src_spec+"/events_"+str(int(exp))+"hr.fits.gz"
-
-
-##############
 
 ENERGY_AXIS = MapAxis.from_bounds(0.1, 300, nbin=30, unit="TeV", name="energy", interp="log")
 ENERGY_AXIS_TRUE = MapAxis.from_bounds(0.1, 300, nbin=30, unit="TeV", name="energy", interp="log")
@@ -54,7 +40,8 @@ WCS_GEOM = WcsGeom.create(skydir=POINTING, width=(6, 6), binsz=0.02, coordsys="G
 LIVETIME = 1 * u.hr
 GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
 
-filename = "data/dataset_{value:.0f}{unit}.fits.gz".format(value=LIVETIME.value, unit=LIVETIME.unit)
+filename = "data/models/dataset_{value:.0f}{unit}.fits.gz".format(value=LIVETIME.value, unit=LIVETIME.unit)
+BASE_PATH = Path(__file__).parent
 DATASET_PATH = BASE_PATH / filename
 
 def prepare_dataset():
@@ -91,20 +78,18 @@ def simulate_events(filename_model, observation):
     # optionally : bin events here and write counts map to data/models/your-model/counts-1.fits
     
     dataset = MapDataset.read(DATASET_PATH)
-#    dataset = MapDataset.read('/Users/fabio/LAVORO/CTA/GAMMAPY/GIT/gammapy-benchmarks/validation/event-sampling/data/dataset_1h.fits.gz')
 
     models = SkyModels.read(filename_model)
-#    models = SkyModels.read('/Users/fabio/LAVORO/CTA/GAMMAPY/GIT/gammapy-benchmarks/validation/event-sampling/models/point-pwl.yaml')
     dataset.models = models
 
     events = MapDatasetEventSampler(random_state=0)
     events = events.run(dataset, observation)
 
     model_str = filename_model.name.replace(filename_model.suffix, "")
-    filename = f"data/models/{model_str}/events.fits.gz"
+    filename = f"data/models/{model_str}/events_"+"{value:.0f}{unit}.fits.gz".format(value=LIVETIME.value, unit=LIVETIME.unit)
     path = BASE_PATH / filename
     log.info(f"Writing {path}")
-    events.table.writeto(str(path), overwrite=True)
+    events.table.write(str(path), overwrite=True)
 
 
 def fit_model(filename_events, filename_model):
@@ -138,7 +123,7 @@ def fit_model(filename_events, filename_model):
     covar = result.parameters.get_subcovariance(model_fit[0].spectral_model.parameters)
     
     model_str = filename_model.name.replace(filename_model.suffix, "")
-    filename = f"results/models/{model_str}/{model_str}/.yaml"
+    filename = f"results/models/{model_str}/{model_str}.yaml"
     path = BASE_PATH / filename
     log.info(f"Writing {path}")
     model_fit.write(str(path), overwrite=True)
@@ -166,7 +151,7 @@ def plot_results(filename_model, filename_best_fit_model, covar_matrix):
     ax2.legend()
     ax3.legend()
     model_str = filename_model.name.replace(filename_model.suffix, "")
-    filename = f"results/models/{model_str}/{model_str}/_{value:.0f}{unit}.png".format(value=LIVETIME.value, unit=LIVETIME.unit)
+    filename = f"results/models/{model_str}/{model_str}"+"_{value:.0f}{unit}.png".format(value=LIVETIME.value, unit=LIVETIME.unit)
     path = BASE_PATH / filename
     log.info(f"Writing {path}")
     plt.savefig(path, format='png', dpi=1000)
@@ -178,7 +163,7 @@ def plot_results(filename_model, filename_best_fit_model, covar_matrix):
     dataset.models = best_fit_model
     dataset.fake()
     dataset.plot_residuals(method="diff/sqrt(model)", vmin=-0.5, vmax=0.5)
-    filename = f"results/models/{model_str}/{model_str}/_{value:.0f}{unit}_residuals.png".format(value=LIVETIME.value, unit=LIVETIME.unit)
+    filename = f"results/models/{model_str}/{model_str}"+"_{value:.0f}{unit}_residuals.png".format(value=LIVETIME.value, unit=LIVETIME.unit)
     path = BASE_PATH / filename
     log.info(f"Writing {path}")
     plt.savefig(path, format='png', dpi=1000)
@@ -210,7 +195,7 @@ def plot_results(filename_model, filename_best_fit_model, covar_matrix):
     xmin, xmax = np.min(sig_resid), np.max(sig_resid)
     plt.xlim(xmin, xmax)
     
-    filename = f"results/models/{model_str}/{model_str}/_{value:.0f}{unit}_resid_distrib.png".format(value=LIVETIME.value, unit=LIVETIME.unit)
+    filename = f"results/models/{model_str}/{model_str}"+"_{value:.0f}{unit}_resid_distrib.png".format(value=LIVETIME.value, unit=LIVETIME.unit)
     path = BASE_PATH / filename
     log.info(f"Writing {path}")
     plt.savefig(path, format='png', dpi=1000)
@@ -222,9 +207,17 @@ def plot_results(filename_model, filename_best_fit_model, covar_matrix):
 
 if __name__ == "__main__":
     observation = prepare_dataset()
+    
+    for filename_model in (BASE_PATH / "models/").glob("*.yaml"):
+        model_str = filename_model.name.replace(filename_model.suffix, "")
 
-    for filename_model in (BASE_PATH / "models").glob("*.yaml"):
         simulate_events(filename_model, observation)
-#        covar = fit_model(filename_events, filename_model)
-#        filename_model_fit_path = BASE_PATH / "results/models/{model_str}/{model_str}.yaml"
-#        plot_results(filename_model, filename_model_fit_path, covar)
+        
+        filename_events = f"data/models/{model_str}/events_"+"{value:.0f}{unit}.fits.gz".format(value=LIVETIME.value, unit=LIVETIME.unit)
+        covar = fit_model(filename_events, filename_model)
+        
+        filename_model_fit_path = f"results/models/{model_str}/{model_str}.yaml"
+        plot_results(filename_model, filename_model_fit_path, covar)
+
+        new_path = f"data/models/{model_str}/" + "dataset_{value:.0f}{unit}.fits.gz".format(value=LIVETIME.value, unit=LIVETIME.unit)
+        os.rename(DATASET_PATH, new_path)
