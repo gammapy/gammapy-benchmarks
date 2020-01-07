@@ -1,8 +1,12 @@
 # simulate bright sources
+from pathlib import Path
+import logging
+
 import numpy as np
 import matplotlib.pyplot as plt
 import astropy.units as u
 from astropy.coordinates import SkyCoord
+from astropy.io import fits
 from scipy.stats import norm
 
 from gammapy.cube import MapDataset, MapDatasetEventSampler, MapDatasetMaker, SafeMaskMaker
@@ -19,16 +23,23 @@ from gammapy.modeling.models import (
                                      SkyModels,
                                      )
 
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
+
 ##############
 exp = 1.0
 src_morph = 'point'
 src_spec = 'pwl'
 
+BASE_PATH = Path(__file__).parent
+
+
 path = "$GAMMAPY_VALIDATION/gammapy-benchmarks/validation/event-sampling/"
 
 model_path = "/Users/fabio/LAVORO/CTA/GAMMAPY/GIT/gammapy-benchmarks/validation/event-sampling/models/"+src_morph+"-"+src_spec+"/"+src_morph+"-"+src_spec+".yaml"
 model_fit_path = "/Users/fabio/LAVORO/CTA/GAMMAPY/GIT/gammapy-benchmarks/validation/event-sampling/results/models/"+src_morph+"-"+src_spec+"/"+src_morph+"-"+src_spec+".yaml"
-dataset_path = path+"/data/models/"+src_morph+"-"+src_spec+"/dataset_"+str(int(exp))+"hr.fits.gz"
+
+
 events_path = path+"/models/"+src_morph+"-"+src_spec+"/events_"+str(int(exp))+"hr.fits.gz"
 
 
@@ -37,12 +48,15 @@ events_path = path+"/models/"+src_morph+"-"+src_spec+"/events_"+str(int(exp))+"h
 ENERGY_AXIS = MapAxis.from_bounds(0.1, 300, nbin=30, unit="TeV", name="energy", interp="log")
 ENERGY_AXIS_TRUE = MapAxis.from_bounds(0.1, 300, nbin=30, unit="TeV", name="energy", interp="log")
 
-position = SkyCoord(0.0, 0.0, frame="galactic", unit="deg")
-WCS_GEOM = WcsGeom.create(skydir=(0, 0), width=(6, 6), binsz=0.02, coordsys="GAL", axes=[ENERGY_AXIS])
+POINTING = SkyCoord(0.0, 0.0, frame="galactic", unit="deg")
+WCS_GEOM = WcsGeom.create(skydir=POINTING, width=(6, 6), binsz=0.02, coordsys="GAL", axes=[ENERGY_AXIS])
 
-livetime = exp * u.hr
-t_min = 0 * u.s
-t_max = livetime.to(u.s)
+
+LIVETIME = 1 * u.hr
+GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
+
+filename = "data/dataset_{value:.0f}_{unit}.fits.gz".format(value=LIVETIME.value, unit=LIVETIME.unit)
+DATASET_PATH = BASE_PATH / filename
 
 
 def prepare_dataset():
@@ -50,15 +64,12 @@ def prepare_dataset():
     # choose some geom, rather fine energy binnning at least 10 bins / per decade
     # computed reduced dataset see e.g. https://docs.gammapy.org/0.15/notebooks/simulate_3d.html#Simulation
     # write dataset to data/dataset-{livetime}.fits.gz
-    
-#    irfs = load_cta_irfs(
-#                         "$GAMMAPY_DATA/cta-prod3b/caldb/data/cta/prod3b-v2/bcf/South_z20_50h/irf_file.fits"
-#                )
+
     irfs = load_cta_irfs(
                      "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits"
                      )
 
-    observation = Observation.create(obs_id=1001, pointing=position, livetime=livetime, irfs=irfs)
+    observation = Observation.create(obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs)
 
     empty = MapDataset.create(WCS_GEOM)
     maker = MapDatasetMaker(selection=["exposure", "background", "psf", "edisp"])
@@ -66,31 +77,33 @@ def prepare_dataset():
     dataset = maker.run(empty, observation)
     dataset = maker_safe_mask.run(dataset, observation)
 
-    gti = GTI.create(start=t_min, stop=t_max)
-    dataset.gti = gti
-
-    dataset.write(path+"/data/models/"+src_morph+"-"+src_spec+"/dataset_"+str(int(exp))+"hr.fits.gz", overwrite=True)
-
+    log.info(f"Writing {DATASET_PATH}")
+    dataset.write(DATASET_PATH, overwrite=True)
     return observation
 
-def simulate_events(dataset, model, observation):
+
+def simulate_events(filename_model, observation):
+    """Simulate events for a given model and dataset."""
     # read dataset using MapDataset.read()
     # read model from model.yaml using SkyModels.read()
     # set the model on the dataset write
     # simulate events and write them to data/models/your-model/events-1.fits
     # optionally : bin events here and write counts map to data/models/your-model/counts-1.fits
     
-    dataset = MapDataset.read(dataset)
-    
-    model_simu = SkyModels.read(model)
-    dataset.models = model_simu
-    
+    dataset = MapDataset.read(DATASET_PATH)
+
+    models = SkyModels.read(filename_model)
+    dataset.models = models
+
     events = MapDatasetEventSampler(random_state=0)
     events = events.run(dataset, observation)
-    
-    events.table.write("/Users/fabio/LAVORO/CTA/GAMMAPY/GIT/gammapy-benchmarks/validation/event-sampling/models/"+src_morph+"-"+src_spec+"/events_"+str(int(exp))+"hr.fits.gz", overwrite=True)
 
-    return events
+    model_str = filename_model.name.replace(filename_model.suffix, "")
+    filename = f"data/models/{model_str}/events.fits.gz"
+    path = BASE_PATH / filename
+    log.info(f"Writing {path}")
+    events.table.writeto(str(path), overwrite=True)
+
 
 def fit_model(dataset, events, model):
     # read dataset using MapDataset.read()
@@ -116,6 +129,7 @@ def fit_model(dataset, events, model):
     fit = Fit([dataset])
     result = fit.run(optimize_opts={"print_level": 1})
 
+    # TODO: use log.info() instead
     print("True model: \n", model_simu, "\n\n Fitted model: \n", model_fit)
     result.parameters.to_table()
 
@@ -171,6 +185,7 @@ def plot_results(dataset, model, best_fit_model, covar_matrix):
              )
              
     mu, std = norm.fit(sig_resid)
+    # replace with log.info()
     print("Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
     x = np.linspace(-8, 8, 50)
     p = norm.pdf(x, mu, std)
@@ -190,6 +205,8 @@ def plot_results(dataset, model, best_fit_model, covar_matrix):
 
 if __name__ == "__main__":
     observation = prepare_dataset()
-    events = simulate_events(dataset_path, model_path, observation)
-    covar = fit_model(dataset_path, events_path, model_path)
-    plot_results(dataset_path, model_path, model_fit_path, covar)
+
+    for filename_model in (BASE_PATH / "models").glob("*.yaml"):
+        simulate_events(filename_model, observation)
+    #covar = fit_model(dataset_path, events_path, model_path)
+    #plot_results(dataset_path, model_path, model_fit_path, covar)
