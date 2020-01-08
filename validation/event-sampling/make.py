@@ -13,25 +13,18 @@ from gammapy.cube import (
     MapDataset,
     MapDatasetEventSampler,
     MapDatasetMaker,
-    SafeMaskMaker,
 )
 from gammapy.data import GTI, Observation, EventList
-from gammapy.maps import MapAxis, WcsGeom, WcsNDMap, Map
+from gammapy.maps import MapAxis, WcsGeom, Map
 from gammapy.irf import load_cta_irfs
 from gammapy.modeling import Fit
-from gammapy.modeling.models import (
-    PointSpatialModel,
-    GaussianSpatialModel,
-    PowerLawSpectralModel,
-    SkyModel,
-    SkyModels,
-)
+from gammapy.modeling.models import SkyModels
 from regions import CircleSkyRegion
 
 log = logging.getLogger(__name__)
 
 AVAILABLE_MODELS = ["point-pwl"]
-DPI = 300
+DPI = 120
 
 # observation config
 IRF_FILE = "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits"

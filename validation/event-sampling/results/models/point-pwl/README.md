@@ -3,5 +3,7 @@
 ## Model parameters
 
 ## Spectra
+![Model spectra](plots/spectra.png "Spectra")
 
-## Residual Signifiance Map and Distribution
+## Residuals
+![Model residuals](plots/residuals.png "Residuals")
