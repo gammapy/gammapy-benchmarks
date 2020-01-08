@@ -1,134 +1,234 @@
 # simulate bright sources
 from pathlib import Path
 import logging
-
-import os
+import warnings
+import click
 
 import numpy as np
+from scipy.stats import norm
 import matplotlib.pyplot as plt
 import astropy.units as u
 from astropy.coordinates import SkyCoord
-from astropy.io import fits
-from scipy.stats import norm
-
-from gammapy.cube import MapDataset, MapDatasetEventSampler, MapDatasetMaker, SafeMaskMaker
-#from gammapy.cube.tests.test_fit import get_map_dataset
+from gammapy.cube import (
+    MapDataset,
+    MapDatasetEventSampler,
+    MapDatasetMaker,
+    SafeMaskMaker,
+)
 from gammapy.data import GTI, Observation, EventList
-from gammapy.maps import MapAxis, WcsGeom, WcsNDMap
+from gammapy.maps import MapAxis, WcsGeom, WcsNDMap, Map
 from gammapy.irf import load_cta_irfs
 from gammapy.modeling import Fit
 from gammapy.modeling.models import (
-                                     PointSpatialModel,
-                                     GaussianSpatialModel,
-                                     PowerLawSpectralModel,
-                                     SkyModel,
-                                     SkyModels,
-                                     )
+    PointSpatialModel,
+    GaussianSpatialModel,
+    PowerLawSpectralModel,
+    SkyModel,
+    SkyModels,
+)
 
 log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
 
-##############
+AVAILABLE_MODELS = ["point-pwl"]
 
-ENERGY_AXIS = MapAxis.from_bounds(0.1, 300, nbin=30, unit="TeV", name="energy", interp="log")
-ENERGY_AXIS_TRUE = MapAxis.from_bounds(0.1, 300, nbin=30, unit="TeV", name="energy", interp="log")
-
+# observation config
+IRF_FILE = "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits"
 POINTING = SkyCoord(0.0, 0.0, frame="galactic", unit="deg")
-WCS_GEOM = WcsGeom.create(skydir=POINTING, width=(6, 6), binsz=0.02, coordsys="GAL", axes=[ENERGY_AXIS])
-
-
-LIVETIME = 1 * u.hr
+LIVETIME = 10 * u.hr
 GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
 
-filename = "data/models/dataset_{value:.0f}{unit}.fits.gz".format(value=LIVETIME.value, unit=LIVETIME.unit)
+# dataset config
+ENERGY_AXIS = MapAxis.from_energy_bounds("0.1 TeV", "100 TeV", nbin=30)
+ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds("0.3 TeV", "300 TeV", nbin=30)
+WCS_GEOM = WcsGeom.create(
+    skydir=POINTING, width=(8, 8), binsz=0.02, coordsys="GAL", axes=[ENERGY_AXIS]
+)
+
+# path config
 BASE_PATH = Path(__file__).parent
-DATASET_PATH = BASE_PATH / filename
+
+
+def get_filename_dataset(livetime):
+    filename = f"data/dataset_{livetime.value:.0f}{livetime.unit}.fits.gz"
+    return BASE_PATH / filename
+
+
+def get_filename_events(filename_dataset, filename_model):
+    model_str = filename_model.name.replace(filename_model.suffix, "")
+    filename_events = filename_dataset.name.replace("dataset", "events")
+    path = BASE_PATH / f"data/models/{model_str}/" / filename_events
+    return path
+
+
+@click.group()
+@click.option(
+    "--log-level", default="INFO", type=click.Choice(["DEBUG", "INFO", "WARNING"])
+)
+@click.option("--show-warnings", is_flag=True, help="Show warnings?")
+def cli(log_level, show_warnings):
+    logging.basicConfig(level=log_level)
+
+    if not show_warnings:
+        warnings.simplefilter("ignore")
+
+
+@cli.command("prepare-dataset", help="Prepare map dataset used for event simulation")
+def prepare_dataset_cmd():
+    prepare_dataset()
+
 
 def prepare_dataset():
     """Prepare dataset for a given skymodel."""
-    # read irfs create observation with a single pointing
-    # choose some geom, rather fine energy binnning at least 10 bins / per decade
-    # computed reduced dataset see e.g. https://docs.gammapy.org/0.15/notebooks/simulate_3d.html#Simulation
-    # write dataset to data/dataset-{livetime}.fits.gz
-
-    irfs = load_cta_irfs(
-                     "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits"
-                     )
-
-    observation = Observation.create(obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs)
+    log.info(f"Reading {IRF_FILE}")
+    irfs = load_cta_irfs(IRF_FILE)
+    observation = Observation.create(
+        obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs
+    )
 
     empty = MapDataset.create(WCS_GEOM)
     maker = MapDatasetMaker(selection=["exposure", "background", "psf", "edisp"])
-    maker_safe_mask = SafeMaskMaker(methods=["offset-max"], offset_max=4.0 * u.deg)
     dataset = maker.run(empty, observation)
-    dataset = maker_safe_mask.run(dataset, observation)
-    dataset.gti = GTI_TABLE
 
-    log.info(f"Writing {DATASET_PATH}")
-    dataset.write(DATASET_PATH, overwrite=True)
-    return observation
+    path = get_filename_dataset(LIVETIME)
+    path.parent.mkdir(exist_ok=True, parents=True)
+    log.info(f"Writing {path}")
+    dataset.write(path, overwrite=True)
 
 
-def simulate_events(filename_model, observation):
-    """Simulate events for a given model and dataset."""
-    # read dataset using MapDataset.read()
-    # read model from model.yaml using SkyModels.read()
-    # set the model on the dataset write
-    # simulate events and write them to data/models/your-model/events-1.fits
-    # optionally : bin events here and write counts map to data/models/your-model/counts-1.fits
-    
-    dataset = MapDataset.read(DATASET_PATH)
+@cli.command("simulate-events", help="Simulate events for given model and livetime")
+@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
+def simulate_events_cmd(model):
+    if model == "all":
+        models = AVAILABLE_MODELS
+    else:
+        models = [model]
 
+    filename_dataset = get_filename_dataset(LIVETIME)
+
+    for model in models:
+        filename_model = BASE_PATH / f"models/{model}.yaml"
+        simulate_events(filename_model=filename_model, filename_dataset=filename_dataset)
+
+
+def simulate_events(filename_model, filename_dataset, obs_id=0):
+    """Simulate events for a given model and dataset.
+
+    Parameters
+    ----------
+    filename_model : str
+        Filename of the model definition.
+    filename_dataset : str
+        Filename of the dataset to use for simulation.
+    obs_id : int
+        Observation ID.
+    """
+    log.info(f"Reading {IRF_FILE}")
+    irfs = load_cta_irfs(IRF_FILE)
+    observation = Observation.create(
+        obs_id=obs_id, pointing=POINTING, livetime=LIVETIME, irfs=irfs
+    )
+
+    log.info(f"Reading {filename_dataset}")
+    dataset = MapDataset.read(filename_dataset)
+
+    log.info(f"Reading {filename_model}")
     models = SkyModels.read(filename_model)
     dataset.models = models
 
-    events = MapDatasetEventSampler(random_state=0)
+    events = MapDatasetEventSampler(random_state=obs_id)
     events = events.run(dataset, observation)
 
-    model_str = filename_model.name.replace(filename_model.suffix, "")
-    filename = f"data/models/{model_str}/events_"+"{value:.0f}{unit}.fits.gz".format(value=LIVETIME.value, unit=LIVETIME.unit)
-    path = BASE_PATH / filename
+    path = get_filename_events(filename_dataset, filename_model)
     log.info(f"Writing {path}")
+    path.parent.mkdir(exist_ok=True, parents=True)
     events.table.write(str(path), overwrite=True)
 
 
-def fit_model(filename_events, filename_model):
-    """Fit the events using a model."""
-    # read dataset using MapDataset.read()
-    # read events using EventList.read()
-    # bin events into datasets using WcsNDMap.fill_events(events)
-    # read reference model and set it on the dataset
-    # fit and write best-fit model
-    
-    dataset = MapDataset.read(DATASET_PATH)
-    event = EventList.read(filename_events)
-    model_simu = SkyModels.read(filename_model)
-    model_fit = SkyModels.read(filename_model)
+@cli.command("simulate-events", help="Simulate events for given model")
+@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
+def simulate_events_cmd(model):
+    if model == "all":
+        models = AVAILABLE_MODELS
+    else:
+        models = [model]
 
-#    model_fit = model_simu[0].copy
-    dataset.models = model_fit
-    dataset.fake()
-    
-    background_model = dataset.background_model
-    background_model.parameters["norm"].value = 1.0
-    background_model.parameters["norm"].frozen = True
-    background_model.parameters["tilt"].frozen = True
+    filename_dataset = get_filename_dataset(LIVETIME)
+
+    for model in models:
+        filename_model = BASE_PATH / f"models/{model}.yaml"
+        simulate_events(filename_model=filename_model, filename_dataset=filename_dataset)
+
+
+@cli.command("fit-model", help="Fit given model")
+@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
+def fit_model_cmd(model):
+    if model == "all":
+        models = AVAILABLE_MODELS
+    else:
+        models = [model]
+
+    filename_dataset = get_filename_dataset(LIVETIME)
+
+    for model in models:
+        filename_model = BASE_PATH / f"models/{model}.yaml"
+        fit_model(filename_model=filename_model, filename_dataset=filename_dataset)
+
+
+def fit_model(filename_model, filename_dataset, obs_id=0):
+    """Fit the events using a model.
+
+    Parameters
+    ----------
+    filename_model : str
+        Filename of the model definition.
+    filename_dataset : str
+        Filename of the dataset to use for simulation.
+    obs_id : int
+        Observation ID.
+    """
+    log.info(f"Reading {filename_dataset}")
+    dataset = MapDataset.read(filename_dataset)
+
+    filename_events = get_filename_events(filename_dataset, filename_model)
+    log.info(f"Reading {filename_events}")
+    events = EventList.read(filename_events)
+
+    counts = Map.from_geom(WCS_GEOM)
+    counts.fill_events(events)
+
+    log.info(f"Reading {filename_model}")
+    models = SkyModels.read(filename_model)
+
+    dataset.models = models
+    dataset.counts = counts
+
+    dataset.background_model.parameters["norm"].frozen = True
 
     fit = Fit([dataset])
     result = fit.run(optimize_opts={"print_level": 1})
 
-    log.info(f"True model: \n {model_simu} \n\n Fitted model: \n {model_fit}")
-    result.parameters.to_table()
+    log.info(f"Fit info: {result}")
 
-    covar = result.parameters.get_subcovariance(model_fit[0].spectral_model.parameters)
-    
     model_str = filename_model.name.replace(filename_model.suffix, "")
-    filename = f"results/models/{model_str}/{model_str}.yaml"
+    filename = f"results/models/{model_str}/best-fit-model.yaml"
     path = BASE_PATH / filename
-    log.info(f"Writing {path}")
-    model_fit.write(str(path), overwrite=True)
 
-    return covar
+    # write best fit model
+    log.info(f"Writing {path}")
+    models.write(str(path), overwrite=True)
+
+    # write covariance
+    filename = f"results/models/{model_str}/covariance.txt"
+    covariance = result.parameters.covariance
+    path = str(BASE_PATH / filename)
+    log.info(f"Writing {path}")
+    np.savetxt(path, covariance)
+
+
+def plot_spectra(filename_model):
+    """"""
+    pass
+
 
 def plot_results(filename_model, filename_best_fit_model, covar_matrix):
     """Plot the best-fit spectrum, the residual map and the residual significance distribution."""
@@ -144,17 +244,24 @@ def plot_results(filename_model, filename_best_fit_model, covar_matrix):
     best_fit_model[0].spectral_model.parameters.covariance = covar_matrix
 
     # plot spectral models
-    ax1 = model[0].spectral_model.plot(energy_range=(0.1,300)*u.TeV, label='Sim. model')
-    ax2 = best_fit_model[0].spectral_model.plot(energy_range=(0.1,300)*u.TeV, label='Best-fit model')
-    ax3 = best_fit_model[0].spectral_model.plot_error(energy_range=(0.1,300)*u.TeV)
+    ax1 = model[0].spectral_model.plot(
+        energy_range=(0.1, 300) * u.TeV, label="Sim. model"
+    )
+    ax2 = best_fit_model[0].spectral_model.plot(
+        energy_range=(0.1, 300) * u.TeV, label="Best-fit model"
+    )
+    ax3 = best_fit_model[0].spectral_model.plot_error(energy_range=(0.1, 300) * u.TeV)
     ax1.legend()
     ax2.legend()
     ax3.legend()
     model_str = filename_model.name.replace(filename_model.suffix, "")
-    filename = f"results/models/{model_str}/{model_str}"+"_{value:.0f}{unit}.png".format(value=LIVETIME.value, unit=LIVETIME.unit)
+    filename = (
+        f"results/models/{model_str}/{model_str}"
+        + "_{value:.0f}{unit}.png".format(value=LIVETIME.value, unit=LIVETIME.unit)
+    )
     path = BASE_PATH / filename
     log.info(f"Writing {path}")
-    plt.savefig(path, format='png', dpi=1000)
+    plt.savefig(path, format="png", dpi=1000)
     plt.gcf().clear()
     plt.close
 
@@ -163,25 +270,26 @@ def plot_results(filename_model, filename_best_fit_model, covar_matrix):
     dataset.models = best_fit_model
     dataset.fake()
     dataset.plot_residuals(method="diff/sqrt(model)", vmin=-0.5, vmax=0.5)
-    filename = f"results/models/{model_str}/{model_str}"+"_{value:.0f}{unit}_residuals.png".format(value=LIVETIME.value, unit=LIVETIME.unit)
+    filename = (
+        f"results/models/{model_str}/{model_str}"
+        + "_{value:.0f}{unit}_residuals.png".format(
+            value=LIVETIME.value, unit=LIVETIME.unit
+        )
+    )
     path = BASE_PATH / filename
     log.info(f"Writing {path}")
-    plt.savefig(path, format='png', dpi=1000)
+    plt.savefig(path, format="png", dpi=300)
     plt.gcf().clear()
     plt.close
-    
+
     # plot residual significance distribution
     resid = dataset.residuals()
     sig_resid = resid.data[np.isfinite(resid.data)]
-    
+
     plt.hist(
-             sig_resid,
-             density=True,
-             alpha=0.5,
-             color="red",
-             bins=100,
-             )
-             
+        sig_resid, density=True, alpha=0.5, color="red", bins=100,
+    )
+
     mu, std = norm.fit(sig_resid)
     # replace with log.info()
     print("Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
@@ -194,30 +302,17 @@ def plot_results(filename_model, filename_best_fit_model, covar_matrix):
     plt.ylim(1e-5, 1)
     xmin, xmax = np.min(sig_resid), np.max(sig_resid)
     plt.xlim(xmin, xmax)
-    
-    filename = f"results/models/{model_str}/{model_str}"+"_{value:.0f}{unit}_resid_distrib.png".format(value=LIVETIME.value, unit=LIVETIME.unit)
+
+    filename = (
+        f"results/models/{model_str}/{model_str}"
+        + "_{value:.0f}{unit}_resid_distrib.png".format(
+            value=LIVETIME.value, unit=LIVETIME.unit
+        )
+    )
     path = BASE_PATH / filename
     log.info(f"Writing {path}")
-    plt.savefig(path, format='png', dpi=1000)
-    plt.gcf().clear()
-    plt.close
-    
-    pass
+    plt.savefig(path, format="png", dpi=300)
 
 
 if __name__ == "__main__":
-    observation = prepare_dataset()
-    
-    for filename_model in (BASE_PATH / "models/").glob("*.yaml"):
-        model_str = filename_model.name.replace(filename_model.suffix, "")
-
-        simulate_events(filename_model, observation)
-        
-        filename_events = f"data/models/{model_str}/events_"+"{value:.0f}{unit}.fits.gz".format(value=LIVETIME.value, unit=LIVETIME.unit)
-        covar = fit_model(filename_events, filename_model)
-        
-        filename_model_fit_path = f"results/models/{model_str}/{model_str}.yaml"
-        plot_results(filename_model, filename_model_fit_path, covar)
-
-        new_path = f"data/models/{model_str}/" + "dataset_{value:.0f}{unit}.fits.gz".format(value=LIVETIME.value, unit=LIVETIME.unit)
-        os.rename(DATASET_PATH, new_path)
+    cli()

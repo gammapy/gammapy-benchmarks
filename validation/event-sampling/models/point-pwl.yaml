@@ -15,7 +15,7 @@ components:
     type: PowerLawSpectralModel
     parameters:
     - name: amplitude
-      value: 5.0e-12
+      value: 1.0e-12
       unit: cm-2 s-1 TeV-1
     - name: index
       value: 2.0
