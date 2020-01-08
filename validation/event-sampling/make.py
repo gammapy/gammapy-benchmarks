@@ -26,10 +26,12 @@ from gammapy.modeling.models import (
     SkyModel,
     SkyModels,
 )
+from regions import CircleSkyRegion
 
 log = logging.getLogger(__name__)
 
 AVAILABLE_MODELS = ["point-pwl"]
+DPI = 300
 
 # observation config
 IRF_FILE = "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits"
@@ -59,6 +61,17 @@ def get_filename_events(filename_dataset, filename_model):
     path = BASE_PATH / f"data/models/{model_str}/" / filename_events
     return path
 
+
+def get_filename_best_fit_model(filename_model):
+    model_str = filename_model.name.replace(filename_model.suffix, "")
+    filename = f"results/models/{model_str}/best-fit-model.yaml"
+    return BASE_PATH / filename
+
+
+def get_filename_covariance(filename_model):
+    model_str = filename_model.name.replace(filename_model.suffix, "")
+    filename = f"results/models/{model_str}/covariance.txt"
+    return str(BASE_PATH / filename)
 
 @click.group()
 @click.option(
@@ -174,6 +187,20 @@ def fit_model_cmd(model):
         fit_model(filename_model=filename_model, filename_dataset=filename_dataset)
 
 
+def read_dataset(filename_dataset, filename_model):
+    log.info(f"Reading {filename_dataset}")
+    dataset = MapDataset.read(filename_dataset)
+
+    filename_events = get_filename_events(filename_dataset, filename_model)
+    log.info(f"Reading {filename_events}")
+    events = EventList.read(filename_events)
+
+    counts = Map.from_geom(WCS_GEOM)
+    counts.fill_events(events)
+    dataset.counts = counts
+    return dataset
+
+
 def fit_model(filename_model, filename_dataset, obs_id=0):
     """Fit the events using a model.
 
@@ -186,22 +213,12 @@ def fit_model(filename_model, filename_dataset, obs_id=0):
     obs_id : int
         Observation ID.
     """
-    log.info(f"Reading {filename_dataset}")
-    dataset = MapDataset.read(filename_dataset)
-
-    filename_events = get_filename_events(filename_dataset, filename_model)
-    log.info(f"Reading {filename_events}")
-    events = EventList.read(filename_events)
-
-    counts = Map.from_geom(WCS_GEOM)
-    counts.fill_events(events)
+    dataset = read_dataset(filename_dataset, filename_model)
 
     log.info(f"Reading {filename_model}")
     models = SkyModels.read(filename_model)
 
     dataset.models = models
-    dataset.counts = counts
-
     dataset.background_model.parameters["norm"].frozen = True
 
     fit = Fit([dataset])
@@ -209,80 +226,76 @@ def fit_model(filename_model, filename_dataset, obs_id=0):
 
     log.info(f"Fit info: {result}")
 
-    model_str = filename_model.name.replace(filename_model.suffix, "")
-    filename = f"results/models/{model_str}/best-fit-model.yaml"
-    path = BASE_PATH / filename
-
     # write best fit model
+    path = get_filename_best_fit_model(filename_model)
     log.info(f"Writing {path}")
     models.write(str(path), overwrite=True)
 
     # write covariance
-    filename = f"results/models/{model_str}/covariance.txt"
-    covariance = result.parameters.covariance
-    path = str(BASE_PATH / filename)
+    path = get_filename_covariance(filename_model)
     log.info(f"Writing {path}")
+
+    # TODO: exclude background parameters for now, as they are fixed anyway
+    covariance = result.parameters.get_subcovariance(models.parameters)
     np.savetxt(path, covariance)
 
 
-def plot_spectra(filename_model):
-    """"""
-    pass
+@cli.command("plot-results", help="Plot results for given model")
+@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
+def plot_results_cmd(model):
+    if model == "all":
+        models = AVAILABLE_MODELS
+    else:
+        models = [model]
+
+    filename_dataset = get_filename_dataset(LIVETIME)
+
+    for model in models:
+        filename_model = BASE_PATH / f"models/{model}.yaml"
+        plot_results(filename_model=filename_model, filename_dataset=filename_dataset)
 
 
-def plot_results(filename_model, filename_best_fit_model, covar_matrix):
-    """Plot the best-fit spectrum, the residual map and the residual significance distribution."""
-    # read model and best-fit model
-    # write to results folder
-    # compare the spectra
-    # plot summed residuals
-    # plot residual significance distribution and check for normal distribution
-    # compare best fit values by writting to model.yaml
+def save_figure(filename):
+    path = BASE_PATH / filename
+    path.parent.mkdir(parents=True, exist_ok=True)
+    log.info(f"Writing {path}")
+    plt.savefig(path, dpi=DPI)
+    plt.clf()
 
-    model = SkyModels.read(filename_model)
-    best_fit_model = SkyModels.read(filename_best_fit_model)
-    best_fit_model[0].spectral_model.parameters.covariance = covar_matrix
 
+def plot_spectra(model, model_best_fit):
+    """Plot spectral models"""
     # plot spectral models
-    ax1 = model[0].spectral_model.plot(
+    ax = model.spectral_model.plot(
         energy_range=(0.1, 300) * u.TeV, label="Sim. model"
     )
-    ax2 = best_fit_model[0].spectral_model.plot(
-        energy_range=(0.1, 300) * u.TeV, label="Best-fit model"
+    model_best_fit.spectral_model.plot(
+        energy_range=(0.1, 300) * u.TeV, label="Best-fit model", ax=ax,
     )
-    ax3 = best_fit_model[0].spectral_model.plot_error(energy_range=(0.1, 300) * u.TeV)
-    ax1.legend()
-    ax2.legend()
-    ax3.legend()
-    model_str = filename_model.name.replace(filename_model.suffix, "")
-    filename = (
-        f"results/models/{model_str}/{model_str}"
-        + "_{value:.0f}{unit}.png".format(value=LIVETIME.value, unit=LIVETIME.unit)
-    )
-    path = BASE_PATH / filename
-    log.info(f"Writing {path}")
-    plt.savefig(path, format="png", dpi=1000)
-    plt.gcf().clear()
-    plt.close
+    model_best_fit.spectral_model.plot_error(energy_range=(0.1, 300) * u.TeV, ax=ax)
+    ax.legend()
 
+    filename = f"results/models/{model.name}/plots/spectra.png"
+    save_figure(filename)
+
+
+def plot_residuals(dataset):
     # plot residuals
-    dataset = MapDataset.read(DATASET_PATH)
-    dataset.models = best_fit_model
-    dataset.fake()
-    dataset.plot_residuals(method="diff/sqrt(model)", vmin=-0.5, vmax=0.5)
-    filename = (
-        f"results/models/{model_str}/{model_str}"
-        + "_{value:.0f}{unit}_residuals.png".format(
-            value=LIVETIME.value, unit=LIVETIME.unit
-        )
-    )
-    path = BASE_PATH / filename
-    log.info(f"Writing {path}")
-    plt.savefig(path, format="png", dpi=300)
-    plt.gcf().clear()
-    plt.close
+    model = dataset.models[0]
+    spatial_model = model.spatial_model
+    if spatial_model.__class__.__name__ == "PointSpatialModel":
+        region = CircleSkyRegion(center=spatial_model.position, radius=0.1 * u.deg)
+    else:
+        region = spatial_model.to_region()
 
+    dataset.plot_residuals(method="diff/sqrt(model)", vmin=-0.5, vmax=0.5, region=region, figsize=(10, 4))
+    filename = f"results/models/{model.name}/plots/residuals.png"
+    save_figure(filename)
+
+
+def plot_residual_distribution(dataset):
     # plot residual significance distribution
+    model = dataset.models[0]
     resid = dataset.residuals()
     sig_resid = resid.data[np.isfinite(resid.data)]
 
@@ -303,15 +316,49 @@ def plot_results(filename_model, filename_best_fit_model, covar_matrix):
     xmin, xmax = np.min(sig_resid), np.max(sig_resid)
     plt.xlim(xmin, xmax)
 
-    filename = (
-        f"results/models/{model_str}/{model_str}"
-        + "_{value:.0f}{unit}_resid_distrib.png".format(
-            value=LIVETIME.value, unit=LIVETIME.unit
-        )
-    )
-    path = BASE_PATH / filename
-    log.info(f"Writing {path}")
-    plt.savefig(path, format="png", dpi=300)
+    filename = f"results/models/{model.name}/plots/residuals-distribution.png"
+    save_figure(filename)
+
+
+def read_best_fit_model(path):
+    log.info(f"Reading {path}")
+    model_best_fit = SkyModels.read(path)
+
+    path = path.parent / "covariance.txt"
+    log.info(f"Reading {path}")
+    pars = model_best_fit.parameters
+    pars.covariance = np.loadtxt(str(path))
+
+    spectral_model_best_fit = model_best_fit[0].spectral_model
+    covar = pars.get_subcovariance(spectral_model_best_fit.parameters)
+    spectral_model_best_fit.parameters.covariance = covar
+    return model_best_fit
+
+
+def plot_results(filename_model, filename_dataset=None):
+    """Plot the best-fit spectrum, the residual map and the residual significance distribution.
+
+    Parameters
+    ----------
+    filename_model : str
+        Filename of the model definition.
+    filename_dataset : str
+        Filename of the dataset.
+    obs_id : int
+        Observation ID.
+    """
+    log.info(f"Reading {filename_model}")
+    model = SkyModels.read(filename_model)
+
+    path = get_filename_best_fit_model(filename_model)
+    model_best_fit = read_best_fit_model(path)
+
+    plot_spectra(model[0], model_best_fit[0])
+
+    dataset = read_dataset(filename_dataset, filename_model)
+    dataset.models = model_best_fit
+    plot_residuals(dataset)
+    plot_residual_distribution(dataset)
 
 
 if __name__ == "__main__":
