@@ -85,12 +85,32 @@ def cli(log_level, show_warnings):
         warnings.simplefilter("ignore")
 
 
+@cli.command("all", help="Run all steps")
+@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS)))
+def all_cmd(model):
+    if model == "all":
+        models = AVAILABLE_MODELS
+    else:
+        models = [model]
+
+    filename_dataset = get_filename_dataset(LIVETIME)
+
+    prepare_dataset(filename_dataset)
+
+    for model in models:
+        filename_model = BASE_PATH / f"models/{model}.yaml"
+        simulate_events(filename_model=filename_model, filename_dataset=filename_dataset)
+        fit_model(filename_model=filename_model, filename_dataset=filename_dataset)
+        plot_results(filename_model=filename_model, filename_dataset=filename_dataset)
+
+
 @cli.command("prepare-dataset", help="Prepare map dataset used for event simulation")
 def prepare_dataset_cmd():
-    prepare_dataset()
+    filename_dataset = get_filename_dataset(LIVETIME)
+    prepare_dataset(filename_dataset)
 
 
-def prepare_dataset():
+def prepare_dataset(filename_dataset):
     """Prepare dataset for a given skymodel."""
     log.info(f"Reading {IRF_FILE}")
     irfs = load_cta_irfs(IRF_FILE)
@@ -102,10 +122,9 @@ def prepare_dataset():
     maker = MapDatasetMaker(selection=["exposure", "background", "psf", "edisp"])
     dataset = maker.run(empty, observation)
 
-    path = get_filename_dataset(LIVETIME)
-    path.parent.mkdir(exist_ok=True, parents=True)
-    log.info(f"Writing {path}")
-    dataset.write(path, overwrite=True)
+    filename_dataset.parent.mkdir(exist_ok=True, parents=True)
+    log.info(f"Writing {filename_dataset}")
+    dataset.write(filename_dataset, overwrite=True)
 
 
 @cli.command("simulate-events", help="Simulate events for given model and livetime")
@@ -155,21 +174,6 @@ def simulate_events(filename_model, filename_dataset, obs_id=0):
     log.info(f"Writing {path}")
     path.parent.mkdir(exist_ok=True, parents=True)
     events.table.write(str(path), overwrite=True)
-
-
-@cli.command("simulate-events", help="Simulate events for given model")
-@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
-def simulate_events_cmd(model):
-    if model == "all":
-        models = AVAILABLE_MODELS
-    else:
-        models = [model]
-
-    filename_dataset = get_filename_dataset(LIVETIME)
-
-    for model in models:
-        filename_model = BASE_PATH / f"models/{model}.yaml"
-        simulate_events(filename_model=filename_model, filename_dataset=filename_dataset)
 
 
 @cli.command("fit-model", help="Fit given model")
