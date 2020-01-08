@@ -102,6 +102,7 @@ ENV/
 # mypy
 .mypy_cache/
 
+*.DS_Store
 
 validation/fermi-3fhl/data
 validation/fermi-3fhl/results

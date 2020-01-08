@@ -3,7 +3,7 @@ components:
   type: SkyModel
   spatial:
     type: PointSpatialModel
-    frame: icrs
+    frame: galactic
     parameters:
     - name: lon_0
       value: 0
