@@ -14,9 +14,11 @@ from gammapy.modeling.models import SkyModel
 from gammapy.modeling.models import LogParabolaSpectralModel
 from gammapy.modeling import Fit, Datasets
 from gammapy.utils.scripts import make_path
+from joint_crab.extract_fermi import extract_spectra_fermi
+
 log = logging.getLogger(__name__)
 
-AVAILABLE_DATA = ["hess","magic","veritas","fact"]
+AVAILABLE_DATA = ["hess","magic","veritas","fact", "fermi"]
 
 DATASETS = [
     {
@@ -62,7 +64,12 @@ instrument_opts = dict(
             'emin':'0.4 TeV', 
             'emax':'30 TeV',
             'color': "#3EB489",},
-
+    fermi = {'on_radius':'0.3 deg', 
+            'stack':False, 
+            'containment':True,
+            'emin':'0.03 TeV', 
+            'emax':'2 TeV',
+            'color': "#21ABCD",},
 )
 
 @click.group()
@@ -93,7 +100,10 @@ def run_analyses(instruments, npoints=10):
     joint = []
     for instrument in instruments:
         # First perform data reduction and save to disk
-        data_reduction(instrument)
+        if instrument != "fermi": 
+            data_reduction(instrument)
+        else:
+            extract_spectra_fermi()
         data_fitting(instrument, npoints)
         make_summary(instrument)
 
@@ -116,6 +126,33 @@ def run_analyses(instruments, npoints=10):
     
 def data_reduction(instrument):
     log.info(f"data_reduction: {instrument}")
+    config = AnalysisConfig.read(f"config.yaml")
+    config.observations.datastore = f"$JOINT_CRAB/data/{instrument}"
+    config.datasets.stack = instrument_opts[instrument]['stack']
+    config.datasets.containment_correction = instrument_opts[instrument]['containment']
+    config.datasets.on_region.radius = instrument_opts[instrument]['on_radius']
+
+    analysis = Analysis(config)
+    analysis.get_observations()
+    analysis.get_datasets() 
+  
+    # TODO remove when safe mask can be set on config
+    if instrument is 'fact':
+        from gammapy.spectrum import SpectrumDatasetOnOff
+        stacked = SpectrumDatasetOnOff.create(
+            e_reco=analysis.datasets[0]._energy_axis.edges, 
+            e_true=analysis.datasets[0]._energy_axis.edges, 
+            region=None
+        )
+        for ds in analysis.datasets:
+            ds.mask_safe[:] = True
+            stacked.stack(ds)
+        analysis.datasets = Datasets([stacked])
+
+    analysis.datasets.write(f"reduced_{instrument}", overwrite=True)
+
+def data_reduction_fermi():
+    log.info(f"data_reduction: fermi")
     config = AnalysisConfig.read(f"config.yaml")
     config.observations.datastore = f"$JOINT_CRAB/data/{instrument}"
     config.datasets.stack = instrument_opts[instrument]['stack']
