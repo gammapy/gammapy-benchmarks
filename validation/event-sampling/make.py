@@ -370,5 +370,26 @@ def plot_results(filename_model, filename_dataset=None, obs_id=OBS_ID):
     plot_residual_distribution(dataset, obs_id)
 
 
+@cli.command("iterative", help="Run N simulation and fit steps")
+@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS)))
+def iterative_cmd(model):
+    if model == "all":
+        models = AVAILABLE_MODELS
+    else:
+        models = [model]
+    
+    filename_dataset = get_filename_dataset(LIVETIME)
+
+    prepare_dataset(filename_dataset)
+    
+    for obsid in np.arange(1,101):
+        for model in models:
+            OBS_ID = '{:04d}'.format(obsid)
+            filename_model = BASE_PATH / f"models/{model}.yaml"
+            simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
+            fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
+            plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
+
+
 if __name__ == "__main__":
     cli()
