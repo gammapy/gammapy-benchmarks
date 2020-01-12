@@ -77,6 +77,7 @@ def get_filename_covariance(filename_model, obs_id=OBS_ID):
     filename = f"results/models/{model_str}/covariance_{obs_id}.txt"
     return str(BASE_PATH / filename)
 
+
 @click.group()
 @click.option(
     "--log-level", default="INFO", type=click.Choice(["DEBUG", "INFO", "WARNING"])
@@ -103,9 +104,9 @@ def all_cmd(model):
 
     for model in models:
         filename_model = BASE_PATH / f"models/{model}.yaml"
-        simulate_events(filename_model=filename_model, filename_dataset=filename_dataset)
-        fit_model(filename_model=filename_model, filename_dataset=filename_dataset)
-        plot_results(filename_model=filename_model, filename_dataset=filename_dataset)
+        simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
+        fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
+        plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
 
 
 @cli.command("prepare-dataset", help="Prepare map dataset used for event simulation")
@@ -143,10 +144,10 @@ def simulate_events_cmd(model):
 
     for model in models:
         filename_model = BASE_PATH / f"models/{model}.yaml"
-        simulate_events(filename_model=filename_model, filename_dataset=filename_dataset)
+        simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
 
 
-def simulate_events(filename_model, filename_dataset, obs_id=int(OBS_ID)):
+def simulate_events(filename_model, filename_dataset, obs_id=OBS_ID):
     """Simulate events for a given model and dataset.
 
     Parameters
@@ -171,10 +172,10 @@ def simulate_events(filename_model, filename_dataset, obs_id=int(OBS_ID)):
     models = SkyModels.read(filename_model)
     dataset.models = models
 
-    events = MapDatasetEventSampler(random_state=obs_id)
+    events = MapDatasetEventSampler(random_state=int(obs_id))
     events = events.run(dataset, observation)
 
-    path = get_filename_events(filename_dataset, filename_model)
+    path = get_filename_events(filename_dataset, filename_model, obs_id)
     log.info(f"Writing {path}")
     path.parent.mkdir(exist_ok=True, parents=True)
     events.table.write(str(path), overwrite=True)
@@ -192,14 +193,14 @@ def fit_model_cmd(model):
 
     for model in models:
         filename_model = BASE_PATH / f"models/{model}.yaml"
-        fit_model(filename_model=filename_model, filename_dataset=filename_dataset)
+        fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
 
 
-def read_dataset(filename_dataset, filename_model):
+def read_dataset(filename_dataset, filename_model, obs_id=OBS_ID):
     log.info(f"Reading {filename_dataset}")
     dataset = MapDataset.read(filename_dataset)
 
-    filename_events = get_filename_events(filename_dataset, filename_model)
+    filename_events = get_filename_events(filename_dataset, filename_model, obs_id)
     log.info(f"Reading {filename_events}")
     events = EventList.read(filename_events)
 
@@ -209,7 +210,7 @@ def read_dataset(filename_dataset, filename_model):
     return dataset
 
 
-def fit_model(filename_model, filename_dataset):
+def fit_model(filename_model, filename_dataset, obs_id=OBS_ID):
     """Fit the events using a model.
 
     Parameters
@@ -219,7 +220,7 @@ def fit_model(filename_model, filename_dataset):
     filename_dataset : str
         Filename of the dataset to use for simulation.
     """
-    dataset = read_dataset(filename_dataset, filename_model)
+    dataset = read_dataset(filename_dataset, filename_model, obs_id)
 
     log.info(f"Reading {filename_model}")
     models = SkyModels.read(filename_model)
@@ -233,12 +234,12 @@ def fit_model(filename_model, filename_dataset):
     log.info(f"Fit info: {result}")
 
     # write best fit model
-    path = get_filename_best_fit_model(filename_model)
+    path = get_filename_best_fit_model(filename_model, obs_id)
     log.info(f"Writing {path}")
     models.write(str(path), overwrite=True)
 
     # write covariance
-    path = get_filename_covariance(filename_model)
+    path = get_filename_covariance(filename_model, obs_id)
     log.info(f"Writing {path}")
 
     # TODO: exclude background parameters for now, as they are fixed anyway
@@ -258,7 +259,7 @@ def plot_results_cmd(model):
 
     for model in models:
         filename_model = BASE_PATH / f"models/{model}.yaml"
-        plot_results(filename_model=filename_model, filename_dataset=filename_dataset)
+        plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
 
 
 def save_figure(filename):
@@ -269,7 +270,7 @@ def save_figure(filename):
     plt.clf()
 
 
-def plot_spectra(model, model_best_fit):
+def plot_spectra(model, model_best_fit, obs_id=OBS_ID):
     """Plot spectral models"""
     # plot spectral models
     ax = model.spectral_model.plot(
@@ -281,11 +282,11 @@ def plot_spectra(model, model_best_fit):
     model_best_fit.spectral_model.plot_error(energy_range=(0.1, 300) * u.TeV, ax=ax)
     ax.legend()
 
-    filename = f"results/models/{model.name}/plots/spectra_{OBS_ID}.png"
+    filename = f"results/models/{model.name}/plots/spectra_{obs_id}.png"
     save_figure(filename)
 
 
-def plot_residuals(dataset):
+def plot_residuals(dataset, obs_id=OBS_ID):
     # plot residuals
     model = dataset.models[0]
     spatial_model = model.spatial_model
@@ -295,11 +296,11 @@ def plot_residuals(dataset):
         region = spatial_model.to_region()
 
     dataset.plot_residuals(method="diff/sqrt(model)", vmin=-0.5, vmax=0.5, region=region, figsize=(10, 4))
-    filename = f"results/models/{model.name}/plots/residuals_{OBS_ID}.png"
+    filename = f"results/models/{model.name}/plots/residuals_{obs_id}.png"
     save_figure(filename)
 
 
-def plot_residual_distribution(dataset):
+def plot_residual_distribution(dataset, obs_id=OBS_ID):
     # plot residual significance distribution
     model = dataset.models[0]
     resid = dataset.residuals()
@@ -322,7 +323,7 @@ def plot_residual_distribution(dataset):
     xmin, xmax = np.min(sig_resid), np.max(sig_resid)
     plt.xlim(xmin, xmax)
 
-    filename = f"results/models/{model.name}/plots/residuals-distribution_{OBS_ID}.png"
+    filename = f"results/models/{model.name}/plots/residuals-distribution_{obs_id}.png"
     save_figure(filename)
 
 
@@ -341,7 +342,7 @@ def read_best_fit_model(path, obs_id=OBS_ID):
     return model_best_fit
 
 
-def plot_results(filename_model, filename_dataset=None):
+def plot_results(filename_model, filename_dataset=None, obs_id=OBS_ID):
     """Plot the best-fit spectrum, the residual map and the residual significance distribution.
 
     Parameters
@@ -354,15 +355,15 @@ def plot_results(filename_model, filename_dataset=None):
     log.info(f"Reading {filename_model}")
     model = SkyModels.read(filename_model)
 
-    path = get_filename_best_fit_model(filename_model)
-    model_best_fit = read_best_fit_model(path)
+    path = get_filename_best_fit_model(filename_model, obs_id)
+    model_best_fit = read_best_fit_model(path, obs_id)
 
-    plot_spectra(model[0], model_best_fit[0])
+    plot_spectra(model[0], model_best_fit[0], obs_id)
 
-    dataset = read_dataset(filename_dataset, filename_model)
+    dataset = read_dataset(filename_dataset, filename_model, obs_id)
     dataset.models = model_best_fit
-    plot_residuals(dataset)
-    plot_residual_distribution(dataset)
+    plot_residuals(dataset, obs_id)
+    plot_residual_distribution(dataset, obs_id)
 
 
 if __name__ == "__main__":
