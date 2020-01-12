@@ -219,6 +219,8 @@ def fit_model(filename_model, filename_dataset, obs_id=OBS_ID):
         Filename of the model definition.
     filename_dataset : str
         Filename of the dataset to use for simulation.
+    obs_id : int
+        Observation ID.
     """
     dataset = read_dataset(filename_dataset, filename_model, obs_id)
 
@@ -351,6 +353,8 @@ def plot_results(filename_model, filename_dataset=None, obs_id=OBS_ID):
         Filename of the model definition.
     filename_dataset : str
         Filename of the dataset.
+    obs_id : int
+        Observation ID.
     """
     log.info(f"Reading {filename_model}")
     model = SkyModels.read(filename_model)
