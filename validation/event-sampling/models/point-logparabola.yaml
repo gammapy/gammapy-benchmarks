@@ -1,0 +1,29 @@
+components:
+- name: point-logparabola
+  type: SkyModel
+  spatial:
+    type: PointSpatialModel
+    frame: galactic
+    parameters:
+    - name: lon_0
+      value: 0
+      unit: deg
+    - name: lat_0
+      value: 0
+      unit: deg
+  spectral:
+    type: LogParabolaSpectralModel
+    parameters:
+    - name: amplitude
+      value: 1.0e-12
+      unit: cm-2 s-1 TeV-1
+    - name: alpha
+      value: 2.0
+      unit: ''
+    - name: beta
+      value: 0.12
+      unit: ''
+    - name: reference
+      value: 1.0
+      unit: TeV
+      frozen: true

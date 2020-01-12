@@ -1,0 +1,30 @@
+components:
+- name: point-pwltwo
+  type: SkyModel
+  spatial:
+    type: PointSpatialModel
+    frame: galactic
+    parameters:
+    - name: lon_0
+      value: 0
+      unit: deg
+    - name: lat_0
+      value: 0
+      unit: deg
+  spectral:
+    type: PowerLaw2SpectralModel
+    parameters:
+    - name: amplitude
+      value: 1.0e-12
+      unit: cm-2 s-1
+    - name: index
+      value: 2.0
+      unit: ''
+    - name: emin
+      value: 1.0
+      unit: TeV
+      frozen: true
+    - name: emax
+      value: 10.0
+      unit: TeV
+      frozen: true
