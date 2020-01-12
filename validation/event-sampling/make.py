@@ -13,24 +13,33 @@ from gammapy.cube import (
     MapDataset,
     MapDatasetEventSampler,
     MapDatasetMaker,
+    SafeMaskMaker,
 )
 from gammapy.data import GTI, Observation, EventList
-from gammapy.maps import MapAxis, WcsGeom, Map
+from gammapy.maps import MapAxis, WcsGeom, WcsNDMap, Map
 from gammapy.irf import load_cta_irfs
 from gammapy.modeling import Fit
-from gammapy.modeling.models import SkyModels
+from gammapy.modeling.models import (
+    PointSpatialModel,
+    SkyModel,
+    SkyModels,
+)
 from regions import CircleSkyRegion
 
 log = logging.getLogger(__name__)
 
-AVAILABLE_MODELS = ["point-pwl"]
-DPI = 120
+AVAILABLE_MODELS = ["point-pwl", "point-ecpow", "point-logparabola",
+                    "point-pwltwo", "point-ecpow3fgl", "point-excpow4fgl",
+                    "point-compoundmod",
+                    "disk-pwl", "gauss-pwl"]
+DPI = 300
 
 # observation config
 IRF_FILE = "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits"
 POINTING = SkyCoord(0.0, 0.0, frame="galactic", unit="deg")
 LIVETIME = 10 * u.hr
 GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
+OBS_ID = '{:04d}'.format(1)
 
 # dataset config
 ENERGY_AXIS = MapAxis.from_energy_bounds("0.1 TeV", "100 TeV", nbin=30)
@@ -48,22 +57,24 @@ def get_filename_dataset(livetime):
     return BASE_PATH / filename
 
 
-def get_filename_events(filename_dataset, filename_model):
+def get_filename_events(filename_dataset, filename_model, obs_id=OBS_ID):
     model_str = filename_model.name.replace(filename_model.suffix, "")
     filename_events = filename_dataset.name.replace("dataset", "events")
+    filename_events = BASE_PATH / f"data/models/{model_str}/" / filename_events
+    filename_events = filename_events.name.replace(".fits.gz", f"_{obs_id}.fits.gz")
     path = BASE_PATH / f"data/models/{model_str}/" / filename_events
     return path
 
 
-def get_filename_best_fit_model(filename_model):
+def get_filename_best_fit_model(filename_model, obs_id=OBS_ID):
     model_str = filename_model.name.replace(filename_model.suffix, "")
-    filename = f"results/models/{model_str}/best-fit-model.yaml"
+    filename = f"results/models/{model_str}/best-fit-model_{obs_id}.yaml"
     return BASE_PATH / filename
 
 
-def get_filename_covariance(filename_model):
+def get_filename_covariance(filename_model, obs_id=OBS_ID):
     model_str = filename_model.name.replace(filename_model.suffix, "")
-    filename = f"results/models/{model_str}/covariance.txt"
+    filename = f"results/models/{model_str}/covariance_{obs_id}.txt"
     return str(BASE_PATH / filename)
 
 @click.group()
@@ -135,7 +146,7 @@ def simulate_events_cmd(model):
         simulate_events(filename_model=filename_model, filename_dataset=filename_dataset)
 
 
-def simulate_events(filename_model, filename_dataset, obs_id=0):
+def simulate_events(filename_model, filename_dataset, obs_id=int(OBS_ID)):
     """Simulate events for a given model and dataset.
 
     Parameters
@@ -198,7 +209,7 @@ def read_dataset(filename_dataset, filename_model):
     return dataset
 
 
-def fit_model(filename_model, filename_dataset, obs_id=0):
+def fit_model(filename_model, filename_dataset):
     """Fit the events using a model.
 
     Parameters
@@ -207,8 +218,6 @@ def fit_model(filename_model, filename_dataset, obs_id=0):
         Filename of the model definition.
     filename_dataset : str
         Filename of the dataset to use for simulation.
-    obs_id : int
-        Observation ID.
     """
     dataset = read_dataset(filename_dataset, filename_model)
 
@@ -272,7 +281,7 @@ def plot_spectra(model, model_best_fit):
     model_best_fit.spectral_model.plot_error(energy_range=(0.1, 300) * u.TeV, ax=ax)
     ax.legend()
 
-    filename = f"results/models/{model.name}/plots/spectra.png"
+    filename = f"results/models/{model.name}/plots/spectra_{OBS_ID}.png"
     save_figure(filename)
 
 
@@ -286,7 +295,7 @@ def plot_residuals(dataset):
         region = spatial_model.to_region()
 
     dataset.plot_residuals(method="diff/sqrt(model)", vmin=-0.5, vmax=0.5, region=region, figsize=(10, 4))
-    filename = f"results/models/{model.name}/plots/residuals.png"
+    filename = f"results/models/{model.name}/plots/residuals_{OBS_ID}.png"
     save_figure(filename)
 
 
@@ -313,15 +322,15 @@ def plot_residual_distribution(dataset):
     xmin, xmax = np.min(sig_resid), np.max(sig_resid)
     plt.xlim(xmin, xmax)
 
-    filename = f"results/models/{model.name}/plots/residuals-distribution.png"
+    filename = f"results/models/{model.name}/plots/residuals-distribution_{OBS_ID}.png"
     save_figure(filename)
 
 
-def read_best_fit_model(path):
+def read_best_fit_model(path, obs_id=OBS_ID):
     log.info(f"Reading {path}")
     model_best_fit = SkyModels.read(path)
 
-    path = path.parent / "covariance.txt"
+    path = path.parent / f"covariance_{obs_id}.txt"
     log.info(f"Reading {path}")
     pars = model_best_fit.parameters
     pars.covariance = np.loadtxt(str(path))
@@ -341,8 +350,6 @@ def plot_results(filename_model, filename_dataset=None):
         Filename of the model definition.
     filename_dataset : str
         Filename of the dataset.
-    obs_id : int
-        Observation ID.
     """
     log.info(f"Reading {filename_model}")
     model = SkyModels.read(filename_model)
