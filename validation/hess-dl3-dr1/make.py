@@ -79,30 +79,44 @@ def run_analysis(method, target_dict, debug):
     analysis.get_observations()
 
     log.info(f"Running data reduction")
-    # TODO: apply the safe mask (run by run). For the 1d analysis, use method="edisp-bias, bias_percent=10.
-    #   for the 3d analysis, use method=["edisp-bias", bkg-peak] and bias_percent=10
     analysis.get_datasets()
+
+    # TODO: This is a workaround. We should somehow apply the safe mask (run by run) from the HLI
+    from gammapy.cube import SafeMaskMaker
+    datasets = []
+    maker_safe_mask = SafeMaskMaker(methods=["edisp-bias", "bkg-peak"], bias_percent=10)
+    for dataset in analysis.datasets:
+        dataset = maker_safe_mask.run(dataset)
+        datasets.append(dataset)
+    analysis.datasets = datasets
 
     log.info(f"Setting the model")
     txt = Path("model_config.yaml").read_text()
     txt = txt.format_map(target_dict)
+    log.info(txt)
     analysis.set_models(txt)
     if method == "3d" and target_dict["spatial_model"] == "DiskSpatialModel":
         analysis.models[0].spatial_model.e.frozen = False
         analysis.models[0].spatial_model.phi.frozen = False
+        analysis.models[0].spatial_model.r_0.value = 0.3
 
     log.info(f"Running fit ...")
     analysis.run_fit()
 
-    # TODO: set covariance automatically
-    model = analysis.models[0].spectral_model
-    results_joint = analysis.fit_result
-    model.parameters.covariance = results_joint.parameters.get_subcovariance(
-        model.parameters
-    )
+    # TODO: This is a workaround. Set covariance automatically
+    results = analysis.fit_result
+    names = ["spectral_model", "spatial_model"]
+    for name in names:
+        if name == "spatial_model" and method == "1d":
+            continue
+        model = getattr(analysis.models[0], name)
+        model.parameters.covariance = results.parameters.get_subcovariance(
+            model.parameters.names
+        )
+
     log.info(f"Writing {path_res}")
     write_fit_summary(
-        model.parameters, str(path_res / f"results-summary-fit-{method}.yaml")
+        analysis.models[0].parameters, str(path_res / f"results-summary-fit-{method}.yaml")
     )
 
     log.info(f"Running flux points estimation")
