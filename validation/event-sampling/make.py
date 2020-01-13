@@ -28,8 +28,8 @@ from regions import CircleSkyRegion
 
 log = logging.getLogger(__name__)
 
-AVAILABLE_MODELS = ["point-pwl", "point-ecpow", "point-logparabola",
-                    "point-pwltwo", "point-ecpow3fgl", "point-excpow4fgl",
+AVAILABLE_MODELS = ["point-pwl", "point-ecpl", "point-log-parabola",
+                    "point-pwl2", "point-ecpl-3fgl", "point-ecpl-4fgl",
                     "point-compoundmod",
                     "disk-pwl", "gauss-pwl"]
 DPI = 300
@@ -40,6 +40,7 @@ POINTING = SkyCoord(0.0, 0.0, frame="galactic", unit="deg")
 LIVETIME = 10 * u.hr
 GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
 OBS_ID = '{:04d}'.format(1)
+N_OBS = 100
 
 # dataset config
 ENERGY_AXIS = MapAxis.from_energy_bounds("0.1 TeV", "100 TeV", nbin=30)
@@ -382,7 +383,7 @@ def iterative_cmd(model):
 
     prepare_dataset(filename_dataset)
     
-    for obsid in np.arange(1,101):
+    for obsid in np.arange(N_OBS):
         for model in models:
             OBS_ID = '{:04d}'.format(obsid)
             filename_model = BASE_PATH / f"models/{model}.yaml"
