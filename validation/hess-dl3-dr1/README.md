@@ -80,32 +80,23 @@ First of all notice that, for the sake of time (and code lines) saving, the vali
  is a rather simplified version of the analysis that is performed in the reference paper. The main simplification 
  consists in the fact that we run a 3d "stacked" analysis, as opposed to a (much longer) "joint" one.
 
-The fit results are generally in acceptable (sometimes even good) agreement with the reference values. The only case 
-where something appears to be really wrong is te 3D fit of MSH 1552: this needs to be investigated. Also, the flux points 
-resulting from the 1D fit of MSH 1552 have the tendency to overshoot the reference values.
-
-I don't understand why the error bars of the flux points from the reference paper are so big. There must be a mistake 
-in the way the reference value are read, but I can't find it.
+The fit results are generally in acceptable (sometimes even good) agreement with the reference values. 
 
 ## TODO
-Some important pieces are still missing in the  gammapy HLI. Therefore there are several TODOs (to be addressed 
+Some important pieces are still missing in the  gammapy HLI. Therefore there are a few TODOs (to be addressed 
 in gammapy):
- - During data reduction, apply (run-by-run) a safe mask using the proper `methods`: for the 1d analysis, use 
- `method="edisp-bias", bias_percent=10`; for the 3d analysis, use `method=["edisp-bias", bkg-peak], bias_percent=10`. 
- This corresponds to what is implemented in the paper. Right now, the choice of the `method` is not customizable 
- from the HLI.
+ - During data reduction, apply (run-by-run) a safe mask using the proper `methods`. Right now, the choice of the
+  `method` is not customizable from the HLI. A workaround has been implemented
  - Implement a way to set the covariance automatically after the fit
  - For the 3D analysis, re-optimize the background norm in each energy bin. For now, this is not possible from the HLI.
  Notice that only the bkg norm is to be re-fitted (together with the model scaling), therefore all other spatial and 
  spectral parameters have to be frozen (which don't correspond to the default behavior of the `FluxPointsEstimator`
  with the setting `reoptimize=True`).
- - Implement a more uniform units handling between the analysis config and the model config: for now, in the former
+ - Implement a more uniform units handling schema between the analysis config and the model config: for now, in the former
  something like `10 deg` works, wherheas in the latter the value and units need to be separated.
  
  There are also a few TODOs to address here in this folder:
- - Implement the case of RXJ 1713-3946
- - Fix the 3D fit of MSH 1552
- - Fix the reference flux points error bars 
+ - Implement the case of RXJ 1713-3946 (postponed, for now)
  - Make plots for the best-fit spectral models (comparing reference models and results)
  - Adapt the scripts, following the improvements in the HLI
 
