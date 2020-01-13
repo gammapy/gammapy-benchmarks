@@ -153,11 +153,8 @@ def data_reduction(instrument):
 
 def data_reduction_fermi():
     log.info(f"data_reduction: fermi")
-    config = AnalysisConfig.read(f"config.yaml")
-    config.observations.datastore = f"$JOINT_CRAB/data/{instrument}"
-    config.datasets.stack = instrument_opts[instrument]['stack']
-    config.datasets.containment_correction = instrument_opts[instrument]['containment']
-    config.datasets.on_region.radius = instrument_opts[instrument]['on_radius']
+    containment_correction = instrument_opts[instrument]['containment']
+    radius = instrument_opts[instrument]['on_radius']
 
     analysis = Analysis(config)
     analysis.get_observations()

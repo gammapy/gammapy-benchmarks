@@ -17,24 +17,20 @@ from gammapy.utils.time import time_ref_from_dict
 log = logging.getLogger(__name__)   
     
 
-class FermiAnalysis1D:
+class FermiDatasetMaker:
     """Simple class to perform aperture photometry and produce SpectrumDatasetOnOff"""
     def __init__(self,
-                 geom,
                  evt_file="$JOINT_CRAB/data/fermi/events.fits.gz",
                  exp_file="$JOINT_CRAB/data/fermi/exposure_cube.fits.gz",
                  psf_file="$JOINT_CRAB/data/fermi/psf.fits.gz",
-                 max_radius='0.5 deg'
+                 max_psf_radius='0.5 deg'
                 ):
-        log.info("Extracting 1d spectra for Fermi-LAT")
         # Read data
         self.events = EventList.read(evt_file)
         self.exposure = HpxNDMap.read(exp_file)
         self.exposure.unit = u.Unit('cm2s')   # no unit stored on map...
         self.psf = EnergyDependentTablePSF.read(psf_file)
-        self.geom = geom
-        self.dataset = self._make_mapdataset(max_radius)
-        
+                
     def _make_gti(self):
         # Tentative extraction of the GTI
         tstart = self.events.table.meta['TSTART']*u.s
@@ -44,17 +40,21 @@ class FermiAnalysis1D:
     
     def _fill_psfmap(self, psf, dataset):
         # Fill each bin of the PSFMap with the psf table.
-        coord = dataset.psf.psf_map.geom.get_coord()
+        energy = dataset.psf.psf_map.geom.get_axis_by_name('energy')
+        theta = dataset.psf.psf_map.geom.get_axis_by_name('theta')
+
         values = psf.evaluate(
-                            energy=coord['energy'],
-                            rad=coord['theta'],
+                            energy=energy.center,
+                            rad=theta.center,
                             method='linear'
         )
-        dataset.psf.psf_map.quantity = values
         
-    def _make_mapdataset(self, max_radius):
+        dataset.psf.psf_map.quantity *= 0
+        dataset.psf.psf_map.quantity += values[:,:,np.newaxis,np.newaxis]
+        
+    def run(self, geom):
         """Create and fill the map dataset"""
-        dataset = MapDataset.create(self.geom, binsz_irf=1.0)
+        dataset = MapDataset.create(geom, binsz_irf=1.0)
         dataset.counts.fill_events(self.events)
 
         dataset.gti = self._make_gti()
@@ -62,12 +62,12 @@ class FermiAnalysis1D:
         self._fill_psfmap(self.psf, dataset)
         
         # recompute exposure on geom
-        coords = self.geom.get_coord()
+        coords = geom.get_coord()
         values = self.exposure.interp_by_coord(coords)
         dataset.exposure = Map.from_geom(geom, data=values, unit=self.exposure.unit)
 
         # Not the real Fermi-LAT EDISP: Use 5% energy resolution as approximation
-        energy = self.geom.axes[0]
+        energy = geom.axes[0]
         edisp = EDispKernel.from_gauss(
             e_true=energy.edges, e_reco=energy.edges, sigma=0.05, bias=0
         )
@@ -75,19 +75,38 @@ class FermiAnalysis1D:
  
         return dataset
     
-    def run(target_position, on_radius, off_region):
-        """Perform the spectral extraction at target_position for a circular region."""
-
-        # create dummy WcsGeom for event selection. Center it on the Crab
-        geom = WcsGeom.create(skydir=target_position,width='10 deg', binsize='0.01 deg')
+def extract_spectrum_fermi(on_region, off_region, energy, containment_correction=True):
+    """Perform the spectral extraction at target_position for a circular region."""
     
-        # Select ON and OFF events
-        on_events = events.select_region(on_region, geom.wcs)
-    
-        if 
-        off_events = events.select_region(off_region, geom.wcs)
-
+    geom = WcsGeom.create(skydir=on_region.center,width='5 deg', binsz=0.01, axes=[energy])
         
+    ds = FermiDatasetMaker().run(geom)
+    
+    spec_dataset = ds.to_spectrum_dataset(
+        on_region,
+        containment_correction=containment_correction
+    )
+    on_mask=ds.counts.geom.region_mask([on_region]) 
+    on_solid_angle = np.sum(ds.counts.geom.solid_angle()*on_mask)
+    
+    off_dataset = ds.to_spectrum_dataset(
+        off_region,
+        containment_correction=False
+    )
+    off_mask=ds.counts.geom.region_mask([off_region]) 
+    off_solid_angle = np.sum(ds.counts.geom.solid_angle()*off_mask)
+
+    
+    return SpectrumDatasetOnOff(
+        counts=spec_dataset.counts,
+        counts_off=off_dataset.counts,
+        gti=spec_dataset.gti,
+        aeff=spec_dataset.aeff,
+        edisp=spec_dataset.edisp,
+        livetime=spec_dataset.livetime,
+        acceptance=1,
+        acceptance_off=(off_solid_angle/on_solid_angle).to_value("")
+        )
     
     
 def extract_spectra_fermi(target_position, on_radius):
