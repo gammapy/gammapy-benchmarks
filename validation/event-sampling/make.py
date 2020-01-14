@@ -39,7 +39,7 @@ IRF_FILE = "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.
 POINTING = SkyCoord(0.0, 0.0, frame="galactic", unit="deg")
 LIVETIME = 10 * u.hr
 GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
-OBS_ID = '{:04d}'.format(1)
+#OBS_ID = '{:04d}'.format(1)
 N_OBS = 100
 
 # dataset config
@@ -93,7 +93,10 @@ def cli(log_level, show_warnings):
 
 @cli.command("all", help="Run all steps")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS)))
-def all_cmd(model):
+@click.option(
+              "--obs_id", default=1, nargs=1, help="Number of simulations", type=int
+              )
+def all_cmd(model, obs_id):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -104,6 +107,7 @@ def all_cmd(model):
     prepare_dataset(filename_dataset)
 
     for model in models:
+        OBS_ID = '{:04d}'.format(obs_id)
         filename_model = BASE_PATH / f"models/{model}.yaml"
         simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
         fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
@@ -111,7 +115,11 @@ def all_cmd(model):
 
 
 @cli.command("prepare-dataset", help="Prepare map dataset used for event simulation")
-def prepare_dataset_cmd():
+@click.option(
+              "--obs_id", default=1, nargs=1, help="Number of simulations", type=int
+              )
+def prepare_dataset_cmd(obs_id):
+    OBS_ID = '{:04d}'.format(obs_id)
     filename_dataset = get_filename_dataset(LIVETIME)
     prepare_dataset(filename_dataset)
 
@@ -135,12 +143,16 @@ def prepare_dataset(filename_dataset):
 
 @cli.command("simulate-events", help="Simulate events for given model and livetime")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
-def simulate_events_cmd(model):
+@click.option(
+              "--obs_id", default=1, nargs=1, help="Number of simulations", type=int
+              )
+def simulate_events_cmd(model,obs_id):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
         models = [model]
 
+    OBS_ID = '{:04d}'.format(obs_id)
     filename_dataset = get_filename_dataset(LIVETIME)
 
     for model in models:
@@ -184,12 +196,16 @@ def simulate_events(filename_model, filename_dataset, obs_id=OBS_ID):
 
 @cli.command("fit-model", help="Fit given model")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
-def fit_model_cmd(model):
+@click.option(
+              "--obs_id", default=1, nargs=1, help="Number of simulations", type=int
+              )
+def fit_model_cmd(model,obs_id):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
         models = [model]
 
+    OBS_ID = '{:04d}'.format(obs_id)
     filename_dataset = get_filename_dataset(LIVETIME)
 
     for model in models:
@@ -252,12 +268,16 @@ def fit_model(filename_model, filename_dataset, obs_id=OBS_ID):
 
 @cli.command("plot-results", help="Plot results for given model")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
-def plot_results_cmd(model):
+@click.option(
+              "--obs_id", default=1, nargs=1, help="Number of simulations", type=int
+              )
+def plot_results_cmd(model, obs_id):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
         models = [model]
 
+    OBS_ID = '{:04d}'.format(obs_id)
     filename_dataset = get_filename_dataset(LIVETIME)
 
     for model in models:
@@ -369,27 +389,6 @@ def plot_results(filename_model, filename_dataset=None, obs_id=OBS_ID):
     dataset.models = model_best_fit
     plot_residuals(dataset, obs_id)
     plot_residual_distribution(dataset, obs_id)
-
-
-@cli.command("iterative", help="Run N simulation and fit steps")
-@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS)))
-def iterative_cmd(model):
-    if model == "all":
-        models = AVAILABLE_MODELS
-    else:
-        models = [model]
-    
-    filename_dataset = get_filename_dataset(LIVETIME)
-
-    prepare_dataset(filename_dataset)
-    
-    for obsid in np.arange(N_OBS):
-        for model in models:
-            OBS_ID = '{:04d}'.format(obsid)
-            filename_model = BASE_PATH / f"models/{model}.yaml"
-            simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
-            fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
-            plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
 
 
 if __name__ == "__main__":
