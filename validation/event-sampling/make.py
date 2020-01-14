@@ -104,9 +104,9 @@ def cli(log_level, show_warnings):
               "--obs_id", default=1, nargs=1, help="Selected observation", type=int
               )
 @click.option(
-              "--obs-id-all", default='False', nargs=1, help="Iterate over N observations"
+              "--obs_id_all", default='False', nargs=1, help="Iterate over N observations"
               )
-def all_cmd(model, obs_id, obs-id-all):
+def all_cmd(model, obs_id, obs_id_all):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -116,7 +116,7 @@ def all_cmd(model, obs_id, obs-id-all):
 
     prepare_dataset(filename_dataset)
 
-    if obs-id-all == 'False':
+    if obs_id_all == 'False':
         OBS_ID = '{:04d}'.format(obs_id)
         for model in models:
             all(model, filename_dataset, obs_id=OBS_ID)
@@ -161,9 +161,9 @@ def prepare_dataset(filename_dataset):
               "--obs_id", default=1, nargs=1, help="Number of simulations", type=int
               )
 @click.option(
-              "--obs-id-all", default='False', nargs=1, help="Iterate over N observations"
+              "--obs_id_all", default='False', nargs=1, help="Iterate over N observations"
               )
-def simulate_events_cmd(model, obs_id, obs-id-all):
+def simulate_events_cmd(model, obs_id, obs_id_all):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -171,7 +171,7 @@ def simulate_events_cmd(model, obs_id, obs-id-all):
 
     filename_dataset = get_filename_dataset(LIVETIME)
 
-    if obs-id-all == 'False':
+    if obs_id_all == 'False':
         OBS_ID = '{:04d}'.format(obs_id)
         for model in models:
             filename_model = BASE_PATH / f"models/{model}.yaml"
@@ -225,9 +225,9 @@ def simulate_events(filename_model, filename_dataset, obs_id):
               "--obs_id", default=1, nargs=1, help="Number of simulations", type=int
               )
 @click.option(
-              "--obs-id-all", default='False', nargs=1, help="Iterate over N observations"
+              "--obs_id_all", default='False', nargs=1, help="Iterate over N observations"
               )
-def fit_model_cmd(model, obs_id, obs-id-all):
+def fit_model_cmd(model, obs_id, obs_id_all):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -235,7 +235,7 @@ def fit_model_cmd(model, obs_id, obs-id-all):
 
     filename_dataset = get_filename_dataset(LIVETIME)
 
-    if obs-id-all == 'False':
+    if obs_id_all == 'False':
         OBS_ID = '{:04d}'.format(obs_id)
         for model in models:
             filename_model = BASE_PATH / f"models/{model}.yaml"
@@ -308,9 +308,9 @@ def fit_model(filename_model, filename_dataset, obs_id):
               "--obs_id", default=1, nargs=1, help="ObsID of the observation", type=int
               )
 @click.option(
-              "--obs-id-all", default='False', nargs=1, help="Iterate over N observations"
+              "--obs_id_all", default='False', nargs=1, help="Iterate over N observations"
               )
-def plot_results_cmd(model, obs_id, obs-id-all):
+def plot_results_cmd(model, obs_id, obs_id_all):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -318,7 +318,7 @@ def plot_results_cmd(model, obs_id, obs-id-all):
 
     filename_dataset = get_filename_dataset(LIVETIME)
 
-    if obs-id-all == 'False':
+    if obs_id_all == 'False':
         OBS_ID = '{:04d}'.format(obs_id)
         for model in models:
             filename_model = BASE_PATH / f"models/{model}.yaml"
