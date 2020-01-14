@@ -40,7 +40,7 @@ POINTING = SkyCoord(0.0, 0.0, frame="galactic", unit="deg")
 LIVETIME = 10 * u.hr
 GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
 #OBS_ID = '{:04d}'.format(1)
-N_OBS = 100
+#N_OBS = 100
 
 # dataset config
 ENERGY_AXIS = MapAxis.from_energy_bounds("0.1 TeV", "100 TeV", nbin=30)
@@ -122,11 +122,11 @@ def all_cmd(model, obs_id, obs_id_all):
             all(model, filename_dataset, obs_id=OBS_ID)
 
     else:
-        for obsid in np.arange(N_OBS):
+        for obsid in np.arange(obs_id):
             OBS_ID = '{:04d}'.format(obsid)
             for model in models:
                 all(model, filename_dataset, obs_id=OBS_ID)
-
+        pull(model, obs_id=obs_id)
 
 @cli.command("prepare-dataset", help="Prepare map dataset used for event simulation")
 @click.option(
@@ -178,7 +178,7 @@ def simulate_events_cmd(model, obs_id, obs_id_all):
             simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
 
     else:
-        for obsid in np.arange(N_OBS):
+        for obsid in np.arange(obs_id):
             OBS_ID = '{:04d}'.format(obsid)
             for model in models:
                 filename_model = BASE_PATH / f"models/{model}.yaml"
@@ -242,7 +242,7 @@ def fit_model_cmd(model, obs_id, obs_id_all):
             fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
 
     else:
-        for obsid in np.arange(N_OBS):
+        for obsid in np.arange(obs_id):
             OBS_ID = '{:04d}'.format(obsid)
             for model in models:
                 filename_model = BASE_PATH / f"models/{model}.yaml"
@@ -325,7 +325,7 @@ def plot_results_cmd(model, obs_id, obs_id_all):
             plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
 
     else:
-        for obsid in np.arange(N_OBS):
+        for obsid in np.arange(obs_id):
             OBS_ID = '{:04d}'.format(obsid)
             for model in models:
                 filename_model = BASE_PATH / f"models/{model}.yaml"
@@ -436,6 +436,45 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
     dataset.models = model_best_fit
     plot_residuals(dataset, obs_id)
     plot_residual_distribution(dataset, obs_id)
+
+
+def pull(model_name, obs_id):
+    filename_model = BASE_PATH / f"models/{model_name}.yaml"
+    mod = SkyModels.read(filename_model)
+    mod = mod[0].spectral_model.parameters
+    names = mod.names
+    for name in names:
+        vars()[name] = []
+    
+    for model in model_name:
+        for obsid in np.arange(obs_id):
+            OBS_ID = '{:04d}'.format(obsid)
+            path = get_filename_best_fit_model(filename_model, OBS_ID)
+            model_best_fit = read_best_fit_model(path, OBS_ID)
+            spectrum = model_best_fit[0].spectral_model
+            params = spectrum.parameters
+            names = params.names
+            for name in names:
+                exec("%s.append(params[name].value)" % name)
+
+    for name in names:
+        exec("plt.hist(%s, bins=int(%s/3))" % (name,obs_id))
+        filename = f"results/models/{model_name}/plots/pull-distribution_{name}.png"
+        save_figure(filename)
+
+
+@cli.command("plot-pull_results", help="Plot the pull distribution for the model")
+@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
+@click.option(
+              "--obs_id", default=100, nargs=1, help="Selected observation", type=int
+              )
+def plot_pull_distrib(model, obs_id):
+    if model == "all":
+        models = AVAILABLE_MODELS
+    else:
+        models = [model]
+
+    pull(model_name=model, obs_id=obs_id)
 
 
 if __name__ == "__main__":
