@@ -9,14 +9,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 from astropy.table import Table
 from astropy import units as u
+from astropy.coordinates import Angle, SkyCoord
+from regions import CircleSkyRegion, CircleAnnulusSkyRegion
 from gammapy.analysis import Analysis, AnalysisConfig
 from gammapy.modeling.models import SkyModel
 from gammapy.modeling.models import LogParabolaSpectralModel
 from gammapy.modeling import Fit, Datasets
+from gammapy.maps import MapAxis
 from gammapy.utils.scripts import make_path
+from joint_crab.extract_fermi import extract_spectrum_fermi
+
 log = logging.getLogger(__name__)
 
-AVAILABLE_DATA = ["hess","magic","veritas","fact"]
+AVAILABLE_DATA = ["hess","magic","veritas","fact", "fermi"]
 
 DATASETS = [
     {
@@ -62,7 +67,12 @@ instrument_opts = dict(
             'emin':'0.4 TeV', 
             'emax':'30 TeV',
             'color': "#3EB489",},
-
+    fermi = {'on_radius':'0.3 deg', 
+            'stack':False, 
+            'containment'True,
+            'emin':'0.03 TeV', 
+            'emax':'2 TeV',
+            'color': "#21ABCD",},
 )
 
 @click.group()
@@ -93,7 +103,10 @@ def run_analyses(instruments, npoints=10):
     joint = []
     for instrument in instruments:
         # First perform data reduction and save to disk
-        data_reduction(instrument)
+        if instrument != "fermi": 
+            data_reduction(instrument)
+        else:
+            data_reduction_fermi()
         data_fitting(instrument, npoints)
         make_summary(instrument)
 
@@ -141,7 +154,24 @@ def data_reduction(instrument):
 
     analysis.datasets.write(f"reduced_{instrument}", overwrite=True)
 
-    
+def data_reduction_fermi():
+    log.info(f"data_reduction: fermi")
+    containment_correction = instrument_opts['fermi']['containment']
+    radius = instrument_opts['fermi']['on_radius']
+    emin = u.Quantity(instrument_opts['fermi']['emin']).to_value('TeV')
+    emax = u.Quantity(instrument_opts['fermi']['emax']).to_value('TeV')
+
+    crab_pos = SkyCoord(ra=83.63, dec=22.01, unit='deg', frame='icrs')
+    on_region = CircleSkyRegion(crab_pos,radius=Angle(radius))
+    off_region = CircleAnnulusSkyRegion(crab_pos,inner_radius=1*u.deg, outer_radius=2*u.deg)    
+
+    energy = MapAxis.from_bounds(emin, emax, 36, unit='TeV',name="energy",interp='log')
+    dataset = extract_spectrum_fermi(on_region, off_region, energy, containment_correction)
+    datasets = Datasets([dataset])
+
+    datasets.write(f"reduced_fermi", overwrite=True)
+
+
 def define_model():
     crab_spectrum = LogParabolaSpectralModel(amplitude=1e-11/u.cm**2/u.s/u.TeV,
                                          reference=1*u.TeV,
@@ -201,6 +231,7 @@ def data_fitting(instrument, npoints):
     for ds in datasets:
         ds.models = crab_model
         ds.mask_fit = ds.counts.energy_mask(e_min, e_max)
+        print(ds.mask_fit)
         print(ds.energy_range)
     # Perform fit
     fit = Fit(datasets)
