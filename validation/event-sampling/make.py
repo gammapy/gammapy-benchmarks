@@ -330,12 +330,9 @@ def fit_gather(model_name):
 @cli.command("plot-results", help="Plot results for given model")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
 @click.option(
-              "--obs_id", default=1, nargs=1, help="ObsID of the observation", type=int
+              "--obs-ids", default="0", nargs=1, help="Which observation to choose.", type=str
               )
-@click.option(
-              "--obs_id_all", default='False', nargs=1, help="Iterate over N observations"
-              )
-def plot_results_cmd(model, obs_id, obs_id_all):
+def plot_results_cmd(model, obs_ids):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -343,18 +340,10 @@ def plot_results_cmd(model, obs_id, obs_id_all):
 
     filename_dataset = get_filename_dataset(LIVETIME)
 
-    if obs_id_all == 'False':
-        OBS_ID = '{:04d}'.format(obs_id)
-        for model in models:
+    for model in models:
+        for obs_id in parse_obs_ids(obs_ids, model):
             filename_model = BASE_PATH / f"models/{model}.yaml"
-            plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
-
-    else:
-        for obsid in np.arange(obs_id):
-            OBS_ID = '{:04d}'.format(obsid)
-            for model in models:
-                filename_model = BASE_PATH / f"models/{model}.yaml"
-                plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
+            plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=obs_id)
 
 
 def save_figure(filename):
@@ -377,7 +366,7 @@ def plot_spectra(model, model_best_fit, obs_id):
     model_best_fit.spectral_model.plot_error(energy_range=(0.1, 300) * u.TeV, ax=ax)
     ax.legend()
 
-    filename = f"results/models/{model.name}/plots/spectra_{obs_id}.png"
+    filename = f"results/models/{model.name}/plots/spectra/spectra_{obs_id:04d}.png"
     save_figure(filename)
 
 
@@ -391,7 +380,7 @@ def plot_residuals(dataset, obs_id):
         region = spatial_model.to_region()
 
     dataset.plot_residuals(method="diff/sqrt(model)", vmin=-0.5, vmax=0.5, region=region, figsize=(10, 4))
-    filename = f"results/models/{model.name}/plots/residuals_{obs_id}.png"
+    filename = f"results/models/{model.name}/plots/residuals/residuals_{obs_id:04d}.png"
     save_figure(filename)
 
 
@@ -418,7 +407,7 @@ def plot_residual_distribution(dataset, obs_id):
     xmin, xmax = np.min(sig_resid), np.max(sig_resid)
     plt.xlim(xmin, xmax)
 
-    filename = f"results/models/{model.name}/plots/residuals-distribution_{obs_id}.png"
+    filename = f"results/models/{model.name}/plots/residuals-distribution/residuals-distribution_{obs_id:04d}.png"
     save_figure(filename)
 
 
@@ -457,7 +446,7 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
     model = SkyModels.read(filename_model)
 
     path = get_filename_best_fit_model(filename_model, obs_id)
-    model_best_fit = read_best_fit_model(path, obs_id)
+    model_best_fit = read_best_fit_model(path)
 
     plot_spectra(model[0], model_best_fit[0], obs_id)
 
@@ -499,8 +488,11 @@ def plot_pull_distribution(model_name):
 
         pull = (values - par.value) / values_err
 
-        plt.hist(pull, bins=21)
+        plt.hist(pull, bins=21, normed=True)
         plt.xlim(-5, 5)
+        plt.xlabel("(value - value_true) / error")
+        plt.ylabel("PDF")
+        plt.title(f"Pull distribution for {model_name}: {name} ")
         filename = f"results/models/{model_name}/plots/pull-distribution-{name}.png"
         save_figure(filename)
 
