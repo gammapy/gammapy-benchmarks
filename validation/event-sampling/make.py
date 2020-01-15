@@ -32,7 +32,7 @@ AVAILABLE_MODELS = ["point-pwl", "point-ecpl", "point-log-parabola",
                     "point-pwl2", "point-ecpl-3fgl", "point-ecpl-4fgl",
                     "point-template", "diffuse-cube",
                     "disk-pwl", "gauss-pwl"]
-DPI = 300
+DPI = 120
 
 # observation config
 IRF_FILE = "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits"
@@ -79,11 +79,10 @@ def get_filename_covariance(filename_model, obs_id):
     return str(BASE_PATH / filename)
 
 
-def all(model, filename_dataset, obs_id):
-    filename_model = BASE_PATH / f"models/{model}.yaml"
+def all(filename_model, filename_dataset, obs_id):
+#    filename_model = BASE_PATH / f"models/{model}.yaml"
     simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=obs_id)
     fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=obs_id)
-    plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=obs_id)
 
 
 @click.group()
@@ -113,19 +112,21 @@ def all_cmd(model, obs_id, obs_id_all):
         models = [model]
 
     filename_dataset = get_filename_dataset(LIVETIME)
+    filename_model = BASE_PATH / f"models/{model}.yaml"
 
     prepare_dataset(filename_dataset)
 
     if obs_id_all == 'False':
         OBS_ID = '{:04d}'.format(obs_id)
         for model in models:
-            all(model, filename_dataset, obs_id=OBS_ID)
+            all(filename_model, filename_dataset, obs_id=OBS_ID)
+            plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
 
     else:
         for obsid in np.arange(obs_id):
             OBS_ID = '{:04d}'.format(obsid)
             for model in models:
-                all(model, filename_dataset, obs_id=OBS_ID)
+                all(filename_model, filename_dataset, obs_id=OBS_ID)
         pull(model, obs_id=obs_id)
 
 @cli.command("prepare-dataset", help="Prepare map dataset used for event simulation")
