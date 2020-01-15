@@ -3,12 +3,15 @@ from pathlib import Path
 import logging
 import warnings
 import click
+import multiprocessing
+from itertools import repeat
 
 import numpy as np
 from scipy.stats import norm
 import matplotlib.pyplot as plt
 import astropy.units as u
 from astropy.coordinates import SkyCoord
+from astropy.table import Table
 from gammapy.cube import (
     MapDataset,
     MapDatasetEventSampler,
@@ -162,13 +165,12 @@ def simulate_events_cmd(model, nobs):
 
     filename_dataset = get_filename_dataset(LIVETIME)
 
-    for obs_id in np.arange(nobs):
-        for model in models:
-            filename_model = BASE_PATH / f"models/{model}.yaml"
-            simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=obs_id)
+    for model in models:
+        filename_model = BASE_PATH / f"models/{model}.yaml"
+        simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=nobs)
 
 
-def simulate_events(filename_model, filename_dataset, obs_id):
+def simulate_events(filename_model, filename_dataset, nobs):
     """Simulate events for a given model and dataset.
 
     Parameters
@@ -177,14 +179,11 @@ def simulate_events(filename_model, filename_dataset, obs_id):
         Filename of the model definition.
     filename_dataset : str
         Filename of the dataset to use for simulation.
-    obs_id : int
-        Observation ID.
+    nobs : int
+        Number of obervations to simulate.
     """
     log.info(f"Reading {IRF_FILE}")
     irfs = load_cta_irfs(IRF_FILE)
-    observation = Observation.create(
-        obs_id=obs_id, pointing=POINTING, livetime=LIVETIME, irfs=irfs
-    )
 
     log.info(f"Reading {filename_dataset}")
     dataset = MapDataset.read(filename_dataset)
@@ -193,24 +192,41 @@ def simulate_events(filename_model, filename_dataset, obs_id):
     models = SkyModels.read(filename_model)
     dataset.models = models
 
-    events = MapDatasetEventSampler(random_state=obs_id)
-    events = events.run(dataset, observation)
+    sampler = MapDatasetEventSampler(random_state=0)
 
-    path = get_filename_events(filename_dataset, filename_model, obs_id)
-    log.info(f"Writing {path}")
-    path.parent.mkdir(exist_ok=True, parents=True)
-    events.table.write(str(path), overwrite=True)
+    for obs_id in np.arange(nobs):
+        observation = Observation.create(
+            obs_id=obs_id, pointing=POINTING, livetime=LIVETIME, irfs=irfs
+        )
+
+        events = sampler.run(dataset, observation)
+
+        path = get_filename_events(filename_dataset, filename_model, obs_id)
+        log.info(f"Writing {path}")
+        path.parent.mkdir(exist_ok=True, parents=True)
+        events.table.write(str(path), overwrite=True)
+
+
+def parse_obs_ids(obs_ids_str, model):
+    if ":" in obs_ids_str:
+        start, stop = obs_ids_str.split(":")
+        obs_ids = np.arange(int(start), int(stop))
+    elif "," in obs_ids_str:
+        obs_ids = [int(_) for _ in obs_ids_str.split(",")]
+    elif obs_ids_str == "all":
+        n_obs = len(list(BASE_PATH.glob(f"data/models/{model}/events_*.fits.gz")))
+        obs_ids = np.arange(n_obs)
+    else:
+         obs_ids = [int(obs_ids_str)]
+    return obs_ids
 
 
 @cli.command("fit-model", help="Fit given model")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
 @click.option(
-              "--obs-id", default=0, nargs=1, help="Choose a single observation to fit.", type=int
+              "--obs-ids", default="all", nargs=1, help="Which observation to choose.", type=str
               )
-@click.option(
-              "--obs-all", default=False, nargs=1, help="Iterate over all observations", is_flag=True
-              )
-def fit_model_cmd(model, obs_id, obs_all):
+def fit_model_cmd(model, obs_ids):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -218,16 +234,13 @@ def fit_model_cmd(model, obs_id, obs_all):
 
     filename_dataset = get_filename_dataset(LIVETIME)
 
-    if obs_all:
-        n_obs = len(BASE_PATH.glob(f"data/models/{model}/*.fits.gz"))
-        obs_ids = np.arange(n_obs)
-    else:
-        obs_ids = [obs_id]
-
     for model in models:
-        for obs_id in obs_ids:
-            filename_model = BASE_PATH / f"models/{model}.yaml"
-            fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=obs_id)
+        obs_ids = parse_obs_ids(obs_ids, model)
+        filename_model = BASE_PATH / f"models/{model}.yaml"
+
+        with multiprocessing.Pool(processes=4) as pool:
+            args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids)
+            results = pool.starmap(fit_model, args)
 
 
 def read_dataset(filename_dataset, filename_model, obs_id):
@@ -421,6 +434,10 @@ def read_best_fit_model(filename):
     spectral_model_best_fit = model_best_fit[0].spectral_model
     covar = pars.get_subcovariance(spectral_model_best_fit.parameters)
     spectral_model_best_fit.parameters.covariance = covar
+
+    spatial_model_best_fit = model_best_fit[0].spatial_model
+    covar = pars.get_subcovariance(spatial_model_best_fit.parameters)
+    spatial_model_best_fit.parameters.covariance = covar
     return model_best_fit
 
 
@@ -450,40 +467,42 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
     plot_residual_distribution(dataset, obs_id)
 
 
-def plot_pull_distribution(model_name):
-    filename_model = BASE_PATH / f"models/{model_name}.yaml"
-    mod = SkyModels.read(filename_model)
-    mod = mod[0].spectral_model.parameters
-    names = mod.names
-    for name in names:
-        vars()[name] = []
-    
-    for model in model_name:
-        for obsid in np.arange(obs_id):
-            OBS_ID = '{:04d}'.format(obsid)
-            path = get_filename_best_fit_model(filename_model, OBS_ID)
-            model_best_fit = read_best_fit_model(path, OBS_ID)
-            spectrum = model_best_fit[0].spectral_model
-            params = spectrum.parameters
-            names = params.names
-            for name in names:
-                exec("%s.append(params[name].value)" % name)
-
-    for name in names:
-        exec("plt.hist(%s, bins=int(%s/4))" % (name,obs_id))
-        filename = f"results/models/{model_name}/plots/pull-distribution_{name}.png"
-        save_figure(filename)
-
-
-@cli.command("plot-pull_results", help="Plot the pull distribution for the model")
+@cli.command("plot-pull-distributions", help="Plot pull distributions for the given model")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
-def plot_pull_distrib(model, obs_id):
+def plot_pull_distribution_cmd(model):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
         models = [model]
 
-    plot_pull_distribution(model_name=model)
+    for model in models:
+        plot_pull_distribution(model_name=model)
+
+
+def plot_pull_distribution(model_name):
+    filename = BASE_PATH / f"results/models/{model_name}/fit-results-all.fits.gz"
+    results = Table.read(str(filename))
+
+    filename_ref = BASE_PATH / f"models/{model_name}.yaml"
+    model_ref = SkyModels.read(filename_ref)[0]
+    names = [name for name in results.colnames if "err" not in name]
+
+    for name in names:
+        # TODO: report mean and stdev here as well
+        values = results[name]
+        values_err = results[name + "_err"]
+        par = model_ref.parameters[name]
+
+        if par.frozen:
+            log.info(f"Skipping frozen parameter: {name}")
+            continue
+
+        pull = (values - par.value) / values_err
+
+        plt.hist(pull, bins=21)
+        plt.xlim(-5, 5)
+        filename = f"results/models/{model_name}/plots/pull-distribution-{name}.png"
+        save_figure(filename)
 
 
 if __name__ == "__main__":
