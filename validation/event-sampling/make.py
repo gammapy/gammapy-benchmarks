@@ -46,7 +46,7 @@ GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
 
 # dataset config
 ENERGY_AXIS = MapAxis.from_energy_bounds("0.1 TeV", "100 TeV", nbin=30)
-ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds("0.3 TeV", "300 TeV", nbin=30)
+ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds("0.03 TeV", "300 TeV", nbin=30)
 WCS_GEOM = WcsGeom.create(
     skydir=POINTING, width=(8, 8), binsz=0.02, frame="galactic", axes=[ENERGY_AXIS]
 )
@@ -58,6 +58,7 @@ def get_filename_dataset(livetime):
 
 
 def get_filename_events(filename_dataset, filename_model, obs_id):
+    obs_id=int(obs_id)
     model_str = filename_model.name.replace(filename_model.suffix, "")
     filename_events = filename_dataset.name.replace("dataset", "events")
     filename_events = BASE_PATH / f"data/models/{model_str}/" / filename_events
@@ -67,6 +68,7 @@ def get_filename_events(filename_dataset, filename_model, obs_id):
 
 
 def get_filename_best_fit_model(filename_model, obs_id):
+    obs_id=int(obs_id)
     model_str = filename_model.name.replace(filename_model.suffix, "")
     filename = f"results/models/{model_str}/fit/best-fit-model_{obs_id:04d}.yaml"
     return BASE_PATH / filename
@@ -79,10 +81,11 @@ def get_filename_covariance(filename_best_fit_model):
     return filename_best_fit_model.parent / "covariance" / filename
 
 
-def all(filename_model, filename_dataset, obs_id):
-#    filename_model = BASE_PATH / f"models/{model}.yaml"
-    simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=obs_id)
-    fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=obs_id)
+#def all(filename_model, filename_dataset, obs_id):
+##    filename_model = BASE_PATH / f"models/{model}.yaml"
+#    simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_id)
+#    obs_ids = f"0:{obs_id}"
+#    fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs-ids=obs_ids)
 
 
 @click.group()
@@ -100,12 +103,12 @@ def cli(log_level, show_warnings):
 @cli.command("all", help="Run all steps")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS)))
 @click.option(
-              "--obs-id", default=1, nargs=1, help="Select a single observation", type=int
+              "--obs_ids", default=1, nargs=1, help="Select a single observation", type=int
               )
 @click.option(
-              "--obs-all", default=False, nargs=1, help="Iterate over all observations", is_flag=True
+              "--obs_all", default=False, nargs=1, help="Iterate over all observations", is_flag=True
               )
-def all_cmd(model, obs_id, obs_all):
+def all_cmd(model, obs_ids, obs_all):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -117,16 +120,21 @@ def all_cmd(model, obs_id, obs_all):
     prepare_dataset(filename_dataset)
 
     if obs_all:
-        for idx in np.arange(obs_id):
-            for model in models:
-                obs_id = f"{idx:04d}"
-                all(filename_model, filename_dataset, obs_id=obs_id)
-        pull(model, obs_id=obs_id)
-    else:
-        obs_id = f"{obs_id:04d}"
         for model in models:
-            all(filename_model, filename_dataset, obs_id=obs_id)
-            plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=obs_id)
+            simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
+            obs_ids = f"0:{obs_ids}"
+            obs_ids = parse_obs_ids(obs_ids, model)
+            with multiprocessing.Pool(processes=4) as pool:
+                args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids)
+                results = pool.starmap(fit_model, args)
+
+            fit_gather(model)
+            plot_pull_distribution(model)
+    else:
+        for model in models:
+            simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
+            fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=str(obs_ids-1))
+            plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=str(obs_ids-1))
 
 
 @cli.command("prepare-dataset", help="Prepare map dataset used for event simulation")
@@ -224,7 +232,7 @@ def parse_obs_ids(obs_ids_str, model):
 @cli.command("fit-model", help="Fit given model")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
 @click.option(
-              "--obs-ids", default="all", nargs=1, help="Which observation to choose.", type=str
+              "--obs_ids", default="all", nargs=1, help="Which observation to choose.", type=str
               )
 def fit_model_cmd(model, obs_ids):
     if model == "all":
@@ -330,7 +338,7 @@ def fit_gather(model_name):
 @cli.command("plot-results", help="Plot results for given model")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
 @click.option(
-              "--obs-ids", default="0", nargs=1, help="Which observation to choose.", type=str
+              "--obs_ids", default="0", nargs=1, help="Which observation to choose.", type=str
               )
 def plot_results_cmd(model, obs_ids):
     if model == "all":
@@ -365,7 +373,7 @@ def plot_spectra(model, model_best_fit, obs_id):
     )
     model_best_fit.spectral_model.plot_error(energy_range=(0.1, 300) * u.TeV, ax=ax)
     ax.legend()
-
+    obs_id = int(obs_id)
     filename = f"results/models/{model.name}/plots/spectra/spectra_{obs_id:04d}.png"
     save_figure(filename)
 
@@ -380,6 +388,7 @@ def plot_residuals(dataset, obs_id):
         region = spatial_model.to_region()
 
     dataset.plot_residuals(method="diff/sqrt(model)", vmin=-0.5, vmax=0.5, region=region, figsize=(10, 4))
+    obs_id = int(obs_id)
     filename = f"results/models/{model.name}/plots/residuals/residuals_{obs_id:04d}.png"
     save_figure(filename)
 
@@ -407,6 +416,7 @@ def plot_residual_distribution(dataset, obs_id):
     xmin, xmax = np.min(sig_resid), np.max(sig_resid)
     plt.xlim(xmin, xmax)
 
+    obs_id = int(obs_id)
     filename = f"results/models/{model.name}/plots/residuals-distribution/residuals-distribution_{obs_id:04d}.png"
     save_figure(filename)
 
