@@ -30,7 +30,7 @@ log = logging.getLogger(__name__)
 
 AVAILABLE_MODELS = ["point-pwl", "point-ecpl", "point-log-parabola",
                     "point-pwl2", "point-ecpl-3fgl", "point-ecpl-4fgl",
-                    "point-compoundmod",
+                    "point-template", "diffuse-cube",
                     "disk-pwl", "gauss-pwl"]
 DPI = 300
 
@@ -458,7 +458,7 @@ def pull(model_name, obs_id):
                 exec("%s.append(params[name].value)" % name)
 
     for name in names:
-        exec("plt.hist(%s, bins=int(%s/3))" % (name,obs_id))
+        exec("plt.hist(%s, bins=int(%s/4))" % (name,obs_id))
         filename = f"results/models/{model_name}/plots/pull-distribution_{name}.png"
         save_figure(filename)
 
