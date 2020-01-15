@@ -13,44 +13,40 @@ from gammapy.cube import (
     MapDataset,
     MapDatasetEventSampler,
     MapDatasetMaker,
-    SafeMaskMaker,
 )
 from gammapy.data import GTI, Observation, EventList
-from gammapy.maps import MapAxis, WcsGeom, WcsNDMap, Map
+from gammapy.maps import MapAxis, WcsGeom, Map
 from gammapy.irf import load_cta_irfs
 from gammapy.modeling import Fit
-from gammapy.modeling.models import (
-    PointSpatialModel,
-    SkyModel,
-    SkyModels,
-)
+from gammapy.modeling.models import SkyModels
+from gammapy.utils.table import table_from_row_data
 from regions import CircleSkyRegion
 
 log = logging.getLogger(__name__)
+
+# path config
+BASE_PATH = Path(__file__).parent
 
 AVAILABLE_MODELS = ["point-pwl", "point-ecpl", "point-log-parabola",
                     "point-pwl2", "point-ecpl-3fgl", "point-ecpl-4fgl",
                     "point-template", "diffuse-cube",
                     "disk-pwl", "gauss-pwl"]
+
 DPI = 120
 
 # observation config
 IRF_FILE = "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits"
+
 POINTING = SkyCoord(0.0, 0.0, frame="galactic", unit="deg")
-LIVETIME = 10 * u.hr
+LIVETIME = 1 * u.hr
 GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
-#OBS_ID = '{:04d}'.format(1)
-#N_OBS = 100
 
 # dataset config
 ENERGY_AXIS = MapAxis.from_energy_bounds("0.1 TeV", "100 TeV", nbin=30)
 ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds("0.3 TeV", "300 TeV", nbin=30)
 WCS_GEOM = WcsGeom.create(
-    skydir=POINTING, width=(8, 8), binsz=0.02, coordsys="GAL", axes=[ENERGY_AXIS]
+    skydir=POINTING, width=(8, 8), binsz=0.02, frame="galactic", axes=[ENERGY_AXIS]
 )
-
-# path config
-BASE_PATH = Path(__file__).parent
 
 
 def get_filename_dataset(livetime):
@@ -62,21 +58,22 @@ def get_filename_events(filename_dataset, filename_model, obs_id):
     model_str = filename_model.name.replace(filename_model.suffix, "")
     filename_events = filename_dataset.name.replace("dataset", "events")
     filename_events = BASE_PATH / f"data/models/{model_str}/" / filename_events
-    filename_events = filename_events.name.replace(".fits.gz", f"_{obs_id}.fits.gz")
+    filename_events = filename_events.name.replace(".fits.gz", f"_{obs_id:04d}.fits.gz")
     path = BASE_PATH / f"data/models/{model_str}/" / filename_events
     return path
 
 
 def get_filename_best_fit_model(filename_model, obs_id):
     model_str = filename_model.name.replace(filename_model.suffix, "")
-    filename = f"results/models/{model_str}/best-fit-model_{obs_id}.yaml"
+    filename = f"results/models/{model_str}/fit/best-fit-model_{obs_id:04d}.yaml"
     return BASE_PATH / filename
 
 
-def get_filename_covariance(filename_model, obs_id):
-    model_str = filename_model.name.replace(filename_model.suffix, "")
-    filename = f"results/models/{model_str}/covariance_{obs_id}.txt"
-    return str(BASE_PATH / filename)
+def get_filename_covariance(filename_best_fit_model):
+    filename = filename_best_fit_model.name
+    filename = filename.replace("best-fit-model", "covariance")
+    filename = filename.replace(".yaml", ".txt")
+    return filename_best_fit_model.parent / "covariance" / filename
 
 
 def all(filename_model, filename_dataset, obs_id):
@@ -100,12 +97,12 @@ def cli(log_level, show_warnings):
 @cli.command("all", help="Run all steps")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS)))
 @click.option(
-              "--obs_id", default=1, nargs=1, help="Selected observation", type=int
+              "--obs-id", default=1, nargs=1, help="Select a single observation", type=int
               )
 @click.option(
-              "--obs_id_all", default='False', nargs=1, help="Iterate over N observations"
+              "--obs-all", default=False, nargs=1, help="Iterate over all observations", is_flag=True
               )
-def all_cmd(model, obs_id, obs_id_all):
+def all_cmd(model, obs_id, obs_all):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -116,25 +113,21 @@ def all_cmd(model, obs_id, obs_id_all):
 
     prepare_dataset(filename_dataset)
 
-    if obs_id_all == 'False':
-        OBS_ID = '{:04d}'.format(obs_id)
-        for model in models:
-            all(filename_model, filename_dataset, obs_id=OBS_ID)
-            plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
-
-    else:
-        for obsid in np.arange(obs_id):
-            OBS_ID = '{:04d}'.format(obsid)
+    if obs_all:
+        for idx in np.arange(obs_id):
             for model in models:
-                all(filename_model, filename_dataset, obs_id=OBS_ID)
+                obs_id = f"{idx:04d}"
+                all(filename_model, filename_dataset, obs_id=obs_id)
         pull(model, obs_id=obs_id)
+    else:
+        obs_id = f"{obs_id:04d}"
+        for model in models:
+            all(filename_model, filename_dataset, obs_id=obs_id)
+            plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=obs_id)
+
 
 @cli.command("prepare-dataset", help="Prepare map dataset used for event simulation")
-@click.option(
-              "--obs_id", default=1, nargs=1, help="Number of simulations", type=int
-              )
-def prepare_dataset_cmd(obs_id):
-    OBS_ID = '{:04d}'.format(obs_id)
+def prepare_dataset_cmd():
     filename_dataset = get_filename_dataset(LIVETIME)
     prepare_dataset(filename_dataset)
 
@@ -159,12 +152,9 @@ def prepare_dataset(filename_dataset):
 @cli.command("simulate-events", help="Simulate events for given model and livetime")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
 @click.option(
-              "--obs_id", default=1, nargs=1, help="Number of simulations", type=int
+              "--nobs", default=1, nargs=1, help="How many observations to simulate"
               )
-@click.option(
-              "--obs_id_all", default='False', nargs=1, help="Iterate over N observations"
-              )
-def simulate_events_cmd(model, obs_id, obs_id_all):
+def simulate_events_cmd(model, nobs):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -172,18 +162,10 @@ def simulate_events_cmd(model, obs_id, obs_id_all):
 
     filename_dataset = get_filename_dataset(LIVETIME)
 
-    if obs_id_all == 'False':
-        OBS_ID = '{:04d}'.format(obs_id)
+    for obs_id in np.arange(nobs):
         for model in models:
             filename_model = BASE_PATH / f"models/{model}.yaml"
-            simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
-
-    else:
-        for obsid in np.arange(obs_id):
-            OBS_ID = '{:04d}'.format(obsid)
-            for model in models:
-                filename_model = BASE_PATH / f"models/{model}.yaml"
-                simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
+            simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=obs_id)
 
 
 def simulate_events(filename_model, filename_dataset, obs_id):
@@ -211,7 +193,7 @@ def simulate_events(filename_model, filename_dataset, obs_id):
     models = SkyModels.read(filename_model)
     dataset.models = models
 
-    events = MapDatasetEventSampler(random_state=int(obs_id))
+    events = MapDatasetEventSampler(random_state=obs_id)
     events = events.run(dataset, observation)
 
     path = get_filename_events(filename_dataset, filename_model, obs_id)
@@ -223,12 +205,12 @@ def simulate_events(filename_model, filename_dataset, obs_id):
 @cli.command("fit-model", help="Fit given model")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
 @click.option(
-              "--obs_id", default=1, nargs=1, help="Number of simulations", type=int
+              "--obs-id", default=0, nargs=1, help="Choose a single observation to fit.", type=int
               )
 @click.option(
-              "--obs_id_all", default='False', nargs=1, help="Iterate over N observations"
+              "--obs-all", default=False, nargs=1, help="Iterate over all observations", is_flag=True
               )
-def fit_model_cmd(model, obs_id, obs_id_all):
+def fit_model_cmd(model, obs_id, obs_all):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -236,18 +218,16 @@ def fit_model_cmd(model, obs_id, obs_id_all):
 
     filename_dataset = get_filename_dataset(LIVETIME)
 
-    if obs_id_all == 'False':
-        OBS_ID = '{:04d}'.format(obs_id)
-        for model in models:
-            filename_model = BASE_PATH / f"models/{model}.yaml"
-            fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
-
+    if obs_all:
+        n_obs = len(BASE_PATH.glob(f"data/models/{model}/*.fits.gz"))
+        obs_ids = np.arange(n_obs)
     else:
-        for obsid in np.arange(obs_id):
-            OBS_ID = '{:04d}'.format(obsid)
-            for model in models:
-                filename_model = BASE_PATH / f"models/{model}.yaml"
-                fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=OBS_ID)
+        obs_ids = [obs_id]
+
+    for model in models:
+        for obs_id in obs_ids:
+            filename_model = BASE_PATH / f"models/{model}.yaml"
+            fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=obs_id)
 
 
 def read_dataset(filename_dataset, filename_model, obs_id):
@@ -295,12 +275,43 @@ def fit_model(filename_model, filename_dataset, obs_id):
     models.write(str(path), overwrite=True)
 
     # write covariance
-    path = get_filename_covariance(filename_model, obs_id)
+    path = get_filename_covariance(path)
     log.info(f"Writing {path}")
 
     # TODO: exclude background parameters for now, as they are fixed anyway
     covariance = result.parameters.get_subcovariance(models.parameters)
     np.savetxt(path, covariance)
+
+
+@cli.command("fit-gather", help="Gather fit results from the given model")
+@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
+def fit_gather_cmd(model):
+    if model == "all":
+        models = AVAILABLE_MODELS
+    else:
+        models = [model]
+
+    for model in models:
+        fit_gather(model)
+
+
+def fit_gather(model_name):
+    rows = []
+
+    for filename in (BASE_PATH / f"results/models/{model_name}/fit").glob("*.yaml"):
+        model_best_fit = read_best_fit_model(filename)
+        row = {}
+
+        for par in model_best_fit.parameters:
+            row[par.name] = par.value
+            row[par.name + "_err"] = model_best_fit.parameters.error(par)
+
+        rows.append(row)
+
+    table = table_from_row_data(rows)
+    filename = f"results/models/{model_name}/fit-results-all.fits.gz"
+    log.info(f"Writing {filename}")
+    table.write(str(filename), overwrite=True)
 
 
 @cli.command("plot-results", help="Plot results for given model")
@@ -398,11 +409,11 @@ def plot_residual_distribution(dataset, obs_id):
     save_figure(filename)
 
 
-def read_best_fit_model(path, obs_id):
-    log.info(f"Reading {path}")
-    model_best_fit = SkyModels.read(path)
+def read_best_fit_model(filename):
+    log.info(f"Reading {filename}")
+    model_best_fit = SkyModels.read(filename)
 
-    path = path.parent / f"covariance_{obs_id}.txt"
+    path = get_filename_covariance(filename)
     log.info(f"Reading {path}")
     pars = model_best_fit.parameters
     pars.covariance = np.loadtxt(str(path))
@@ -439,7 +450,7 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
     plot_residual_distribution(dataset, obs_id)
 
 
-def pull(model_name, obs_id):
+def plot_pull_distribution(model_name):
     filename_model = BASE_PATH / f"models/{model_name}.yaml"
     mod = SkyModels.read(filename_model)
     mod = mod[0].spectral_model.parameters
@@ -466,16 +477,13 @@ def pull(model_name, obs_id):
 
 @cli.command("plot-pull_results", help="Plot the pull distribution for the model")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
-@click.option(
-              "--obs_id", default=100, nargs=1, help="Selected observation", type=int
-              )
 def plot_pull_distrib(model, obs_id):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
         models = [model]
 
-    pull(model_name=model, obs_id=obs_id)
+    plot_pull_distribution(model_name=model)
 
 
 if __name__ == "__main__":
