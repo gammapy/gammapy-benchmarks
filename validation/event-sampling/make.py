@@ -81,13 +81,6 @@ def get_filename_covariance(filename_best_fit_model):
     return filename_best_fit_model.parent / "covariance" / filename
 
 
-#def all(filename_model, filename_dataset, obs_id):
-##    filename_model = BASE_PATH / f"models/{model}.yaml"
-#    simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_id)
-#    obs_ids = f"0:{obs_id}"
-#    fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs-ids=obs_ids)
-
-
 @click.group()
 @click.option(
     "--log-level", default="INFO", type=click.Choice(["DEBUG", "INFO", "WARNING"])
