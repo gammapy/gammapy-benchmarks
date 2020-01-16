@@ -360,6 +360,8 @@ def save_figure(filename):
     log.info(f"Writing {path}")
     plt.savefig(path, dpi=DPI)
     plt.clf()
+    plt.close()
+
 
 
 def plot_spectra(model, model_best_fit, obs_id):
