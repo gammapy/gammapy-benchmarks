@@ -227,7 +227,10 @@ def parse_obs_ids(obs_ids_str, model):
 @click.option(
               "--obs_ids", default="all", nargs=1, help="Which observation to choose.", type=str
               )
-def fit_model_cmd(model, obs_ids):
+@click.option(
+              "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
+              )
+def fit_model_cmd(model, obs_ids, binned):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -240,7 +243,7 @@ def fit_model_cmd(model, obs_ids):
         filename_model = BASE_PATH / f"models/{model}.yaml"
 
         with multiprocessing.Pool(processes=4) as pool:
-            args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids)
+            args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids, repeat(binned))
             results = pool.starmap(fit_model, args)
 
 
@@ -258,7 +261,7 @@ def read_dataset(filename_dataset, filename_model, obs_id):
     return dataset
 
 
-def fit_model(filename_model, filename_dataset, obs_id):
+def fit_model(filename_model, filename_dataset, obs_id, binned=False):
     """Fit the events using a model.
 
     Parameters
@@ -276,20 +279,27 @@ def fit_model(filename_model, filename_dataset, obs_id):
     models = SkyModels.read(filename_model)
 
     dataset.models = models
+    if binned:
+        dataset.fake()
     dataset.background_model.parameters["norm"].frozen = True
 
     fit = Fit([dataset])
+    
     result = fit.run(optimize_opts={"print_level": 1})
 
     log.info(f"Fit info: {result}")
 
     # write best fit model
     path = get_filename_best_fit_model(filename_model, obs_id)
+    if binned:
+        path = Path(str(path).replace("/fit/","/fit_fake/"))
     log.info(f"Writing {path}")
     models.write(str(path), overwrite=True)
 
     # write covariance
     path = get_filename_covariance(path)
+    if binned:
+        path = Path(str(path).replace("/fit/","/fit_fake/"))
     log.info(f"Writing {path}")
 
     # TODO: exclude background parameters for now, as they are fixed anyway
@@ -299,20 +309,27 @@ def fit_model(filename_model, filename_dataset, obs_id):
 
 @cli.command("fit-gather", help="Gather fit results from the given model")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
-def fit_gather_cmd(model):
+@click.option(
+              "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
+              )
+def fit_gather_cmd(model, binned):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
         models = [model]
 
     for model in models:
-        fit_gather(model)
+        fit_gather(model, binned)
 
 
-def fit_gather(model_name):
+def fit_gather(model_name, binned=False):
     rows = []
 
-    for filename in (BASE_PATH / f"results/models/{model_name}/fit").glob("*.yaml"):
+    path = (BASE_PATH / f"results/models/{model_name}/fit")
+    if binned:
+        path = Path(str(path).replace("/fit","/fit_fake"))
+
+    for filename in path.glob("*.yaml"):
         model_best_fit = read_best_fit_model(filename)
         row = {}
 
@@ -323,7 +340,10 @@ def fit_gather(model_name):
         rows.append(row)
 
     table = table_from_row_data(rows)
-    filename = f"results/models/{model_name}/fit-results-all.fits.gz"
+    name = "fit-results-all"
+    if binned:
+        name = "fit_binned-results-all"
+    filename = f"results/models/{model_name}/{name}.fits.gz"
     log.info(f"Writing {filename}")
     table.write(str(filename), overwrite=True)
 
@@ -463,24 +483,33 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
 
 @cli.command("plot-pull-distributions", help="Plot pull distributions for the given model")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
-def plot_pull_distribution_cmd(model):
+@click.option(
+              "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
+              )
+def plot_pull_distribution_cmd(model, binned):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
         models = [model]
 
     for model in models:
-        plot_pull_distribution(model_name=model)
+        plot_pull_distribution(model_name=model, binned=binned)
 
 
-def plot_pull_distribution(model_name):
-    filename = BASE_PATH / f"results/models/{model_name}/fit-results-all.fits.gz"
+def plot_pull_distribution(model_name, binned=False):
+    name = "fit-results-all"
+    if binned:
+        name = "fit_binned-results-all"
+    filename = BASE_PATH / f"results/models/{model_name}/{name}.fits.gz"
     results = Table.read(str(filename))
 
     filename_ref = BASE_PATH / f"models/{model_name}.yaml"
     model_ref = SkyModels.read(filename_ref)[0]
     names = [name for name in results.colnames if "err" not in name]
 
+    plots = "plots"
+    if binned:
+        plots = "plots_fake"
     for name in names:
         # TODO: report mean and stdev here as well
         values = results[name]
@@ -498,7 +527,7 @@ def plot_pull_distribution(model_name):
         plt.xlabel("(value - value_true) / error")
         plt.ylabel("PDF")
         plt.title(f"Pull distribution for {model_name}: {name} ")
-        filename = f"results/models/{model_name}/plots/pull-distribution-{name}.png"
+        filename = f"results/models/{model_name}/{plots}/pull-distribution-{name}.png"
         save_figure(filename)
 
 
