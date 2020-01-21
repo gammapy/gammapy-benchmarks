@@ -415,9 +415,8 @@ def plot_residual_distribution(dataset, obs_id):
     model = dataset.models[0]
 
     tophat_2D_kernel = Tophat2DKernel(5)
-    l_m = lima(dataset.counts, dataset.npred(), tophat_2D_kernel)
-    significance = l_m['significance'].sum_over_axes()
-    sig_resid = significance.data[np.isfinite(significance.data)]
+    l_m = lima(dataset.counts.sum_over_axes(keepdims=False), dataset.npred().sum_over_axes(keepdims=False), tophat_2D_kernel)
+    sig_resid = l_m["significance"].data[np.isfinite(l_m["significance"].data)]
 
 #    resid = dataset.residuals()
 #    sig_resid = resid.data[np.isfinite(resid.data)]
