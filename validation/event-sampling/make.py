@@ -10,6 +10,7 @@ import numpy as np
 from scipy.stats import norm
 import matplotlib.pyplot as plt
 import astropy.units as u
+from astropy.convolution import Tophat2DKernel
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
 from gammapy.cube import (
@@ -18,6 +19,7 @@ from gammapy.cube import (
     MapDatasetMaker,
 )
 from gammapy.data import GTI, Observation, EventList
+from gammapy.detect import compute_lima_image as lima
 from gammapy.maps import MapAxis, WcsGeom, Map
 from gammapy.irf import load_cta_irfs
 from gammapy.modeling import Fit
@@ -45,8 +47,8 @@ LIVETIME = 1 * u.hr
 GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
 
 # dataset config
-ENERGY_AXIS = MapAxis.from_energy_bounds("0.1 TeV", "100 TeV", nbin=30)
-ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds("0.03 TeV", "300 TeV", nbin=30)
+ENERGY_AXIS = MapAxis.from_energy_bounds("0.1 TeV", "100 TeV", nbin=90)
+ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds("0.03 TeV", "300 TeV", nbin=90)
 WCS_GEOM = WcsGeom.create(
     skydir=POINTING, width=(8, 8), binsz=0.02, frame="galactic", axes=[ENERGY_AXIS]
 )
@@ -411,8 +413,14 @@ def plot_residuals(dataset, obs_id):
 def plot_residual_distribution(dataset, obs_id):
     # plot residual significance distribution
     model = dataset.models[0]
-    resid = dataset.residuals()
-    sig_resid = resid.data[np.isfinite(resid.data)]
+
+    tophat_2D_kernel = Tophat2DKernel(5)
+    l_m = lima(dataset.counts, dataset.npred(), tophat_2D_kernel)
+    significance = l_m['significance'].sum_over_axes()
+    sig_resid = significance.data[np.isfinite(significance.data)]
+
+#    resid = dataset.residuals()
+#    sig_resid = resid.data[np.isfinite(resid.data)]
 
     plt.hist(
         sig_resid, density=True, alpha=0.5, color="red", bins=100,
