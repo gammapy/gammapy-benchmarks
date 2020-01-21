@@ -430,7 +430,7 @@ def plot_residual_distribution(dataset, obs_id):
     print("Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
     x = np.linspace(-8, 8, 50)
     p = norm.pdf(x, mu, std)
-    plt.plot(x, p, lw=2, color="black")
+    plt.plot(x, p, lw=2, color="black", label="Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
     plt.legend()
     plt.xlabel("Significance")
     plt.yscale("log")
