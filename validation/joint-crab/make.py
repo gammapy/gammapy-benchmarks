@@ -21,18 +21,9 @@ from joint_crab.extract_fermi import extract_spectrum_fermi
 
 log = logging.getLogger(__name__)
 
-AVAILABLE_DATA = ["hess","magic","veritas","fact", "fermi"]
+AVAILABLE_DATA = ["hess","magic","veritas","fact", "fermi", "joint"]
 
 DATASETS = [
-    {
-        "name": "fermi",
-        "label": "Fermi-LAT",
-        "obs_ids": [0],
-        "on_radius": "0.3 deg",
-        "containment_correction": True,
-        "energy_range": {"min": "0.03 TeV", "max": "2 TeV"},
-        "color": "#21ABCD",
-    },
 
     {
         "name": "joint",
@@ -103,24 +94,25 @@ def run_analyses(instruments, npoints=10):
     joint = []
     for instrument in instruments:
         # First perform data reduction and save to disk
-        if instrument != "fermi": 
-            data_reduction(instrument)
-        else:
-            data_reduction_fermi()
+        if instrument != "joint":
+            if instrument != "fermi":
+                data_reduction(instrument)
+            else:
+                data_reduction_fermi()
+
         data_fitting(instrument, npoints)
         make_summary(instrument)
 
 @cli.command("run-fit", help="Run Gammapy fit: joint Crab")
 @click.argument("instruments", type=click.Choice(list(AVAILABLE_DATA) + ["all"]))
 @click.argument("npoints", required = False, type=int, default=10)
-def run_analyses(instruments, npoints=10):    
+def run_fit(instruments, npoints=10):
     # Loop over instruments
     if instruments == "all":
         instruments = list(AVAILABLE_DATA)
     else:
         instruments = [instruments]
 
-    joint = []
     for instrument in instruments:
         data_fitting(instrument, npoints)
         make_summary(instrument)
@@ -214,25 +206,36 @@ def make_contours(fit, result, npoints):
    
     return contours
 
+def read_datasets_and_set_model(instrument, model):
+    # Read from disk
+    datasets = Datasets.read(f"reduced_{instrument}/_datasets.yaml",
+                             f"reduced_{instrument}/_models.yaml")
+
+    e_min = u.Quantity(instrument_opts[instrument]['emin'])
+    e_max = u.Quantity(instrument_opts[instrument]['emax'])
+
+    # Set model and fit range
+    for ds in datasets:
+        ds.models = model
+        ds.mask_fit = ds.counts.energy_mask(e_min, e_max)
+
+    return datasets
 
 def data_fitting(instrument, npoints):
     log.info("Running fit ...")
     # First define model
     crab_model = define_model()
-    
-    # Read from disk
-    datasets = Datasets.read(f"reduced_{instrument}/_datasets.yaml", 
-                            f"reduced_{instrument}/_models.yaml")
-       
-    e_min = u.Quantity(instrument_opts[instrument]['emin'])
-    e_max = u.Quantity(instrument_opts[instrument]['emax'])
-    
-    # Set model and fit range
-    for ds in datasets:
-        ds.models = crab_model
-        ds.mask_fit = ds.counts.energy_mask(e_min, e_max)
-        print(ds.mask_fit)
-        print(ds.energy_range)
+
+    if instrument != "joint":
+        datasets = read_datasets_and_set_model(instrument, crab_model)
+    else:
+        log.info("Performing joint analysis")
+        ds_list = []
+        for inst in AVAILABLE_DATA[:-1]:
+            datasets = read_datasets_and_set_model(inst, crab_model)
+            ds_list = [*ds_list, *datasets]
+        datasets = Datasets(ds_list)
+
     # Perform fit
     fit = Fit(datasets)
     result = fit.run()
