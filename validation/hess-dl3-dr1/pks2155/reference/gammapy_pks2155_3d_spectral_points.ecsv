@@ -5,20 +5,21 @@
 # - {name: e_min, unit: TeV, datatype: float64, format: .3f}
 # - {name: e_max, unit: TeV, datatype: float64, format: .3f}
 # - {name: dnde, unit: 1 / (cm2 s TeV), datatype: float64, format: .3e}
-# - {name: dnde_errp, unit: 1 / (cm2 s TeV), datatype: float64, format: .3e}
 # - {name: dnde_errn, unit: 1 / (cm2 s TeV), datatype: float64, format: .3e}
+# - {name: dnde_errp, unit: 1 / (cm2 s TeV), datatype: float64, format: .3e}
 # - {name: is_ul, datatype: bool}
 # - {name: dnde_ul, unit: 1 / (cm2 s TeV), datatype: float64, format: .3e}
 # meta: {SED_TYPE: dnde}
 # schema: astropy-2.0
-e_ref e_min e_max dnde dnde_errp dnde_errn is_ul dnde_ul
-0.487 0.4217 0.5623 7.26338e-11 5.78057e-11 8.7462e-11 False 0
-0.6494 0.5623 0.7499 1.43187e-11 1.03347e-11 1.83026e-11 False 0
-0.866 0.7499 1.0 8.47003e-12 6.61195e-12 1.03281e-11 False 0
-1.155 1.0 1.334 3.68692e-12 2.71901e-12 4.65484e-12 False 0
-1.54 1.334 1.778 1.47456e-12 9.99429e-13 1.94968e-12 False 0
-2.054 1.778 2.371 2.34987e-13 6.30162e-14 4.06958e-13 False 0
-2.738 2.371 3.162 1.44666e-13 4.16379e-14 2.47694e-13 False 0
-3.652 3.162 4.217 1.02875e-13 2.8602e-14 1.77149e-13 False 0
-4.87 4.217 5.623 0 -1.0 -1.0 True 7.08425e-14
-6.494 5.623 7.499 0 -1.0 -1.0 True 3.37167e-14
+e_ref e_min e_max dnde dnde_errn dnde_errp is_ul dnde_ul
+0.487 0.4217 0.5623 7.26338E-11 1.48281E-11 1.48282E-11 False 0
+0.6494 0.5623 0.7499 1.43187E-11 3.984E-12 3.9839E-12 False 0
+0.866 0.7499 1 8.47003E-12 1.85808E-12 1.85807E-12 False 0
+1.155 1 1.334 3.68692E-12 9.6791E-13 9.67920000000001E-13 False 0
+1.54 1.334 1.778 1.47456E-12 4.75131E-13 4.7512E-13 False 0
+2.054 1.778 2.371 2.34987E-13 1.719708E-13 1.71971E-13 False 0
+2.738 2.371 3.162 1.44666E-13 1.030281E-13 1.03028E-13 False 0
+3.652 3.162 4.217 1.02875E-13 7.4273E-14 7.4274E-14 False 0
+4.87 4.217 5.623 0 1 -1 True 7.08425E-14
+6.494 5.623 7.499 0 1 -1 True 3.37167E-14
+

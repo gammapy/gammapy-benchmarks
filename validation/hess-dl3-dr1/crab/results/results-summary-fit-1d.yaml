@@ -1,3 +1,5 @@
-amplitude: 1.73e-11 +- 9.96e-13 1 / (cm2 s TeV)
-index: '2.71e+00 +- 8.13e-02 '
+amplitude: 1.74e-11 +- 1.03e-12 1 / (cm2 s TeV)
+index: '2.57e+00 +- 1.10e-01 '
+lat_0: 2.20e+01 +- 0.00e+00 deg
+lon_0: 8.36e+01 +- 0.00e+00 deg
 reference: 1.45e+00 +- 0.00e+00 TeV

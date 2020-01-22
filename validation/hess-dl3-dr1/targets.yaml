@@ -1,30 +1,48 @@
 - tag: crab
   name: Crab
+  frame: icrs
   ra: 83.63 deg
+  ra_value: 83.63 # TODO: remove this, once units are uniformly handled in config files
   dec: 22.01 deg
+  dec_value: 22.01
+  search_radius: 5 deg
   on_size: 0.11 deg
   spatial_model: PointSpatialModel
   e_decorr: 1.45 TeV
+  e_decorr_value: 1.45
+  tstart: "null"
+  tstop: "null"
+  debug_run: 23592
 - tag: msh1552
   name: MSH 15-52
+  frame: icrs
   ra: 228.53 deg
+  ra_value: 228.53
   dec: -59.16 deg
+  dec_value: -59.16
+  search_radius: 5 deg
   on_size: 0.3 deg
   spatial_model: DiskSpatialModel
   e_decorr: 1.4 TeV
+  e_decorr_value: 1.4
+  tstart: "null"
+  tstop: "null"
+  debug_run: 20365
 - tag: pks2155
   name: PKS 2155-304 (steady)
+  frame: icrs
   ra: 329.72 deg
+  ra_value: 329.72
   dec: -30.23 deg
+  dec_value: -30.23
+  search_radius: 5 deg
   on_size: 0.11 deg
   spatial_model: PointSpatialModel
   e_decorr: 0.65 TeV
-- tag: rxj1713
-  name: RX J1713.7-3946
-  ra: 258.39 deg
-  dec: -39.76 deg
-  on_size: 0.6 deg
-  spatial_model: excess
-  e_decorr: 1.15 TeV
+  e_decorr_value: 0.65
+  tstart: 2008-08-27T00:00
+  tstop: 2008-08-29T00:00
+  debug_run: 47802
+
 
 
