@@ -231,8 +231,7 @@ def data_fitting(instrument, npoints):
     for ds in datasets:
         ds.models = crab_model
         ds.mask_fit = ds.counts.energy_mask(e_min, e_max)
-        print(ds.mask_fit)
-        print(ds.energy_range)
+
     # Perform fit
     fit = Fit(datasets)
     result = fit.run()
