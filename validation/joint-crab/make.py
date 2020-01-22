@@ -69,7 +69,7 @@ instrument_opts = dict(
             'color': "#3EB489",},
     fermi = {'on_radius':'0.3 deg', 
             'stack':False, 
-            'containment'True,
+            'containment':True,
             'emin':'0.03 TeV', 
             'emax':'2 TeV',
             'color': "#21ABCD",},
@@ -161,7 +161,7 @@ def data_reduction_fermi():
     emin = u.Quantity(instrument_opts['fermi']['emin']).to_value('TeV')
     emax = u.Quantity(instrument_opts['fermi']['emax']).to_value('TeV')
 
-    crab_pos = SkyCoord(ra=83.63, dec=22.01, unit='deg', frame='icrs')
+    crab_pos = SkyCoord(83.63, 22.01, unit='deg', frame='icrs')
     on_region = CircleSkyRegion(crab_pos,radius=Angle(radius))
     off_region = CircleAnnulusSkyRegion(crab_pos,inner_radius=1*u.deg, outer_radius=2*u.deg)    
 
@@ -231,8 +231,6 @@ def data_fitting(instrument, npoints):
     for ds in datasets:
         ds.models = crab_model
         ds.mask_fit = ds.counts.energy_mask(e_min, e_max)
-        print(ds.mask_fit)
-        print(ds.energy_range)
     # Perform fit
     fit = Fit(datasets)
     result = fit.run()

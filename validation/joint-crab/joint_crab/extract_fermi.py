@@ -22,7 +22,6 @@ class FermiDatasetMaker:
                  evt_file="$JOINT_CRAB/data/fermi/events.fits.gz",
                  exp_file="$JOINT_CRAB/data/fermi/exposure_cube.fits.gz",
                  psf_file="$JOINT_CRAB/data/fermi/psf.fits.gz",
-                 max_psf_radius='0.5 deg'
                 ):
         # Read data
         self.events = EventList.read(evt_file)
@@ -62,7 +61,7 @@ class FermiDatasetMaker:
         
         # recompute exposure on geom
         coords = geom.get_coord()
-        values = self.exposure.interp_by_coord(coords)
+        values = self.exposure.get_by_coord(coords)
         dataset.exposure = Map.from_geom(geom, data=values, unit=self.exposure.unit)
 
         # Not the real Fermi-LAT EDISP: Use 5% energy resolution as approximation
@@ -77,7 +76,7 @@ class FermiDatasetMaker:
 def extract_spectrum_fermi(on_region, off_region, energy, containment_correction):
     """Perform the spectral extraction at target_position for a circular region."""
     
-    geom = WcsGeom.create(skydir=on_region.center,width='5 deg', binsz=0.01, axes=[energy])
+    geom = WcsGeom.create(skydir=on_region.center,width='4 deg', binsz=0.02, frame='galactic', axes=[energy])
         
     ds = FermiDatasetMaker().run(geom)
     
@@ -85,6 +84,7 @@ def extract_spectrum_fermi(on_region, off_region, energy, containment_correction
         on_region,
         containment_correction=containment_correction
     )
+
     on_mask=ds.counts.geom.region_mask([on_region]) 
     on_solid_angle = np.sum(ds.counts.geom.solid_angle()*on_mask)
     
@@ -92,6 +92,7 @@ def extract_spectrum_fermi(on_region, off_region, energy, containment_correction
         off_region,
         containment_correction=False
     )
+    
     off_mask=ds.counts.geom.region_mask([off_region]) 
     off_solid_angle = np.sum(ds.counts.geom.solid_angle()*off_mask)
 
