@@ -49,6 +49,9 @@ GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
 # dataset config
 ENERGY_AXIS = MapAxis.from_energy_bounds("0.1 TeV", "100 TeV", nbin=90)
 ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds("0.03 TeV", "300 TeV", nbin=90)
+
+MIGRA_AXIS = MapAxis.from_bounds(0.5, 2, nbin=100, node_type="edges", name="migra")
+
 WCS_GEOM = WcsGeom.create(
     skydir=POINTING, width=(8, 8), binsz=0.02, frame="galactic", axes=[ENERGY_AXIS]
 )
@@ -146,7 +149,7 @@ def prepare_dataset(filename_dataset):
         obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs
     )
 
-    empty = MapDataset.create(WCS_GEOM)
+    empty = MapDataset.create(WCS_GEOM, migra_axis=MIGRA_AXIS)
     maker = MapDatasetMaker(selection=["exposure", "background", "psf", "edisp"])
     dataset = maker.run(empty, observation)
 
