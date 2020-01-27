@@ -78,21 +78,21 @@ def extract_spectrum_fermi(on_region, off_region, energy, containment_correction
     """Perform the spectral extraction at target_position for a circular region."""
     
     geom = WcsGeom.create(skydir=on_region.center,width='5 deg', binsz=0.01, axes=[energy])
-        
+
     ds = FermiDatasetMaker().run(geom)
     
     spec_dataset = ds.to_spectrum_dataset(
         on_region,
         containment_correction=containment_correction
     )
-    on_mask=ds.counts.geom.region_mask([on_region]) 
+    on_mask=ds.counts.geom.region_mask([on_region])
     on_solid_angle = np.sum(ds.counts.geom.solid_angle()*on_mask)
     
     off_dataset = ds.to_spectrum_dataset(
         off_region,
         containment_correction=False
     )
-    off_mask=ds.counts.geom.region_mask([off_region]) 
+    off_mask=ds.counts.geom.region_mask([off_region])
     off_solid_angle = np.sum(ds.counts.geom.solid_angle()*off_mask)
 
     

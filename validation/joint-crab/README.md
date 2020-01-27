@@ -22,7 +22,8 @@
 - See [FACT summary page](results/fact_summary.md)
 
 ### Fermi
-TBD
+
+- See [Fermi summary page](results/fermi_summary.md)
 
 ### Joint
 TBD
