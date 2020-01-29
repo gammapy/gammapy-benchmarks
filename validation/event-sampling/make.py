@@ -42,15 +42,14 @@ DPI = 120
 # observation config
 IRF_FILE = "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits"
 
-POINTING = SkyCoord(0.0, 0.0, frame="galactic", unit="deg")
+POINTING = SkyCoord(0.0, 0.5, frame="galactic", unit="deg")
 LIVETIME = 1 * u.hr
 GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
 
 # dataset config
-ENERGY_AXIS = MapAxis.from_energy_bounds("0.1 TeV", "100 TeV", nbin=90)
-ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds("0.03 TeV", "300 TeV", nbin=90)
-
-MIGRA_AXIS = MapAxis.from_bounds(0.5, 2, nbin=100, node_type="edges", name="migra")
+ENERGY_AXIS = MapAxis.from_energy_bounds("0.1 TeV", "100 TeV", nbin=10, per_decade=True)
+ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds("0.03 TeV", "300 TeV", nbin=20, per_decade=True)
+MIGRA_AXIS = MapAxis.from_bounds(0.5, 2, nbin=150, node_type="edges", name="migra")
 
 WCS_GEOM = WcsGeom.create(
     skydir=POINTING, width=(8, 8), binsz=0.02, frame="galactic", axes=[ENERGY_AXIS]
@@ -149,7 +148,7 @@ def prepare_dataset(filename_dataset):
         obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs
     )
 
-    empty = MapDataset.create(WCS_GEOM, migra_axis=MIGRA_AXIS)
+    empty = MapDataset.create(WCS_GEOM, energy_axis_true=ENERGY_AXIS_TRUE, migra_axis=MIGRA_AXIS)
     maker = MapDatasetMaker(selection=["exposure", "background", "psf", "edisp"])
     dataset = maker.run(empty, observation)
 
