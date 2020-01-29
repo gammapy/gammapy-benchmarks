@@ -23,7 +23,7 @@ from gammapy.detect import compute_lima_image as lima
 from gammapy.maps import MapAxis, WcsGeom, Map
 from gammapy.irf import load_cta_irfs
 from gammapy.modeling import Fit
-from gammapy.modeling.models import SkyModels
+from gammapy.modeling.models import Models
 from gammapy.utils.table import table_from_row_data
 from regions import CircleSkyRegion
 
@@ -195,7 +195,7 @@ def simulate_events(filename_model, filename_dataset, nobs):
     dataset = MapDataset.read(filename_dataset)
 
     log.info(f"Reading {filename_model}")
-    models = SkyModels.read(filename_model)
+    models = Models.read(filename_model)
     dataset.models = models
 
     sampler = MapDatasetEventSampler(random_state=0)
@@ -281,7 +281,7 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False):
     dataset = read_dataset(filename_dataset, filename_model, obs_id)
 
     log.info(f"Reading {filename_model}")
-    models = SkyModels.read(filename_model)
+    models = Models.read(filename_model)
 
     dataset.models = models
     if binned:
@@ -448,7 +448,7 @@ def plot_residual_distribution(dataset, obs_id):
 
 def read_best_fit_model(filename):
     log.info(f"Reading {filename}")
-    model_best_fit = SkyModels.read(filename)
+    model_best_fit = Models.read(filename)
 
     path = get_filename_covariance(filename)
     log.info(f"Reading {path}")
@@ -478,7 +478,7 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
         Observation ID.
     """
     log.info(f"Reading {filename_model}")
-    model = SkyModels.read(filename_model)
+    model = Models.read(filename_model)
 
     path = get_filename_best_fit_model(filename_model, obs_id)
     model_best_fit = read_best_fit_model(path)
@@ -514,7 +514,7 @@ def plot_pull_distribution(model_name, binned=False):
     results = Table.read(str(filename))
 
     filename_ref = BASE_PATH / f"models/{model_name}.yaml"
-    model_ref = SkyModels.read(filename_ref)[0]
+    model_ref = Models.read(filename_ref)[0]
     names = [name for name in results.colnames if "err" not in name]
 
     plots = "plots"
