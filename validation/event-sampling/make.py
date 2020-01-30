@@ -21,7 +21,7 @@ from gammapy.cube import (
 from gammapy.data import GTI, Observation, EventList
 from gammapy.detect import compute_lima_image as lima
 from gammapy.maps import MapAxis, WcsGeom, Map
-from gammapy.irf import load_cta_irfs
+from gammapy.irf import EnergyDispersion2D, load_cta_irfs
 from gammapy.modeling import Fit
 from gammapy.modeling.models import Models
 from gammapy.utils.table import table_from_row_data
@@ -43,7 +43,7 @@ DPI = 120
 IRF_FILE = "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits"
 
 POINTING = SkyCoord(0.0, 0.5, frame="galactic", unit="deg")
-LIVETIME = 1 * u.hr
+LIVETIME = 10 * u.hr
 GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
 
 # dataset config
@@ -52,7 +52,7 @@ ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds("0.03 TeV", "300 TeV", nbin=20, pe
 MIGRA_AXIS = MapAxis.from_bounds(0.5, 2, nbin=150, node_type="edges", name="migra")
 
 WCS_GEOM = WcsGeom.create(
-    skydir=POINTING, width=(8, 8), binsz=0.02, frame="galactic", axes=[ENERGY_AXIS]
+    skydir=POINTING, width=(4, 4), binsz=0.02, frame="galactic", axes=[ENERGY_AXIS]
 )
 
 
@@ -105,7 +105,10 @@ def cli(log_level, show_warnings):
 @click.option(
               "--obs_all", default=False, nargs=1, help="Iterate over all observations", is_flag=True
               )
-def all_cmd(model, obs_ids, obs_all):
+@click.option(
+              "--simple", default=1, nargs=1, help="Select a single observation", is_flag=True
+              )
+def all_cmd(model, obs_ids, obs_all, simple):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -114,7 +117,11 @@ def all_cmd(model, obs_ids, obs_all):
     filename_dataset = get_filename_dataset(LIVETIME)
     filename_model = BASE_PATH / f"models/{model}.yaml"
 
-    prepare_dataset(filename_dataset)
+    if simple:
+        prepare_dataset_simple(filename_dataset)
+
+    else:
+        prepare_dataset(filename_dataset)
 
     if obs_all:
         for model in models:
@@ -150,6 +157,33 @@ def prepare_dataset(filename_dataset):
 
     empty = MapDataset.create(WCS_GEOM, energy_axis_true=ENERGY_AXIS_TRUE, migra_axis=MIGRA_AXIS)
     maker = MapDatasetMaker(selection=["exposure", "background", "psf", "edisp"])
+    dataset = maker.run(empty, observation)
+
+    filename_dataset.parent.mkdir(exist_ok=True, parents=True)
+    log.info(f"Writing {filename_dataset}")
+    dataset.write(filename_dataset, overwrite=True)
+
+
+def prepare_dataset_simple(filename_dataset):
+    """Prepare dataset for a given skymodel."""
+    log.info(f"Reading {IRF_FILE}")
+
+    irfs = load_cta_irfs(IRF_FILE)
+
+    edisp_gauss = EnergyDispersion2D.from_gauss(e_true=ENERGY_AXIS_TRUE.edges,
+                                            migra=MIGRA_AXIS.edges,
+                                            sigma=0.1, bias=0,
+                                            offset=[0, 2, 4, 6, 8] * u.deg)
+
+    irfs["edisp"] = edisp_gauss
+    irfs["aeff"].data.data = np.ones_like(irfs["aeff"].data.data) * 1e6
+
+    observation = Observation.create(
+                                     obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs
+                                     )
+
+    empty = MapDataset.create(WCS_GEOM, energy_axis_true=ENERGY_AXIS_TRUE, migra_axis=MIGRA_AXIS)
+    maker = MapDatasetMaker(selection=["exposure", "edisp"])
     dataset = maker.run(empty, observation)
 
     filename_dataset.parent.mkdir(exist_ok=True, parents=True)
