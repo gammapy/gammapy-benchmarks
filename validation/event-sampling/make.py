@@ -118,6 +118,7 @@ def all_cmd(model, obs_ids, obs_all, simple):
     filename_model = BASE_PATH / f"models/{model}.yaml"
 
     if simple:
+        filename_dataset = Path(str(filename_dataset).replace("dataset","dataset_simple"))
         prepare_dataset_simple(filename_dataset)
 
     else:
