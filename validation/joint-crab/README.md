@@ -26,7 +26,8 @@
 - See [Fermi summary page](results/fermi_summary.md)
 
 ### Joint
-TBD
+
+- See [joint analysis summary page](results/joint_summary.md)
 
 ## Task
 
