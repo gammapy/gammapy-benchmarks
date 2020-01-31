@@ -35,7 +35,7 @@ BASE_PATH = Path(__file__).parent
 AVAILABLE_MODELS = ["point-pwl", "point-ecpl", "point-log-parabola",
                     "point-pwl2", "point-ecpl-3fgl", "point-ecpl-4fgl",
                     "point-template", "diffuse-cube",
-                    "disk-pwl", "gauss-pwl"]
+                    "disk-pwl", "gauss-pwl", "gauss-pwlsimple"]
 
 DPI = 120
 
@@ -106,7 +106,7 @@ def cli(log_level, show_warnings):
               "--obs_all", default=False, nargs=1, help="Iterate over all observations", is_flag=True
               )
 @click.option(
-              "--simple", default=1, nargs=1, help="Select a single observation", is_flag=True
+              "--simple", default=False, nargs=1, help="Simplify the dataset preparation", type=str
               )
 def all_cmd(model, obs_ids, obs_all, simple):
     if model == "all":
@@ -114,6 +114,7 @@ def all_cmd(model, obs_ids, obs_all, simple):
     else:
         models = [model]
 
+    binned = False
     filename_dataset = get_filename_dataset(LIVETIME)
     filename_model = BASE_PATH / f"models/{model}.yaml"
 
@@ -130,7 +131,7 @@ def all_cmd(model, obs_ids, obs_all, simple):
             obs_ids = f"0:{obs_ids}"
             obs_ids = parse_obs_ids(obs_ids, model)
             with multiprocessing.Pool(processes=4) as pool:
-                args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids)
+                args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids, repeat(binned), repeat(simple))
                 results = pool.starmap(fit_model, args)
 
             fit_gather(model)
@@ -138,7 +139,7 @@ def all_cmd(model, obs_ids, obs_all, simple):
     else:
         for model in models:
             simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
-            fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=str(obs_ids-1))
+            fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=str(obs_ids-1), binned, simple)
             plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=str(obs_ids-1))
 
 
@@ -269,7 +270,10 @@ def parse_obs_ids(obs_ids_str, model):
 @click.option(
               "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
               )
-def fit_model_cmd(model, obs_ids, binned):
+@click.option(
+              "--simple", default=False, nargs=1, help="Select a single observation", type=str
+              )
+def fit_model_cmd(model, obs_ids, binned, simple):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -280,9 +284,8 @@ def fit_model_cmd(model, obs_ids, binned):
     for model in models:
         obs_ids = parse_obs_ids(obs_ids, model)
         filename_model = BASE_PATH / f"models/{model}.yaml"
-
         with multiprocessing.Pool(processes=4) as pool:
-            args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids, repeat(binned))
+            args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids, repeat(binned), repeat(simple))
             results = pool.starmap(fit_model, args)
 
 
@@ -300,7 +303,7 @@ def read_dataset(filename_dataset, filename_model, obs_id):
     return dataset
 
 
-def fit_model(filename_model, filename_dataset, obs_id, binned=False):
+def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=False):
     """Fit the events using a model.
 
     Parameters
@@ -320,7 +323,9 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False):
     dataset.models = models
     if binned:
         dataset.fake()
-    dataset.background_model.parameters["norm"].frozen = True
+    
+    if simple==False:
+        dataset.background_model.parameters["norm"].frozen = True
 
     fit = Fit([dataset])
     

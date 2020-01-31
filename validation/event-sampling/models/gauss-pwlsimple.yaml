@@ -1,5 +1,5 @@
 components:
-- name: gauss-pwl_simple
+- name: gauss-pwlsimple
   type: SkyModel
   spatial:
     type: GaussianSpatialModel
