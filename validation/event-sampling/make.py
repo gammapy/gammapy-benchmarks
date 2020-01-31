@@ -139,7 +139,7 @@ def all_cmd(model, obs_ids, obs_all, simple):
     else:
         for model in models:
             simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
-            fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=str(obs_ids-1), binned, simple)
+            fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=str(obs_ids-1), binned=binned, simple=simple)
             plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=str(obs_ids-1))
 
 
@@ -324,7 +324,7 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
     if binned:
         dataset.fake()
     
-    if simple==False:
+    if dataset.background_model:
         dataset.background_model.parameters["norm"].frozen = True
 
     fit = Fit([dataset])
