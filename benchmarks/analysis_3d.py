@@ -33,7 +33,7 @@ def data_prep():
         skydir=(0, 0),
         binsz=0.05,
         width=(10, 8),
-        coordsys="GAL",
+        frame="galactic",
         proj="CAR",
         axes=[energy_axis],
     )
