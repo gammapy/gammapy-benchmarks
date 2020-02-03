@@ -38,7 +38,7 @@ def data_prep():
         axes=[energy_axis],
     )
 
-    stacked = MapDataset.create(geom)
+    stacked = MapDataset.create(geom, name="stacked_ds")
     maker = MapDatasetMaker()
     safe_mask_maker = SafeMaskMaker(methods=["offset-max"], offset_max="4 deg")
     for obs in observations:
@@ -60,8 +60,6 @@ def data_prep():
     )
 
     stacked.models = model
-    stacked.name = "stacked_ds"
-
     return Datasets([stacked])
 
 
