@@ -32,12 +32,11 @@ def data_prep():
         skydir=(0, 0),
         binsz=0.02,
         width=(10, 8),
-        coordsys="GAL",
+        frame="galactic",
         proj="CAR",
         axes=[energy_axis],
     )
 
-    src_pos = SkyCoord(0, 0, unit="deg", frame="galactic")
     offset_max = 4 * u.deg
     maker = MapDatasetMaker()
     safe_mask_maker = SafeMaskMaker(methods=["offset-max"], offset_max=offset_max)
@@ -56,14 +55,14 @@ def data_prep():
         spatial_model=spatial_model, spectral_model=spectral_model, name="gc-source"
     )
 
-    datasets = []
-    for i, obs in enumerate(observations):
-        dataset = maker.run(stacked, obs)
+    datasets = Datasets([])
+    for idx, obs in enumerate(observations):
+        cutout = stacked.cutout(obs.pointing_radec, width=2 * offset_max, name=f"dataset{idx}")
+        dataset = maker.run(cutout, obs)
         dataset = safe_mask_maker.run(dataset, obs)
         dataset.models = model
-        dataset.name = f"dataset{i}"
         datasets.append(dataset)
-    return Datasets(datasets)
+    return datasets
 
 
 def write(datasets, filename):
