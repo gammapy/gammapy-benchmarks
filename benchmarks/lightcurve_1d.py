@@ -7,9 +7,9 @@ import astropy.units as u
 from astropy.coordinates import SkyCoord, Angle
 from regions import CircleSkyRegion
 from gammapy.maps import MapAxis
-from gammapy.data import DataStore
+from gammapy.data import DataStore, GTI
 from gammapy.modeling.models import PowerLawSpectralModel
-from gammapy.spectrum import SpectrumDatasetMaker, ReflectedRegionsBackgroundMaker
+from gammapy.spectrum import SpectrumDatasetMaker, ReflectedRegionsBackgroundMaker, SpectrumDatasetOnOff
 from gammapy.cube import SafeMaskMaker
 from gammapy.time import LightCurveEstimator
 
@@ -21,9 +21,7 @@ def data_prep():
     OBS_ID = 23523
     obs_ids = OBS_ID * np.ones(N_OBS)
     observations = data_store.get_observations(obs_ids)
-
-    time_intervals = [(obs.tstart, obs.tstop) for obs in observations]
-
+    
     target_position = SkyCoord(ra=83.63308, dec=22.01450, unit="deg")
 
     e_reco = MapAxis.from_bounds(0.1, 40, nbin=40, interp="log", unit="TeV").edges
@@ -33,8 +31,11 @@ def data_prep():
     on_region = CircleSkyRegion(center=target_position, radius=on_region_radius)
 
     dataset_maker = SpectrumDatasetMaker(
-        region=on_region, e_reco=e_reco, e_true=e_true, containment_correction=True
+         containment_correction=True, selection=["counts", "aeff", "edisp"]
     )
+
+    empty = SpectrumDatasetOnOff.create(region=on_region, e_reco=e_reco, e_true=e_true)
+
     bkg_maker = ReflectedRegionsBackgroundMaker()
     safe_mask_masker = SafeMaskMaker(methods=["aeff-max"], aeff_percent=10)
 
@@ -48,10 +49,9 @@ def data_prep():
 
     datasets_1d = []
 
-    for time_interval in time_intervals:
-        observation = observations.select_time(time_interval)[0]
+    for observation in observations:
 
-        dataset = dataset_maker.run(observation, selection=["counts", "aeff", "edisp"])
+        dataset = dataset_maker.run(dataset=empty.copy(), observation=observation)
 
         dataset_on_off = bkg_maker.run(dataset, observation)
         dataset_on_off = safe_mask_masker.run(dataset_on_off, observation)
