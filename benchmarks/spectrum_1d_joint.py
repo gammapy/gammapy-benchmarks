@@ -39,7 +39,7 @@ def data_prep():
 
     skydir = target_position.galactic
     exclusion_mask = Map.create(
-        npix=(150, 150), binsz=0.05, skydir=skydir, proj="TAN", coordsys="GAL"
+        npix=(150, 150), binsz=0.05, skydir=skydir, proj="TAN", frame="galactic"
     )
 
     mask = exclusion_mask.geom.region_mask([exclusion_region], inside=False)
@@ -48,9 +48,9 @@ def data_prep():
     e_reco = MapAxis.from_bounds(0.1, 40, nbin=40, interp="log", unit="TeV").edges
     e_true = MapAxis.from_bounds(0.05, 100, nbin=200, interp="log", unit="TeV").edges
 
-    dataset_maker = SpectrumDatasetMaker(
-        region=on_region, e_reco=e_reco, e_true=e_true, containment_correction=True
-    )
+    empty = SpectrumDatasetOnOff.create(region=on_region, e_reco=e_reco, e_true=e_true, )
+
+    dataset_maker = SpectrumDatasetMaker(containment_correction=True, selection=["counts", "aeff", "edisp"])
     bkg_maker = ReflectedRegionsBackgroundMaker(exclusion_mask=exclusion_mask)
     safe_mask_masker = SafeMaskMaker(methods=["aeff-max"], aeff_percent=10)
 
@@ -70,11 +70,11 @@ def data_prep():
     # Data preparation
     datasets = []
 
-    for ind, observation in enumerate(observations):
-        dataset = dataset_maker.run(observation, selection=["counts", "aeff", "edisp"])
+    for idx, observation in enumerate(observations):
+        dataset = empty.copy(name=f"dataset{idx}")
+        dataset = dataset_maker.run(dataset=dataset, observation=observation)
         dataset_on_off = bkg_maker.run(dataset, observation)
         dataset_on_off = safe_mask_masker.run(dataset_on_off, observation)
-        dataset_on_off.name = f"dataset{ind}"
         dataset_on_off.models = sky_model
         datasets.append(dataset_on_off)
 

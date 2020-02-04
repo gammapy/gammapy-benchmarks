@@ -21,9 +21,9 @@ from gammapy.cube import (
 from gammapy.data import GTI, Observation, EventList
 from gammapy.detect import compute_lima_image as lima
 from gammapy.maps import MapAxis, WcsGeom, Map
-from gammapy.irf import load_cta_irfs
+from gammapy.irf import EnergyDispersion2D, load_cta_irfs
 from gammapy.modeling import Fit
-from gammapy.modeling.models import SkyModels
+from gammapy.modeling.models import Models
 from gammapy.utils.table import table_from_row_data
 from regions import CircleSkyRegion
 
@@ -35,22 +35,25 @@ BASE_PATH = Path(__file__).parent
 AVAILABLE_MODELS = ["point-pwl", "point-ecpl", "point-log-parabola",
                     "point-pwl2", "point-ecpl-3fgl", "point-ecpl-4fgl",
                     "point-template", "diffuse-cube",
-                    "disk-pwl", "gauss-pwl"]
+                    "disk-pwl", "gauss-pwl", "gauss-pwlsimple", "point-pwlsimple"]
 
 DPI = 120
 
 # observation config
 IRF_FILE = "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits"
+#IRF_FILE = "$GAMMAPY_DATA/cta-prod3b/caldb/data/cta/prod3b-v2/bcf/South_z20_50h/irf_file.fits"
 
-POINTING = SkyCoord(0.0, 0.0, frame="galactic", unit="deg")
-LIVETIME = 1 * u.hr
+POINTING = SkyCoord(0.0, 0.5, frame="galactic", unit="deg")
+LIVETIME = 10 * u.hr
 GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
 
 # dataset config
-ENERGY_AXIS = MapAxis.from_energy_bounds("0.1 TeV", "100 TeV", nbin=90)
-ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds("0.03 TeV", "300 TeV", nbin=90)
+ENERGY_AXIS = MapAxis.from_energy_bounds("0.1 TeV", "100 TeV", nbin=10, per_decade=True)
+ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds("0.03 TeV", "300 TeV", nbin=20, per_decade=True)
+MIGRA_AXIS = MapAxis.from_bounds(0.5, 2, nbin=150, node_type="edges", name="migra")
+
 WCS_GEOM = WcsGeom.create(
-    skydir=POINTING, width=(8, 8), binsz=0.02, frame="galactic", axes=[ENERGY_AXIS]
+    skydir=POINTING, width=(4, 4), binsz=0.02, frame="galactic", axes=[ENERGY_AXIS]
 )
 
 
@@ -103,16 +106,25 @@ def cli(log_level, show_warnings):
 @click.option(
               "--obs_all", default=False, nargs=1, help="Iterate over all observations", is_flag=True
               )
-def all_cmd(model, obs_ids, obs_all):
+@click.option(
+              "--simple", default=False, nargs=1, help="Simplify the dataset preparation", type=str
+              )
+def all_cmd(model, obs_ids, obs_all, simple):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
         models = [model]
 
+    binned = False
     filename_dataset = get_filename_dataset(LIVETIME)
     filename_model = BASE_PATH / f"models/{model}.yaml"
 
-    prepare_dataset(filename_dataset)
+    if simple:
+        filename_dataset = Path(str(filename_dataset).replace("dataset","dataset_simple"))
+        prepare_dataset_simple(filename_dataset)
+
+    else:
+        prepare_dataset(filename_dataset)
 
     if obs_all:
         for model in models:
@@ -120,7 +132,7 @@ def all_cmd(model, obs_ids, obs_all):
             obs_ids = f"0:{obs_ids}"
             obs_ids = parse_obs_ids(obs_ids, model)
             with multiprocessing.Pool(processes=4) as pool:
-                args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids)
+                args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids, repeat(binned), repeat(simple))
                 results = pool.starmap(fit_model, args)
 
             fit_gather(model)
@@ -128,7 +140,7 @@ def all_cmd(model, obs_ids, obs_all):
     else:
         for model in models:
             simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
-            fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=str(obs_ids-1))
+            fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=str(obs_ids-1), binned=binned, simple=simple)
             plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=str(obs_ids-1))
 
 
@@ -146,8 +158,37 @@ def prepare_dataset(filename_dataset):
         obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs
     )
 
-    empty = MapDataset.create(WCS_GEOM)
+    empty = MapDataset.create(WCS_GEOM, energy_axis_true=ENERGY_AXIS_TRUE, migra_axis=MIGRA_AXIS)
     maker = MapDatasetMaker(selection=["exposure", "background", "psf", "edisp"])
+    dataset = maker.run(empty, observation)
+
+    filename_dataset.parent.mkdir(exist_ok=True, parents=True)
+    log.info(f"Writing {filename_dataset}")
+    dataset.write(filename_dataset, overwrite=True)
+
+
+def prepare_dataset_simple(filename_dataset):
+    """Prepare dataset for a given skymodel."""
+    log.info(f"Reading {IRF_FILE}")
+
+    irfs = load_cta_irfs(IRF_FILE)
+
+    edisp_gauss = EnergyDispersion2D.from_gauss(e_true=ENERGY_AXIS_TRUE.edges,
+                                            migra=MIGRA_AXIS.edges,
+                                            sigma=0.1, bias=0,
+                                            offset=[0, 2, 4, 6, 8] * u.deg)
+
+    irfs["edisp"] = edisp_gauss
+#    irfs["aeff"].data.data = np.ones_like(irfs["aeff"].data.data) * 1e6
+
+    observation = Observation.create(
+                                     obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs
+                                     )
+
+    empty = MapDataset.create(WCS_GEOM, energy_axis_true=ENERGY_AXIS_TRUE, migra_axis=MIGRA_AXIS)
+#    maker = MapDatasetMaker(selection=["exposure", "edisp"])
+#    maker = MapDatasetMaker(selection=["exposure", "edisp", "background"])
+    maker = MapDatasetMaker(selection=["exposure", "edisp", "psf", "background"])
     dataset = maker.run(empty, observation)
 
     filename_dataset.parent.mkdir(exist_ok=True, parents=True)
@@ -192,7 +233,7 @@ def simulate_events(filename_model, filename_dataset, nobs):
     dataset = MapDataset.read(filename_dataset)
 
     log.info(f"Reading {filename_model}")
-    models = SkyModels.read(filename_model)
+    models = Models.read(filename_model)
     dataset.models = models
 
     sampler = MapDatasetEventSampler(random_state=0)
@@ -232,7 +273,10 @@ def parse_obs_ids(obs_ids_str, model):
 @click.option(
               "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
               )
-def fit_model_cmd(model, obs_ids, binned):
+@click.option(
+              "--simple", default=False, nargs=1, help="Select a single observation", type=str
+              )
+def fit_model_cmd(model, obs_ids, binned, simple):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -243,9 +287,8 @@ def fit_model_cmd(model, obs_ids, binned):
     for model in models:
         obs_ids = parse_obs_ids(obs_ids, model)
         filename_model = BASE_PATH / f"models/{model}.yaml"
-
         with multiprocessing.Pool(processes=4) as pool:
-            args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids, repeat(binned))
+            args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids, repeat(binned), repeat(simple))
             results = pool.starmap(fit_model, args)
 
 
@@ -263,7 +306,7 @@ def read_dataset(filename_dataset, filename_model, obs_id):
     return dataset
 
 
-def fit_model(filename_model, filename_dataset, obs_id, binned=False):
+def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=False):
     """Fit the events using a model.
 
     Parameters
@@ -278,12 +321,14 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False):
     dataset = read_dataset(filename_dataset, filename_model, obs_id)
 
     log.info(f"Reading {filename_model}")
-    models = SkyModels.read(filename_model)
+    models = Models.read(filename_model)
 
     dataset.models = models
     if binned:
         dataset.fake()
-    dataset.background_model.parameters["norm"].frozen = True
+    
+    if dataset.background_model:
+        dataset.background_model.parameters["norm"].frozen = True
 
     fit = Fit([dataset])
     
@@ -445,7 +490,7 @@ def plot_residual_distribution(dataset, obs_id):
 
 def read_best_fit_model(filename):
     log.info(f"Reading {filename}")
-    model_best_fit = SkyModels.read(filename)
+    model_best_fit = Models.read(filename)
 
     path = get_filename_covariance(filename)
     log.info(f"Reading {path}")
@@ -475,7 +520,7 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
         Observation ID.
     """
     log.info(f"Reading {filename_model}")
-    model = SkyModels.read(filename_model)
+    model = Models.read(filename_model)
 
     path = get_filename_best_fit_model(filename_model, obs_id)
     model_best_fit = read_best_fit_model(path)
@@ -511,7 +556,7 @@ def plot_pull_distribution(model_name, binned=False):
     results = Table.read(str(filename))
 
     filename_ref = BASE_PATH / f"models/{model_name}.yaml"
-    model_ref = SkyModels.read(filename_ref)[0]
+    model_ref = Models.read(filename_ref)[0]
     names = [name for name in results.colnames if "err" not in name]
 
     plots = "plots"

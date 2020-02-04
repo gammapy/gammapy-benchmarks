@@ -13,6 +13,7 @@ from gammapy.modeling.models import PowerLawSpectralModel, PointSpatialModel, Sk
 from gammapy.spectrum import (
     SpectrumDatasetMaker,
     SpectrumDatasetOnOff,
+    SpectrumDataset,
     FluxPointsEstimator,
     ReflectedRegionsBackgroundMaker,
 )
@@ -39,7 +40,7 @@ def data_prep():
 
     skydir = target_position.galactic
     exclusion_mask = Map.create(
-        npix=(150, 150), binsz=0.05, skydir=skydir, proj="TAN", coordsys="GAL"
+        npix=(150, 150), binsz=0.05, skydir=skydir, proj="TAN", frame="galactic"
     )
 
     mask = exclusion_mask.geom.region_mask([exclusion_region], inside=False)
@@ -48,12 +49,10 @@ def data_prep():
     e_reco = MapAxis.from_bounds(0.1, 40, nbin=40, interp="log", unit="TeV").edges
     e_true = MapAxis.from_bounds(0.05, 100, nbin=200, interp="log", unit="TeV").edges
 
-    stacked = SpectrumDatasetOnOff.create(e_reco=e_reco, e_true=e_true)
-    stacked.name = "stacked"
+    stacked = SpectrumDatasetOnOff.create(region=on_region, e_reco=e_reco, e_true=e_true, name="stacked")
 
-    dataset_maker = SpectrumDatasetMaker(
-        region=on_region, e_reco=e_reco, e_true=e_true, containment_correction=False
-    )
+    dataset_maker = SpectrumDatasetMaker(containment_correction=False, selection=["counts", "aeff", "edisp"])
+
     bkg_maker = ReflectedRegionsBackgroundMaker(exclusion_mask=exclusion_mask)
     safe_mask_masker = SafeMaskMaker(methods=["aeff-max"], aeff_percent=10)
 
@@ -71,7 +70,8 @@ def data_prep():
     )
 
     for observation in observations:
-        dataset = dataset_maker.run(observation, selection=["counts", "aeff", "edisp"])
+        dataset = stacked.copy(name=f"dataset-{observation.obs_id}")
+        dataset = dataset_maker.run(dataset=dataset, observation=observation)
         dataset_on_off = bkg_maker.run(dataset, observation)
         dataset_on_off = safe_mask_masker.run(dataset_on_off, observation)
         stacked.stack(dataset_on_off)

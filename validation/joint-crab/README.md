@@ -29,6 +29,7 @@
 
 - See [Joint summary page](results/joint_summary.md)
 
+
 ## Task
 
 - Write a script (or notebook) to reproduce the Joint Crab analysis using the latest Gammapy
