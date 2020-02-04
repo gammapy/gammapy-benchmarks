@@ -35,12 +35,13 @@ BASE_PATH = Path(__file__).parent
 AVAILABLE_MODELS = ["point-pwl", "point-ecpl", "point-log-parabola",
                     "point-pwl2", "point-ecpl-3fgl", "point-ecpl-4fgl",
                     "point-template", "diffuse-cube",
-                    "disk-pwl", "gauss-pwl", "gauss-pwlsimple"]
+                    "disk-pwl", "gauss-pwl", "gauss-pwlsimple", "point-pwlsimple"]
 
 DPI = 120
 
 # observation config
 IRF_FILE = "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits"
+#IRF_FILE = "$GAMMAPY_DATA/cta-prod3b/caldb/data/cta/prod3b-v2/bcf/South_z20_50h/irf_file.fits"
 
 POINTING = SkyCoord(0.0, 0.5, frame="galactic", unit="deg")
 LIVETIME = 10 * u.hr
@@ -178,14 +179,16 @@ def prepare_dataset_simple(filename_dataset):
                                             offset=[0, 2, 4, 6, 8] * u.deg)
 
     irfs["edisp"] = edisp_gauss
-    irfs["aeff"].data.data = np.ones_like(irfs["aeff"].data.data) * 1e6
+#    irfs["aeff"].data.data = np.ones_like(irfs["aeff"].data.data) * 1e6
 
     observation = Observation.create(
                                      obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs
                                      )
 
     empty = MapDataset.create(WCS_GEOM, energy_axis_true=ENERGY_AXIS_TRUE, migra_axis=MIGRA_AXIS)
-    maker = MapDatasetMaker(selection=["exposure", "edisp"])
+#    maker = MapDatasetMaker(selection=["exposure", "edisp"])
+#    maker = MapDatasetMaker(selection=["exposure", "edisp", "background"])
+    maker = MapDatasetMaker(selection=["exposure", "edisp", "psf", "background"])
     dataset = maker.run(empty, observation)
 
     filename_dataset.parent.mkdir(exist_ok=True, parents=True)
