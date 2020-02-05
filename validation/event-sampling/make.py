@@ -35,7 +35,8 @@ BASE_PATH = Path(__file__).parent
 AVAILABLE_MODELS = ["point-pwl", "point-ecpl", "point-log-parabola",
                     "point-pwl2", "point-ecpl-3fgl", "point-ecpl-4fgl",
                     "point-template", "diffuse-cube",
-                    "disk-pwl", "gauss-pwl", "gauss-pwlsimple", "point-pwlsimple"]
+                    "disk-pwl", "gauss-pwl",
+                    "gauss-pwlsimple", "point-pwlsimple", "disk-pwlsimple"]
 
 DPI = 120
 
