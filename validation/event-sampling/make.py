@@ -19,7 +19,7 @@ from gammapy.cube import (
     MapDatasetMaker,
 )
 from gammapy.data import GTI, Observation, EventList
-from gammapy.detect import compute_lima_image as lima
+from gammapy.detect import LiMaMapEstimator as lima
 from gammapy.maps import MapAxis, WcsGeom, Map
 from gammapy.irf import EnergyDispersion2D, load_cta_irfs
 from gammapy.modeling import Fit
