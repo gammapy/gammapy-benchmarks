@@ -429,65 +429,75 @@ def save_figure(filename):
 def plot_spectra(model, model_best_fit, obs_id):
     """Plot spectral models"""
     # plot spectral models
-    ax = model.spectral_model.plot(
-        energy_range=(0.1, 300) * u.TeV, label="Sim. model"
-    )
-    model_best_fit.spectral_model.plot(
-        energy_range=(0.1, 300) * u.TeV, label="Best-fit model", ax=ax,
-    )
-    model_best_fit.spectral_model.plot_error(energy_range=(0.1, 300) * u.TeV, ax=ax)
-    ax.legend()
-    obs_id = int(obs_id)
-    filename = f"results/models/{model.name}/plots/spectra/spectra_{obs_id:04d}.png"
-    save_figure(filename)
+    if model.tag == "SkyDiffuseCube":
+        log.info(f"SkyDiffuseCube: no spectral model to plot")
+    else:
+        ax = model.spectral_model.plot(
+            energy_range=(0.1, 300) * u.TeV, label="Sim. model"
+            )
+        model_best_fit.spectral_model.plot(
+            energy_range=(0.1, 300) * u.TeV, label="Best-fit model", ax=ax,
+            )
+        model_best_fit.spectral_model.plot_error(energy_range=(0.1, 300) * u.TeV, ax=ax)
+
+        ax.legend()
+        obs_id = int(obs_id)
+        filename = f"results/models/{model.name}/plots/spectra/spectra_{obs_id:04d}.png"
+        save_figure(filename)
 
 
 def plot_residuals(dataset, obs_id):
     # plot residuals
-    model = dataset.models[1]
-    spatial_model = model.spatial_model
-    if spatial_model.__class__.__name__ == "PointSpatialModel":
-        region = CircleSkyRegion(center=spatial_model.position, radius=0.1 * u.deg)
+    if model.tag == "SkyDiffuseCube":
+        log.info(f"SkyDiffuseCube: no spectral model to plot")
     else:
-        region = spatial_model.to_region()
+        model = dataset.models[1]
+        spatial_model = model.spatial_model
+        if spatial_model.__class__.__name__ == "PointSpatialModel":
+            region = CircleSkyRegion(center=spatial_model.position, radius=0.1 * u.deg)
+        else:
+            region = spatial_model.to_region()
 
-    dataset.plot_residuals(method="diff/sqrt(model)", vmin=-0.5, vmax=0.5, region=region, figsize=(10, 4))
-    obs_id = int(obs_id)
-    filename = f"results/models/{model.name}/plots/residuals/residuals_{obs_id:04d}.png"
-    save_figure(filename)
+        dataset.plot_residuals(method="diff/sqrt(model)", vmin=-0.5, vmax=0.5, region=region, figsize=(10, 4))
+        obs_id = int(obs_id)
+        filename = f"results/models/{model.name}/plots/residuals/residuals_{obs_id:04d}.png"
+        save_figure(filename)
 
 
 def plot_residual_distribution(dataset, obs_id):
     # plot residual significance distribution
-    model = dataset.models[1]
+    if model.tag == 'SkyDiffuseCube':
+        log.info(f"SkyDiffuseCube: no spectral model to plot")
+    else:
+        model = dataset.models[1]
 
-    tophat_2D_kernel = Tophat2DKernel(5)
-    l_m = lima.compute_lima_image(dataset.counts.sum_over_axes(keepdims=False), dataset.npred().sum_over_axes(keepdims=False), tophat_2D_kernel)
-    sig_resid = l_m["significance"].data[np.isfinite(l_m["significance"].data)]
+        tophat_2D_kernel = Tophat2DKernel(5)
+        l_m = lima.compute_lima_image(dataset.counts.sum_over_axes(keepdims=False), dataset.npred().sum_over_axes(keepdims=False), tophat_2D_kernel)
+        sig_resid = l_m["significance"].data[np.isfinite(l_m["significance"].data)]
 
-#    resid = dataset.residuals()
-#    sig_resid = resid.data[np.isfinite(resid.data)]
+    #    resid = dataset.residuals()
+    #    sig_resid = resid.data[np.isfinite(resid.data)]
 
-    plt.hist(
-        sig_resid, density=True, alpha=0.5, color="red", bins=100,
-    )
+        plt.hist(
+            sig_resid, density=True, alpha=0.5, color="red", bins=100,
+        )
 
-    mu, std = norm.fit(sig_resid)
-    # replace with log.info()
-    print("Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
-    x = np.linspace(-8, 8, 50)
-    p = norm.pdf(x, mu, std)
-    plt.plot(x, p, lw=2, color="black", label="Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
-    plt.legend()
-    plt.xlabel("Significance")
-    plt.yscale("log")
-    plt.ylim(1e-5, 1)
-    xmin, xmax = np.min(sig_resid), np.max(sig_resid)
-    plt.xlim(xmin, xmax)
+        mu, std = norm.fit(sig_resid)
+        # replace with log.info()
+        print("Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
+        x = np.linspace(-8, 8, 50)
+        p = norm.pdf(x, mu, std)
+        plt.plot(x, p, lw=2, color="black", label="Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
+        plt.legend()
+        plt.xlabel("Significance")
+        plt.yscale("log")
+        plt.ylim(1e-5, 1)
+        xmin, xmax = np.min(sig_resid), np.max(sig_resid)
+        plt.xlim(xmin, xmax)
 
-    obs_id = int(obs_id)
-    filename = f"results/models/{model.name}/plots/residuals-distribution/residuals-distribution_{obs_id:04d}.png"
-    save_figure(filename)
+        obs_id = int(obs_id)
+        filename = f"results/models/{model.name}/plots/residuals-distribution/residuals-distribution_{obs_id:04d}.png"
+        save_figure(filename)
 
 
 def read_best_fit_model(filename):
@@ -499,13 +509,24 @@ def read_best_fit_model(filename):
     pars = model_best_fit.parameters
     pars.covariance = np.loadtxt(str(path))
 
-    spectral_model_best_fit = model_best_fit[0].spectral_model
-    covar = pars.get_subcovariance(spectral_model_best_fit.parameters)
-    spectral_model_best_fit.parameters.covariance = covar
+    if model_best_fit[0].tag  == 'SkyDiffuseCube':
+        spectral_model_best_fit = model_best_fit[0]
+        covar = pars.get_subcovariance(spectral_model_best_fit.parameters)
+        spectral_model_best_fit.parameters.covariance = covar
+            
+#        spatial_model_best_fit = model_best_fit[0].spatial_model
+#        covar = pars.get_subcovariance(spatial_model_best_fit.parameters)
+#        spatial_model_best_fit.parameters.covariance = covar
 
-    spatial_model_best_fit = model_best_fit[0].spatial_model
-    covar = pars.get_subcovariance(spatial_model_best_fit.parameters)
-    spatial_model_best_fit.parameters.covariance = covar
+    else:
+        spectral_model_best_fit = model_best_fit[0].spectral_model
+        covar = pars.get_subcovariance(spectral_model_best_fit.parameters)
+        spectral_model_best_fit.parameters.covariance = covar
+        
+        spatial_model_best_fit = model_best_fit[0].spatial_model
+        covar = pars.get_subcovariance(spatial_model_best_fit.parameters)
+        spatial_model_best_fit.parameters.covariance = covar
+
     return model_best_fit
 
 
