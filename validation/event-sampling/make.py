@@ -45,7 +45,7 @@ IRF_FILE = "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.
 #IRF_FILE = "$GAMMAPY_DATA/cta-prod3b/caldb/data/cta/prod3b-v2/bcf/South_z20_50h/irf_file.fits"
 
 POINTING = SkyCoord(0.0, 0.5, frame="galactic", unit="deg")
-LIVETIME = 10 * u.hr
+LIVETIME = 1 * u.hr
 GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
 
 # dataset config
@@ -235,8 +235,9 @@ def simulate_events(filename_model, filename_dataset, nobs):
 
     log.info(f"Reading {filename_model}")
     models = Models.read(filename_model)
-    dataset.models = models
-
+#    dataset.models = models
+    dataset.models.extend(models)
+    
     sampler = MapDatasetEventSampler(random_state=0)
 
     for obs_id in np.arange(nobs):
@@ -324,7 +325,8 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
     log.info(f"Reading {filename_model}")
     models = Models.read(filename_model)
 
-    dataset.models = models
+#    dataset.models = models
+    dataset.models.extend(models)
     if binned:
         dataset.fake()
     
@@ -530,6 +532,8 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
 
     dataset = read_dataset(filename_dataset, filename_model, obs_id)
     dataset.models = model_best_fit
+#    dataset.models = models
+    dataset.models.extend(model_best_fit)
     plot_residuals(dataset, obs_id)
     plot_residual_distribution(dataset, obs_id)
 
