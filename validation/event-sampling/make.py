@@ -448,10 +448,11 @@ def plot_spectra(model, model_best_fit, obs_id):
 
 def plot_residuals(dataset, obs_id):
     # plot residuals
+    model = dataset.models[1]
+
     if model.tag == "SkyDiffuseCube":
         log.info(f"SkyDiffuseCube: no spectral model to plot")
     else:
-        model = dataset.models[1]
         spatial_model = model.spatial_model
         if spatial_model.__class__.__name__ == "PointSpatialModel":
             region = CircleSkyRegion(center=spatial_model.position, radius=0.1 * u.deg)
@@ -466,11 +467,11 @@ def plot_residuals(dataset, obs_id):
 
 def plot_residual_distribution(dataset, obs_id):
     # plot residual significance distribution
+    model = dataset.models[1]
+
     if model.tag == 'SkyDiffuseCube':
         log.info(f"SkyDiffuseCube: no spectral model to plot")
     else:
-        model = dataset.models[1]
-
         tophat_2D_kernel = Tophat2DKernel(5)
         l_m = lima.compute_lima_image(dataset.counts.sum_over_axes(keepdims=False), dataset.npred().sum_over_axes(keepdims=False), tophat_2D_kernel)
         sig_resid = l_m["significance"].data[np.isfinite(l_m["significance"].data)]
