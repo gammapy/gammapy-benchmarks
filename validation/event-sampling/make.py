@@ -410,7 +410,6 @@ def plot_results_cmd(model, obs_ids):
         models = [model]
 
     filename_dataset = get_filename_dataset(LIVETIME)
-
     for model in models:
         for obs_id in parse_obs_ids(obs_ids, model):
             filename_model = BASE_PATH / f"models/{model}.yaml"
@@ -445,7 +444,7 @@ def plot_spectra(model, model_best_fit, obs_id):
 
 def plot_residuals(dataset, obs_id):
     # plot residuals
-    model = dataset.models[0]
+    model = dataset.models[1]
     spatial_model = model.spatial_model
     if spatial_model.__class__.__name__ == "PointSpatialModel":
         region = CircleSkyRegion(center=spatial_model.position, radius=0.1 * u.deg)
@@ -460,10 +459,10 @@ def plot_residuals(dataset, obs_id):
 
 def plot_residual_distribution(dataset, obs_id):
     # plot residual significance distribution
-    model = dataset.models[0]
+    model = dataset.models[1]
 
     tophat_2D_kernel = Tophat2DKernel(5)
-    l_m = lima(dataset.counts.sum_over_axes(keepdims=False), dataset.npred().sum_over_axes(keepdims=False), tophat_2D_kernel)
+    l_m = lima.compute_lima_image(dataset.counts.sum_over_axes(keepdims=False), dataset.npred().sum_over_axes(keepdims=False), tophat_2D_kernel)
     sig_resid = l_m["significance"].data[np.isfinite(l_m["significance"].data)]
 
 #    resid = dataset.residuals()
@@ -531,8 +530,6 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
     plot_spectra(model[0], model_best_fit[0], obs_id)
 
     dataset = read_dataset(filename_dataset, filename_model, obs_id)
-    dataset.models = model_best_fit
-#    dataset.models = models
     dataset.models.extend(model_best_fit)
     plot_residuals(dataset, obs_id)
     plot_residual_distribution(dataset, obs_id)

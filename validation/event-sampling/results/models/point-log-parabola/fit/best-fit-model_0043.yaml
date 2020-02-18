@@ -4,18 +4,18 @@ components:
     spectral:
         type: LogParabolaSpectralModel
         parameters:
-        - {name: amplitude, value: 1.2142688727443336e-12, unit: cm-2 s-1 TeV-1, min: .nan,
+        - {name: amplitude, value: 8.89281961978644e-13, unit: cm-2 s-1 TeV-1, min: .nan,
             max: .nan, frozen: false}
         - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-        - {name: alpha, value: 2.116174299551415, unit: '', min: .nan, max: .nan,
+        - {name: alpha, value: 2.2441454686543154, unit: '', min: .nan, max: .nan,
             frozen: false}
-        - {name: beta, value: 0.19736692036771245, unit: '', min: .nan, max: .nan,
+        - {name: beta, value: 0.06224017485084132, unit: '', min: .nan, max: .nan,
             frozen: false}
     spatial:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: 0.005022693397346909, unit: deg, min: .nan, max: .nan,
+        - {name: lon_0, value: -0.011150175340130858, unit: deg, min: .nan, max: .nan,
             frozen: false}
-        - {name: lat_0, value: -0.006119255828608061, unit: deg, min: -90.0, max: 90.0,
+        - {name: lat_0, value: 0.0055285655966628156, unit: deg, min: -90.0, max: 90.0,
             frozen: false}
