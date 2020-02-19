@@ -110,7 +110,10 @@ def cli(log_level, show_warnings):
 @click.option(
               "--simple", default=False, nargs=1, help="Simplify the dataset preparation", type=str
               )
-def all_cmd(model, obs_ids, obs_all, simple):
+@click.option(
+              "--core", default=4, nargs=1, help="Number of cores to be used", type=int
+              )
+def all_cmd(model, obs_ids, obs_all, simple, core):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -132,7 +135,7 @@ def all_cmd(model, obs_ids, obs_all, simple):
             simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
             obs_ids = f"0:{obs_ids}"
             obs_ids = parse_obs_ids(obs_ids, model)
-            with multiprocessing.Pool(processes=4) as pool:
+            with multiprocessing.Pool(processes=core) as pool:
                 args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids, repeat(binned), repeat(simple))
                 results = pool.starmap(fit_model, args)
 
@@ -278,7 +281,10 @@ def parse_obs_ids(obs_ids_str, model):
 @click.option(
               "--simple", default=False, nargs=1, help="Select a single observation", type=str
               )
-def fit_model_cmd(model, obs_ids, binned, simple):
+@click.option(
+              "--core", default=4, nargs=1, help="Number of cores to be used", type=int
+              )
+def fit_model_cmd(model, obs_ids, binned, simple, core):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -289,7 +295,7 @@ def fit_model_cmd(model, obs_ids, binned, simple):
     for model in models:
         obs_ids = parse_obs_ids(obs_ids, model)
         filename_model = BASE_PATH / f"models/{model}.yaml"
-        with multiprocessing.Pool(processes=4) as pool:
+        with multiprocessing.Pool(processes=core) as pool:
             args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids, repeat(binned), repeat(simple))
             results = pool.starmap(fit_model, args)
 
