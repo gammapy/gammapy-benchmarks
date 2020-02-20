@@ -36,7 +36,7 @@ AVAILABLE_MODELS = ["point-pwl", "point-ecpl", "point-log-parabola",
                     "point-pwl2", "point-ecpl-3fgl", "point-ecpl-4fgl",
                     "point-template", "diffuse-cube",
                     "disk-pwl", "gauss-pwl",
-                    "gauss-pwlsimple", "point-pwlsimple", "disk-pwlsimple"]
+                    "gauss-pwlsimple", "point-pwlsimple", "disk-pwlsimple", "point-pwltest"]
 
 DPI = 120
 
@@ -130,11 +130,17 @@ def all_cmd(model, obs_ids, obs_all, simple, core):
     else:
         prepare_dataset(filename_dataset)
 
+    dataset = MapDataset.read(filename_dataset)
+
     if obs_all:
         for model in models:
-            simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
             obs_ids = f"0:{obs_ids}"
             obs_ids = parse_obs_ids(obs_ids, model)
+            with multiprocessing.Pool(processes=core) as pool:
+                args = zip(repeat(filename_model), repeat(filename_dataset), repeat(dataset), obs_ids)
+                pool.starmap(simulate_events, args)
+
+#            simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
             with multiprocessing.Pool(processes=core) as pool:
                 args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids, repeat(binned), repeat(simple))
                 results = pool.starmap(fit_model, args)
@@ -212,13 +218,35 @@ def simulate_events_cmd(model, nobs):
         models = [model]
 
     filename_dataset = get_filename_dataset(LIVETIME)
+    dataset = MapDataset.read(filename_dataset)
+
+    obs_ids = f"0:{obs_ids}"
+    obs_ids = parse_obs_ids(obs_ids, model)
 
     for model in models:
         filename_model = BASE_PATH / f"models/{model}.yaml"
-        simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=nobs)
+        with multiprocessing.Pool(processes=core) as pool:
+            args = zip(repeat(filename_model), repeat(filename_dataset), repeat(dataset), obs_ids)
+            pool.starmap(simulate_events, args)
+
+#        simulate_events(filename_model=filename_model, dataset=dataset, obs_id=nobs)
 
 
-def simulate_events(filename_model, filename_dataset, nobs):
+#def simulate_parallel(obs_id, POINTING, LIVETIME, irfs, dataset, filename_dataset, filename_model):
+##    for obs_id in np.arange(nobs):
+#        observation = Observation.create(
+#                                     obs_id=obs_id, pointing=POINTING, livetime=LIVETIME, irfs=irfs
+#                                )
+#
+#        events = sampler.run(dataset, observation)
+#
+#        path = get_filename_events(filename_dataset, filename_model, obs_id)
+#        log.info(f"Writing {path}")
+#        path.parent.mkdir(exist_ok=True, parents=True)
+#        events.table.write(str(path), overwrite=True)
+
+
+def simulate_events(filename_model, filename_dataset, dataset, obs_id):
     """Simulate events for a given model and dataset.
 
     Parameters
@@ -233,8 +261,8 @@ def simulate_events(filename_model, filename_dataset, nobs):
     log.info(f"Reading {IRF_FILE}")
     irfs = load_cta_irfs(IRF_FILE)
 
-    log.info(f"Reading {filename_dataset}")
-    dataset = MapDataset.read(filename_dataset)
+#    log.info(f"Reading {filename_dataset}")
+#    dataset = MapDataset.read(filename_dataset)
 
     log.info(f"Reading {filename_model}")
     models = Models.read(filename_model)
@@ -243,17 +271,24 @@ def simulate_events(filename_model, filename_dataset, nobs):
     
     sampler = MapDatasetEventSampler(random_state=0)
 
-    for obs_id in np.arange(nobs):
-        observation = Observation.create(
-            obs_id=obs_id, pointing=POINTING, livetime=LIVETIME, irfs=irfs
-        )
+#    obs_id = np.arange(nobs)
+#    with multiprocessing.Pool(processes=core) as pool:
+#        args1 = zip(obs_id, repeat(POINTING), repeat(LIVETIME), repeat(irfs),
+#                    repeat(dataset), repeat(filename_dataset), repeat(filename_model))
+#        pool.starmap(simulate_parallel, args1)
 
-        events = sampler.run(dataset, observation)
 
-        path = get_filename_events(filename_dataset, filename_model, obs_id)
-        log.info(f"Writing {path}")
-        path.parent.mkdir(exist_ok=True, parents=True)
-        events.table.write(str(path), overwrite=True)
+#    for obs_id in np.arange(nobs):
+    observation = Observation.create(
+        obs_id=obs_id, pointing=POINTING, livetime=LIVETIME, irfs=irfs
+    )
+
+    events = sampler.run(dataset, observation)
+
+    path = get_filename_events(filename_dataset, filename_model, obs_id)
+    log.info(f"Writing {path}")
+    path.parent.mkdir(exist_ok=True, parents=True)
+    events.table.write(str(path), overwrite=True)
 
 
 def parse_obs_ids(obs_ids_str, model):
@@ -604,8 +639,7 @@ def plot_pull_distribution(model_name, binned=False):
 
         pull = (values - par.value) / values_err
 
-#        print("Number of fits beyond 5 sigmas: ",(np.where( (pull<-5) )))
-        plt.hist(pull, bins=21, normed=True, range=(-5,5))
+        plt.hist(pull, bins=21, normed=True)
         plt.xlim(-5, 5)
         plt.xlabel("(value - value_true) / error")
         plt.ylabel("PDF")
