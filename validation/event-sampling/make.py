@@ -14,14 +14,14 @@ from astropy.convolution import Tophat2DKernel
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
 from gammapy.cube import (
-    MapDataset,
     MapDatasetEventSampler,
-    MapDatasetMaker,
 )
 from gammapy.data import GTI, Observation, EventList
+from gammapy.datasets import MapDataset
 from gammapy.detect import LiMaMapEstimator as lima
 from gammapy.maps import MapAxis, WcsGeom, Map
 from gammapy.irf import EnergyDispersion2D, load_cta_irfs
+from gammapy.makers import MapDatasetMaker
 from gammapy.modeling import Fit
 from gammapy.modeling.models import Models
 from gammapy.utils.table import table_from_row_data
@@ -36,7 +36,8 @@ AVAILABLE_MODELS = ["point-pwl", "point-ecpl", "point-log-parabola",
                     "point-pwl2", "point-ecpl-3fgl", "point-ecpl-4fgl",
                     "point-template", "diffuse-cube",
                     "disk-pwl", "gauss-pwl",
-                    "gauss-pwlsimple", "point-pwlsimple", "disk-pwlsimple"]
+                    "gauss-pwlsimple", "point-pwlsimple", "disk-pwlsimple",
+                    "point-pwltest"]
 
 DPI = 120
 
