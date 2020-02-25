@@ -1,5 +1,4 @@
 # simulate bright sources
-
 from pathlib import Path
 import logging
 import warnings
