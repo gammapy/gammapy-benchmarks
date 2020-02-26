@@ -4,19 +4,19 @@ components:
     spectral:
         type: ExpCutoffPowerLawSpectralModel
         parameters:
-        - {name: index, value: 1.8901392986264873, unit: '', min: .nan, max: .nan,
+        - {name: index, value: 1.8888908561520847, unit: '', min: .nan, max: .nan,
             frozen: false}
-        - {name: amplitude, value: 8.911229697890666e-13, unit: cm-2 s-1 TeV-1, min: .nan,
+        - {name: amplitude, value: 8.903349642904887e-13, unit: cm-2 s-1 TeV-1, min: .nan,
             max: .nan, frozen: false}
         - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-        - {name: lambda_, value: 0.04340418468345425, unit: TeV-1, min: .nan, max: .nan,
+        - {name: lambda_, value: 0.04355924188558375, unit: TeV-1, min: .nan, max: .nan,
             frozen: false}
         - {name: alpha, value: 1.0, unit: '', min: .nan, max: .nan, frozen: true}
     spatial:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: 0.0008922002801868922, unit: deg, min: .nan, max: .nan,
+        - {name: lon_0, value: 0.0009059205632740908, unit: deg, min: .nan, max: .nan,
             frozen: false}
-        - {name: lat_0, value: -0.004425573793625404, unit: deg, min: -90.0, max: 90.0,
+        - {name: lat_0, value: -0.004500565142890878, unit: deg, min: -90.0, max: 90.0,
             frozen: false}
