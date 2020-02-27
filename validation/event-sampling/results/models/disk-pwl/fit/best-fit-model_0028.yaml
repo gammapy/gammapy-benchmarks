@@ -4,20 +4,20 @@ components:
     spectral:
         type: PowerLawSpectralModel
         parameters:
-        - {name: index, value: 1.9979236832416276, unit: '', min: .nan, max: .nan,
+        - {name: index, value: 1.991980050123109, unit: '', min: .nan, max: .nan,
             frozen: false}
-        - {name: amplitude, value: 9.171809095364391e-13, unit: cm-2 s-1 TeV-1, min: .nan,
+        - {name: amplitude, value: 9.137428946955312e-13, unit: cm-2 s-1 TeV-1, min: .nan,
             max: .nan, frozen: false}
         - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
     spatial:
         type: DiskSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: -0.007329054901847591, unit: deg, min: .nan, max: .nan,
+        - {name: lon_0, value: -0.0027328071914133286, unit: deg, min: .nan, max: .nan,
             frozen: false}
-        - {name: lat_0, value: 0.009355061254396446, unit: deg, min: -90.0, max: 90.0,
+        - {name: lat_0, value: 0.005573398168081667, unit: deg, min: -90.0, max: 90.0,
             frozen: false}
-        - {name: r_0, value: 0.29985570249615506, unit: deg, min: 0.0, max: .nan,
+        - {name: r_0, value: 0.29976219600520143, unit: deg, min: 0.0, max: .nan,
             frozen: false}
         - {name: e, value: 0.0, unit: '', min: 0.0, max: 1.0, frozen: true}
         - {name: phi, value: 0.0, unit: deg, min: .nan, max: .nan, frozen: true}
