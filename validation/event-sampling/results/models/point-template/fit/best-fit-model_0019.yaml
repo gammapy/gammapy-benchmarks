@@ -4,7 +4,7 @@ components:
     spectral:
         type: TemplateSpectralModel
         parameters:
-        - {name: norm, value: 1.0116099434144477, unit: '', min: .nan, max: .nan,
+        - {name: norm, value: 1.0066884684815967, unit: '', min: .nan, max: .nan,
             frozen: false}
         - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true}
         - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
@@ -34,7 +34,7 @@ components:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: -0.0013802468691527915, unit: deg, min: .nan, max: .nan,
+        - {name: lon_0, value: -0.001661878046163064, unit: deg, min: .nan, max: .nan,
             frozen: false}
-        - {name: lat_0, value: -0.0008566953147379763, unit: deg, min: -90.0, max: 90.0,
+        - {name: lat_0, value: -0.00105313622391634, unit: deg, min: -90.0, max: 90.0,
             frozen: false}
