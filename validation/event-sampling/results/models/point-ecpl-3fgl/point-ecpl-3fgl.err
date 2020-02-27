@@ -1,0 +1,4 @@
+Usage: make.py [OPTIONS] COMMAND [ARGS]...
+Try "make.py --help" for help.
+
+Error: No such command "allpoint-ecpl-3fgl".
