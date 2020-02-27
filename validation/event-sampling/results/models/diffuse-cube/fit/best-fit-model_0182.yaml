@@ -1,0 +1,8 @@
+components:
+-   name: gll_iem_v06_cutout
+    type: SkyDiffuseCube
+    filename: $GAMMAPY_DATA/fermi_3fhl/gll_iem_v06_cutout.fits
+    parameters:
+    - {name: norm, value: 0.9759602818867373, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}

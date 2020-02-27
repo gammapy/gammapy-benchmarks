@@ -1,0 +1,51 @@
+INFO:__main__:Reading $GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits
+INFO:__main__:Writing /home/fabio/GIT/gammapy-benchmarks/validation/event-sampling/data/dataset_1h.fits.gz
+INFO:__main__:Reading $GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits
+INFO:__main__:Reading /home/fabio/GIT/gammapy-benchmarks/validation/event-sampling/data/dataset_1h.fits.gz
+INFO:__main__:Reading /home/fabio/GIT/gammapy-benchmarks/validation/event-sampling/models/diffuse-cube.yaml
+Traceback (most recent call last):
+  File "/home/fabio/GIT/gammapy-benchmarks/validation/event-sampling/make.py", line 619, in <module>
+    cli()
+  File "/home/fabio/anaconda3/envs/gammapy-dev/lib/python3.7/site-packages/click/core.py", line 764, in __call__
+    return self.main(*args, **kwargs)
+  File "/home/fabio/anaconda3/envs/gammapy-dev/lib/python3.7/site-packages/click/core.py", line 717, in main
+    rv = self.invoke(ctx)
+  File "/home/fabio/anaconda3/envs/gammapy-dev/lib/python3.7/site-packages/click/core.py", line 1137, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+  File "/home/fabio/anaconda3/envs/gammapy-dev/lib/python3.7/site-packages/click/core.py", line 956, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/home/fabio/anaconda3/envs/gammapy-dev/lib/python3.7/site-packages/click/core.py", line 555, in invoke
+    return callback(*args, **kwargs)
+  File "/home/fabio/GIT/gammapy-benchmarks/validation/event-sampling/make.py", line 136, in all_cmd
+    simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
+  File "/home/fabio/GIT/gammapy-benchmarks/validation/event-sampling/make.py", line 241, in simulate_events
+    models = Models.read(filename_model)
+  File "/home/fabio/GIT/gammapy/gammapy/modeling/models/core.py", line 149, in read
+    return cls.from_yaml(yaml_str)
+  File "/home/fabio/GIT/gammapy/gammapy/modeling/models/core.py", line 156, in from_yaml
+    models = dict_to_models(data)
+  File "/home/fabio/GIT/gammapy/gammapy/modeling/models/io.py", line 59, in dict_to_models
+    model = SkyDiffuseCube.from_dict(component)
+  File "/home/fabio/GIT/gammapy/gammapy/modeling/models/cube.py", line 451, in from_dict
+    model = cls.read(data["filename"])
+  File "/home/fabio/GIT/gammapy/gammapy/modeling/models/cube.py", line 387, in read
+    m = Map.read(filename, **kwargs)
+  File "/home/fabio/GIT/gammapy/gammapy/maps/base.py", line 189, in read
+    with fits.open(make_path(filename), memmap=False) as hdulist:
+  File "/home/fabio/anaconda3/envs/gammapy-dev/lib/python3.7/site-packages/astropy/io/fits/hdu/hdulist.py", line 158, in fitsopen
+    lazy_load_hdus, **kwargs)
+  File "/home/fabio/anaconda3/envs/gammapy-dev/lib/python3.7/site-packages/astropy/io/fits/hdu/hdulist.py", line 397, in fromfile
+    lazy_load_hdus=lazy_load_hdus, **kwargs)
+  File "/home/fabio/anaconda3/envs/gammapy-dev/lib/python3.7/site-packages/astropy/io/fits/hdu/hdulist.py", line 1046, in _readfrom
+    fileobj = _File(fileobj, mode=mode, memmap=memmap, cache=cache)
+  File "/home/fabio/anaconda3/envs/gammapy-dev/lib/python3.7/site-packages/astropy/utils/decorators.py", line 521, in wrapper
+    return function(*args, **kwargs)
+  File "/home/fabio/anaconda3/envs/gammapy-dev/lib/python3.7/site-packages/astropy/io/fits/file.py", line 193, in __init__
+    self._open_filename(fileobj, mode, overwrite)
+  File "/home/fabio/anaconda3/envs/gammapy-dev/lib/python3.7/site-packages/astropy/io/fits/file.py", line 573, in _open_filename
+    if not self._try_read_compressed(self.name, magic, mode, ext=ext):
+  File "/home/fabio/anaconda3/envs/gammapy-dev/lib/python3.7/site-packages/astropy/io/fits/file.py", line 467, in _try_read_compressed
+    self._file = gzip.GzipFile(**kwargs)
+  File "/home/fabio/anaconda3/envs/gammapy-dev/lib/python3.7/gzip.py", line 163, in __init__
+    fileobj = self.myfileobj = builtins.open(filename, mode or 'rb')
+FileNotFoundError: [Errno 2] No such file or directory: '/home/fabio/GIT/gammapy-extra/datasets/fermi-3fhl-gc/gll_iem_v06_gc.fits.gz'
