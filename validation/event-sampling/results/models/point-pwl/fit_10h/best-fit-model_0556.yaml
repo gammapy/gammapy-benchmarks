@@ -1,0 +1,19 @@
+components:
+-   name: point-pwl
+    type: SkyModel
+    spectral:
+        type: PowerLawSpectralModel
+        parameters:
+        - {name: index, value: 1.9728854841646253, unit: '', min: .nan, max: .nan,
+            frozen: false}
+        - {name: amplitude, value: 9.599677914128944e-13, unit: cm-2 s-1 TeV-1, min: .nan,
+            max: .nan, frozen: false}
+        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    spatial:
+        type: PointSpatialModel
+        frame: galactic
+        parameters:
+        - {name: lon_0, value: -0.0015174953597169216, unit: deg, min: .nan, max: .nan,
+            frozen: false}
+        - {name: lat_0, value: 0.0012971640924348549, unit: deg, min: -90.0, max: 90.0,
+            frozen: false}
