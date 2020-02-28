@@ -37,7 +37,7 @@ AVAILABLE_MODELS = ["point-pwl", "point-ecpl", "point-log-parabola",
                     "point-template", "diffuse-cube",
                     "disk-pwl", "gauss-pwl",
                     "gauss-pwlsimple", "point-pwlsimple", "disk-pwlsimple",
-                    "point-pwltest"]
+                    "point-pwltest", "test"]
 
 DPI = 120
 
@@ -74,10 +74,16 @@ def get_filename_events(filename_dataset, filename_model, obs_id):
     return path
 
 
-def get_filename_best_fit_model(filename_model, obs_id):
+def get_filename_best_fit_model(filename_model, obs_id, livetime):
     obs_id=int(obs_id)
     model_str = filename_model.name.replace(filename_model.suffix, "")
-    filename = f"results/models/{model_str}/fit/best-fit-model_{obs_id:04d}.yaml"
+    
+    path = BASE_PATH / f"results/models/{model_str}/fit_{livetime.value:.0f}{livetime.unit}/covariance"
+    path.mkdir(exist_ok=True, parents=True)
+    path = BASE_PATH / f"results/models/{model_str}/plots_{livetime.value:.0f}{livetime.unit}"
+    path.mkdir(exist_ok=True, parents=True)
+    
+    filename = f"results/models/{model_str}/fit_{livetime.value:.0f}{livetime.unit}/best-fit-model_{obs_id:04d}.yaml"
     return BASE_PATH / filename
 
 
@@ -140,8 +146,8 @@ def all_cmd(model, obs_ids, obs_all, simple, core):
                 args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids, repeat(binned), repeat(simple))
                 results = pool.starmap(fit_model, args)
 
-            fit_gather(model)
-            plot_pull_distribution(model)
+            fit_gather(model,LIVETIME)
+            plot_pull_distribution(model, LIVETIME)
     else:
         for model in models:
             simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
@@ -347,16 +353,16 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
     log.info(f"Fit info: {result}")
 
     # write best fit model
-    path = get_filename_best_fit_model(filename_model, obs_id)
+    path = get_filename_best_fit_model(filename_model, obs_id, LIVETIME)
     if binned:
-        path = Path(str(path).replace("/fit/","/fit_fake/"))
+        path = Path(str(path).replace("/fit","/fit_fake"))
     log.info(f"Writing {path}")
     models.write(str(path), overwrite=True)
 
     # write covariance
     path = get_filename_covariance(path)
     if binned:
-        path = Path(str(path).replace("/fit/","/fit_fake/"))
+        path = Path(str(path).replace("/fit","/fit_fake"))
     log.info(f"Writing {path}")
 
     # TODO: exclude background parameters for now, as they are fixed anyway
@@ -376,13 +382,13 @@ def fit_gather_cmd(model, binned):
         models = [model]
 
     for model in models:
-        fit_gather(model, binned)
+        fit_gather(model, LIVETIME, binned)
 
 
-def fit_gather(model_name, binned=False):
+def fit_gather(model_name, livetime, binned=False):
     rows = []
 
-    path = (BASE_PATH / f"results/models/{model_name}/fit")
+    path = (BASE_PATH / f"results/models/{model_name}/fit_{livetime.value:.0f}{livetime.unit}")
     if binned:
         path = Path(str(path).replace("/fit","/fit_fake"))
 
@@ -397,7 +403,7 @@ def fit_gather(model_name, binned=False):
         rows.append(row)
 
     table = table_from_row_data(rows)
-    name = "fit-results-all"
+    name = f"fit-results-all_{livetime.value:.0f}{livetime.unit}"
     if binned:
         name = "fit_binned-results-all"
     filename = f"results/models/{model_name}/{name}.fits.gz"
@@ -433,7 +439,7 @@ def save_figure(filename):
 
 
 
-def plot_spectra(model, model_best_fit, obs_id):
+def plot_spectra(model, model_best_fit, obs_id, livetime):
     """Plot spectral models"""
     # plot spectral models
     if model.tag == "SkyDiffuseCube":
@@ -449,11 +455,11 @@ def plot_spectra(model, model_best_fit, obs_id):
 
         ax.legend()
         obs_id = int(obs_id)
-        filename = f"results/models/{model.name}/plots/spectra/spectra_{obs_id:04d}.png"
+        filename = f"results/models/{model.name}/plots_{livetime.value:.0f}{livetime.unit}/spectra/spectra_{obs_id:04d}.png"
         save_figure(filename)
 
 
-def plot_residuals(dataset, obs_id):
+def plot_residuals(dataset, obs_id, livetime):
     # plot residuals
     model = dataset.models[1]
 
@@ -468,11 +474,11 @@ def plot_residuals(dataset, obs_id):
 
         dataset.plot_residuals(method="diff/sqrt(model)", vmin=-0.5, vmax=0.5, region=region, figsize=(10, 4))
         obs_id = int(obs_id)
-        filename = f"results/models/{model.name}/plots/residuals/residuals_{obs_id:04d}.png"
+        filename = f"results/models/{model.name}/plots_{livetime.value:.0f}{livetime.unit}/residuals/residuals_{obs_id:04d}.png"
         save_figure(filename)
 
 
-def plot_residual_distribution(dataset, obs_id):
+def plot_residual_distribution(dataset, obs_id, livetime):
     # plot residual significance distribution
     model = dataset.models[1]
 
@@ -504,7 +510,7 @@ def plot_residual_distribution(dataset, obs_id):
         plt.xlim(xmin, xmax)
 
         obs_id = int(obs_id)
-        filename = f"results/models/{model.name}/plots/residuals-distribution/residuals-distribution_{obs_id:04d}.png"
+        filename = f"results/models/{model.name}/plots_{livetime.value:.0f}{livetime.unit}/residuals-distribution/residuals-distribution_{obs_id:04d}.png"
         save_figure(filename)
 
 
@@ -553,15 +559,15 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
     log.info(f"Reading {filename_model}")
     model = Models.read(filename_model)
 
-    path = get_filename_best_fit_model(filename_model, obs_id)
+    path = get_filename_best_fit_model(filename_model, obs_id, LIVETIME)
     model_best_fit = read_best_fit_model(path)
 
-    plot_spectra(model[0], model_best_fit[0], obs_id)
+    plot_spectra(model[0], model_best_fit[0], obs_id, LIVETIME)
 
     dataset = read_dataset(filename_dataset, filename_model, obs_id)
     dataset.models.extend(model_best_fit)
-    plot_residuals(dataset, obs_id)
-    plot_residual_distribution(dataset, obs_id)
+    plot_residuals(dataset, obs_id, LIVETIME)
+    plot_residual_distribution(dataset, obs_id, LIVETIME)
 
 
 @cli.command("plot-pull-distributions", help="Plot pull distributions for the given model")
@@ -576,11 +582,11 @@ def plot_pull_distribution_cmd(model, binned):
         models = [model]
 
     for model in models:
-        plot_pull_distribution(model_name=model, binned=binned)
+        plot_pull_distribution(model_name=model, livetime=LIVETIME, binned=binned)
 
 
-def plot_pull_distribution(model_name, binned=False):
-    name = "fit-results-all"
+def plot_pull_distribution(model_name, livetime, binned=False):
+    name = f"fit-results-all_{livetime.value:.0f}{livetime.unit}"
     if binned:
         name = "fit_binned-results-all"
     filename = BASE_PATH / f"results/models/{model_name}/{name}.fits.gz"
@@ -590,7 +596,7 @@ def plot_pull_distribution(model_name, binned=False):
     model_ref = Models.read(filename_ref)[0]
     names = [name for name in results.colnames if "err" not in name]
 
-    plots = "plots"
+    plots = f"plots_{livetime.value:.0f}{livetime.unit}"
     if binned:
         plots = "plots_fake"
     for name in names:
