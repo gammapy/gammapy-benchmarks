@@ -4,20 +4,20 @@ components:
     spectral:
         type: SuperExpCutoffPowerLaw4FGLSpectralModel
         parameters:
-        - {name: amplitude, value: 8.238716564695097e-13, unit: cm-2 s-1 TeV-1, min: .nan,
+        - {name: amplitude, value: 7.938898353728947e-13, unit: cm-2 s-1 TeV-1, min: .nan,
             max: .nan, frozen: false}
         - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-        - {name: expfactor, value: 0.004932013653458824, unit: '', min: .nan, max: .nan,
+        - {name: expfactor, value: -0.02493370291730748, unit: '', min: .nan, max: .nan,
             frozen: false}
-        - {name: index_1, value: 2.062001501051737, unit: '', min: .nan, max: .nan,
+        - {name: index_1, value: 2.1689335895636397, unit: '', min: .nan, max: .nan,
             frozen: false}
-        - {name: index_2, value: 6.224725057085247, unit: '', min: .nan, max: .nan,
+        - {name: index_2, value: 3.357451943810727, unit: '', min: .nan, max: .nan,
             frozen: false}
     spatial:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: 0.008948663455998915, unit: deg, min: .nan, max: .nan,
+        - {name: lon_0, value: 0.010256537399360232, unit: deg, min: .nan, max: .nan,
             frozen: false}
-        - {name: lat_0, value: -0.004920716910547185, unit: deg, min: -90.0, max: 90.0,
+        - {name: lat_0, value: -0.0031866768953534574, unit: deg, min: -90.0, max: 90.0,
             frozen: false}
