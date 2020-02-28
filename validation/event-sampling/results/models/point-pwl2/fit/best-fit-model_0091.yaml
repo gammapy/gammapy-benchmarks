@@ -4,9 +4,9 @@ components:
     spectral:
         type: PowerLaw2SpectralModel
         parameters:
-        - {name: amplitude, value: 1.0242349447246845e-12, unit: cm-2 s-1, min: .nan,
+        - {name: amplitude, value: 1.0220277229137222e-12, unit: cm-2 s-1, min: .nan,
             max: .nan, frozen: false}
-        - {name: index, value: 2.118765600731849, unit: '', min: .nan, max: .nan,
+        - {name: index, value: 2.1138455794519184, unit: '', min: .nan, max: .nan,
             frozen: false}
         - {name: emin, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
         - {name: emax, value: 10.0, unit: TeV, min: .nan, max: .nan, frozen: true}
@@ -14,7 +14,7 @@ components:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: 0.0038428736782920624, unit: deg, min: .nan, max: .nan,
+        - {name: lon_0, value: 0.0038991861700410574, unit: deg, min: .nan, max: .nan,
             frozen: false}
-        - {name: lat_0, value: 0.003740737476661593, unit: deg, min: -90.0, max: 90.0,
+        - {name: lat_0, value: 0.003646925804545731, unit: deg, min: -90.0, max: 90.0,
             frozen: false}
