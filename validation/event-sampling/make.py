@@ -46,7 +46,7 @@ IRF_FILE = "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.
 #IRF_FILE = "$GAMMAPY_DATA/cta-prod3b/caldb/data/cta/prod3b-v2/bcf/South_z20_50h/irf_file.fits"
 
 POINTING = SkyCoord(0.0, 0.5, frame="galactic", unit="deg")
-LIVETIME = 10 * u.hr
+LIVETIME = 1 * u.hr
 GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
 
 # dataset config
