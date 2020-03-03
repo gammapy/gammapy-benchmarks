@@ -1,0 +1,8 @@
+components:
+-   name: VK5QGHRC
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9986659274934437, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: 0.0011764525777370927, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [RBx4ZtK_]

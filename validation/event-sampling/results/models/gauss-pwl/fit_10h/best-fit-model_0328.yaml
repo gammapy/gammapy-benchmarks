@@ -1,0 +1,23 @@
+components:
+-   name: gauss-pwl
+    type: SkyModel
+    spectral:
+        type: PowerLawSpectralModel
+        parameters:
+        - {name: index, value: 1.9773356406619098, unit: '', min: .nan, max: .nan,
+            frozen: false}
+        - {name: amplitude, value: 8.745011951737762e-13, unit: cm-2 s-1 TeV-1, min: .nan,
+            max: .nan, frozen: false}
+        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    spatial:
+        type: GaussianSpatialModel
+        frame: galactic
+        parameters:
+        - {name: lon_0, value: 0.0006220239938682456, unit: deg, min: .nan, max: .nan,
+            frozen: false}
+        - {name: lat_0, value: -0.0007501337304347544, unit: deg, min: -90.0, max: 90.0,
+            frozen: false}
+        - {name: sigma, value: 0.27672727710254236, unit: deg, min: 0.0, max: .nan,
+            frozen: false}
+        - {name: e, value: 0.0, unit: '', min: 0.0, max: 1.0, frozen: true}
+        - {name: phi, value: 0.0, unit: deg, min: .nan, max: .nan, frozen: true}

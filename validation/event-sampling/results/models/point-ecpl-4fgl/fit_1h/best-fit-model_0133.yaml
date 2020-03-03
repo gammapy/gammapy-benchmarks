@@ -1,0 +1,23 @@
+components:
+-   name: point-ecpl-4fgl
+    type: SkyModel
+    spectral:
+        type: SuperExpCutoffPowerLaw4FGLSpectralModel
+        parameters:
+        - {name: amplitude, value: 1.0649423065140314e-12, unit: cm-2 s-1 TeV-1, min: .nan,
+            max: .nan, frozen: false}
+        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+        - {name: expfactor, value: 0.47566025790181055, unit: '', min: .nan, max: .nan,
+            frozen: false}
+        - {name: index_1, value: 1.5077970793586852, unit: '', min: .nan, max: .nan,
+            frozen: false}
+        - {name: index_2, value: 1.754640667214002, unit: '', min: .nan, max: .nan,
+            frozen: false}
+    spatial:
+        type: PointSpatialModel
+        frame: galactic
+        parameters:
+        - {name: lon_0, value: -0.0049779327221030475, unit: deg, min: .nan, max: .nan,
+            frozen: false}
+        - {name: lat_0, value: -0.00883881918581153, unit: deg, min: -90.0, max: 90.0,
+            frozen: false}

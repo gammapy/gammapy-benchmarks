@@ -1,0 +1,8 @@
+components:
+-   name: nagyVJTZ
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.0084417814457112, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -0.007009525052146799, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [OZCGaklL]

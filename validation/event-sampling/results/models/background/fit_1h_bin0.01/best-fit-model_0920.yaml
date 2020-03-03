@@ -1,0 +1,8 @@
+components:
+-   name: rhc76GyO
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.0316101957717199, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -0.01745359691127538, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [RjlIRGdR]

@@ -14,14 +14,14 @@ from astropy.convolution import Tophat2DKernel
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
 from gammapy.cube import (
-    MapDataset,
     MapDatasetEventSampler,
-    MapDatasetMaker,
 )
 from gammapy.data import GTI, Observation, EventList
-from gammapy.detect import compute_lima_image as lima
+from gammapy.datasets import MapDataset
+from gammapy.detect import LiMaMapEstimator as lima
 from gammapy.maps import MapAxis, WcsGeom, Map
 from gammapy.irf import EnergyDispersion2D, load_cta_irfs
+from gammapy.makers import MapDatasetMaker
 from gammapy.modeling import Fit
 from gammapy.modeling.models import Models
 from gammapy.utils.table import table_from_row_data
@@ -35,7 +35,9 @@ BASE_PATH = Path(__file__).parent
 AVAILABLE_MODELS = ["point-pwl", "point-ecpl", "point-log-parabola",
                     "point-pwl2", "point-ecpl-3fgl", "point-ecpl-4fgl",
                     "point-template", "diffuse-cube",
-                    "disk-pwl", "gauss-pwl", "gauss-pwlsimple", "point-pwlsimple"]
+                    "disk-pwl", "gauss-pwl",
+                    "gauss-pwlsimple", "point-pwlsimple", "disk-pwlsimple",
+                    "point-pwltest", "test"]
 
 DPI = 120
 
@@ -44,12 +46,12 @@ IRF_FILE = "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.
 #IRF_FILE = "$GAMMAPY_DATA/cta-prod3b/caldb/data/cta/prod3b-v2/bcf/South_z20_50h/irf_file.fits"
 
 POINTING = SkyCoord(0.0, 0.5, frame="galactic", unit="deg")
-LIVETIME = 10 * u.hr
+LIVETIME = 1 * u.hr
 GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
 
 # dataset config
 ENERGY_AXIS = MapAxis.from_energy_bounds("0.1 TeV", "100 TeV", nbin=10, per_decade=True)
-ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds("0.03 TeV", "300 TeV", nbin=20, per_decade=True)
+ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds("0.03 TeV", "300 TeV", nbin=20, per_decade=True, name="energy_true")
 MIGRA_AXIS = MapAxis.from_bounds(0.5, 2, nbin=150, node_type="edges", name="migra")
 
 WCS_GEOM = WcsGeom.create(
@@ -72,10 +74,16 @@ def get_filename_events(filename_dataset, filename_model, obs_id):
     return path
 
 
-def get_filename_best_fit_model(filename_model, obs_id):
+def get_filename_best_fit_model(filename_model, obs_id, livetime):
     obs_id=int(obs_id)
     model_str = filename_model.name.replace(filename_model.suffix, "")
-    filename = f"results/models/{model_str}/fit/best-fit-model_{obs_id:04d}.yaml"
+    
+    path = BASE_PATH / f"results/models/{model_str}/fit_{livetime.value:.0f}{livetime.unit}/covariance"
+    path.mkdir(exist_ok=True, parents=True)
+    path = BASE_PATH / f"results/models/{model_str}/plots_{livetime.value:.0f}{livetime.unit}"
+    path.mkdir(exist_ok=True, parents=True)
+    
+    filename = f"results/models/{model_str}/fit_{livetime.value:.0f}{livetime.unit}/best-fit-model_{obs_id:04d}.yaml"
     return BASE_PATH / filename
 
 
@@ -109,7 +117,10 @@ def cli(log_level, show_warnings):
 @click.option(
               "--simple", default=False, nargs=1, help="Simplify the dataset preparation", type=str
               )
-def all_cmd(model, obs_ids, obs_all, simple):
+@click.option(
+              "--core", default=4, nargs=1, help="Number of cores to be used", type=int
+              )
+def all_cmd(model, obs_ids, obs_all, simple, core):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -131,12 +142,12 @@ def all_cmd(model, obs_ids, obs_all, simple):
             simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
             obs_ids = f"0:{obs_ids}"
             obs_ids = parse_obs_ids(obs_ids, model)
-            with multiprocessing.Pool(processes=4) as pool:
+            with multiprocessing.Pool(processes=core) as pool:
                 args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids, repeat(binned), repeat(simple))
                 results = pool.starmap(fit_model, args)
 
-            fit_gather(model)
-            plot_pull_distribution(model)
+            fit_gather(model,LIVETIME)
+            plot_pull_distribution(model, LIVETIME)
     else:
         for model in models:
             simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
@@ -234,8 +245,9 @@ def simulate_events(filename_model, filename_dataset, nobs):
 
     log.info(f"Reading {filename_model}")
     models = Models.read(filename_model)
-    dataset.models = models
-
+#    dataset.models = models
+    dataset.models.extend(models)
+    
     sampler = MapDatasetEventSampler(random_state=0)
 
     for obs_id in np.arange(nobs):
@@ -276,7 +288,10 @@ def parse_obs_ids(obs_ids_str, model):
 @click.option(
               "--simple", default=False, nargs=1, help="Select a single observation", type=str
               )
-def fit_model_cmd(model, obs_ids, binned, simple):
+@click.option(
+              "--core", default=4, nargs=1, help="Number of cores to be used", type=int
+              )
+def fit_model_cmd(model, obs_ids, binned, simple, core):
     if model == "all":
         models = AVAILABLE_MODELS
     else:
@@ -287,7 +302,7 @@ def fit_model_cmd(model, obs_ids, binned, simple):
     for model in models:
         obs_ids = parse_obs_ids(obs_ids, model)
         filename_model = BASE_PATH / f"models/{model}.yaml"
-        with multiprocessing.Pool(processes=4) as pool:
+        with multiprocessing.Pool(processes=core) as pool:
             args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids, repeat(binned), repeat(simple))
             results = pool.starmap(fit_model, args)
 
@@ -323,7 +338,8 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
     log.info(f"Reading {filename_model}")
     models = Models.read(filename_model)
 
-    dataset.models = models
+#    dataset.models = models
+    dataset.models.extend(models)
     if binned:
         dataset.fake()
     
@@ -337,16 +353,16 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
     log.info(f"Fit info: {result}")
 
     # write best fit model
-    path = get_filename_best_fit_model(filename_model, obs_id)
+    path = get_filename_best_fit_model(filename_model, obs_id, LIVETIME)
     if binned:
-        path = Path(str(path).replace("/fit/","/fit_fake/"))
+        path = Path(str(path).replace("/fit","/fit_fake"))
     log.info(f"Writing {path}")
     models.write(str(path), overwrite=True)
 
     # write covariance
     path = get_filename_covariance(path)
     if binned:
-        path = Path(str(path).replace("/fit/","/fit_fake/"))
+        path = Path(str(path).replace("/fit","/fit_fake"))
     log.info(f"Writing {path}")
 
     # TODO: exclude background parameters for now, as they are fixed anyway
@@ -366,13 +382,13 @@ def fit_gather_cmd(model, binned):
         models = [model]
 
     for model in models:
-        fit_gather(model, binned)
+        fit_gather(model, LIVETIME, binned)
 
 
-def fit_gather(model_name, binned=False):
+def fit_gather(model_name, livetime, binned=False):
     rows = []
 
-    path = (BASE_PATH / f"results/models/{model_name}/fit")
+    path = (BASE_PATH / f"results/models/{model_name}/fit_{livetime.value:.0f}{livetime.unit}")
     if binned:
         path = Path(str(path).replace("/fit","/fit_fake"))
 
@@ -387,7 +403,7 @@ def fit_gather(model_name, binned=False):
         rows.append(row)
 
     table = table_from_row_data(rows)
-    name = "fit-results-all"
+    name = f"fit-results-all_{livetime.value:.0f}{livetime.unit}"
     if binned:
         name = "fit_binned-results-all"
     filename = f"results/models/{model_name}/{name}.fits.gz"
@@ -407,7 +423,6 @@ def plot_results_cmd(model, obs_ids):
         models = [model]
 
     filename_dataset = get_filename_dataset(LIVETIME)
-
     for model in models:
         for obs_id in parse_obs_ids(obs_ids, model):
             filename_model = BASE_PATH / f"models/{model}.yaml"
@@ -424,68 +439,79 @@ def save_figure(filename):
 
 
 
-def plot_spectra(model, model_best_fit, obs_id):
+def plot_spectra(model, model_best_fit, obs_id, livetime):
     """Plot spectral models"""
     # plot spectral models
-    ax = model.spectral_model.plot(
-        energy_range=(0.1, 300) * u.TeV, label="Sim. model"
-    )
-    model_best_fit.spectral_model.plot(
-        energy_range=(0.1, 300) * u.TeV, label="Best-fit model", ax=ax,
-    )
-    model_best_fit.spectral_model.plot_error(energy_range=(0.1, 300) * u.TeV, ax=ax)
-    ax.legend()
-    obs_id = int(obs_id)
-    filename = f"results/models/{model.name}/plots/spectra/spectra_{obs_id:04d}.png"
-    save_figure(filename)
-
-
-def plot_residuals(dataset, obs_id):
-    # plot residuals
-    model = dataset.models[0]
-    spatial_model = model.spatial_model
-    if spatial_model.__class__.__name__ == "PointSpatialModel":
-        region = CircleSkyRegion(center=spatial_model.position, radius=0.1 * u.deg)
+    if model.tag == "SkyDiffuseCube":
+        log.info(f"SkyDiffuseCube: no spectral model to plot")
     else:
-        region = spatial_model.to_region()
+        ax = model.spectral_model.plot(
+            energy_range=(0.1, 300) * u.TeV, label="Sim. model"
+            )
+        model_best_fit.spectral_model.plot(
+            energy_range=(0.1, 300) * u.TeV, label="Best-fit model", ax=ax,
+            )
+        model_best_fit.spectral_model.plot_error(energy_range=(0.1, 300) * u.TeV, ax=ax)
 
-    dataset.plot_residuals(method="diff/sqrt(model)", vmin=-0.5, vmax=0.5, region=region, figsize=(10, 4))
-    obs_id = int(obs_id)
-    filename = f"results/models/{model.name}/plots/residuals/residuals_{obs_id:04d}.png"
-    save_figure(filename)
+        ax.legend()
+        obs_id = int(obs_id)
+        filename = f"results/models/{model.name}/plots_{livetime.value:.0f}{livetime.unit}/spectra/spectra_{obs_id:04d}.png"
+        save_figure(filename)
 
 
-def plot_residual_distribution(dataset, obs_id):
+def plot_residuals(dataset, obs_id, livetime):
+    # plot residuals
+    model = dataset.models[1]
+
+    if model.tag == "SkyDiffuseCube":
+        log.info(f"SkyDiffuseCube: no spectral model to plot")
+    else:
+        spatial_model = model.spatial_model
+        if spatial_model.__class__.__name__ == "PointSpatialModel":
+            region = CircleSkyRegion(center=spatial_model.position, radius=0.1 * u.deg)
+        else:
+            region = spatial_model.to_region()
+
+        dataset.plot_residuals(method="diff/sqrt(model)", vmin=-0.5, vmax=0.5, region=region, figsize=(10, 4))
+        obs_id = int(obs_id)
+        filename = f"results/models/{model.name}/plots_{livetime.value:.0f}{livetime.unit}/residuals/residuals_{obs_id:04d}.png"
+        save_figure(filename)
+
+
+def plot_residual_distribution(dataset, obs_id, livetime):
     # plot residual significance distribution
-    model = dataset.models[0]
+    model = dataset.models[1]
 
-    tophat_2D_kernel = Tophat2DKernel(5)
-    l_m = lima(dataset.counts.sum_over_axes(keepdims=False), dataset.npred().sum_over_axes(keepdims=False), tophat_2D_kernel)
-    sig_resid = l_m["significance"].data[np.isfinite(l_m["significance"].data)]
+    if model.tag == 'SkyDiffuseCube':
+        log.info(f"SkyDiffuseCube: no spectral model to plot")
+    else:
+        tophat_2D_kernel = Tophat2DKernel(5)
+        l_m = lima.compute_lima_image(dataset.counts.sum_over_axes(keepdims=False), dataset.npred().sum_over_axes(keepdims=False), tophat_2D_kernel)
+        sig_resid = l_m["significance"].data[np.isfinite(l_m["significance"].data)]
 
-#    resid = dataset.residuals()
-#    sig_resid = resid.data[np.isfinite(resid.data)]
+    #    resid = dataset.residuals()
+    #    sig_resid = resid.data[np.isfinite(resid.data)]
 
-    plt.hist(
-        sig_resid, density=True, alpha=0.5, color="red", bins=100,
-    )
+        plt.hist(
+            sig_resid, density=True, alpha=0.5, color="red", bins=100,
+        )
 
-    mu, std = norm.fit(sig_resid)
-    # replace with log.info()
-    print("Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
-    x = np.linspace(-8, 8, 50)
-    p = norm.pdf(x, mu, std)
-    plt.plot(x, p, lw=2, color="black", label="Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
-    plt.legend()
-    plt.xlabel("Significance")
-    plt.yscale("log")
-    plt.ylim(1e-5, 1)
-    xmin, xmax = np.min(sig_resid), np.max(sig_resid)
-    plt.xlim(xmin, xmax)
+        mu, std = norm.fit(sig_resid)
+        # replace with log.info()
+        print("Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
+        x = np.linspace(-8, 8, 50)
+        p = norm.pdf(x, mu, std)
+        plt.plot(x, p, lw=2, color="black", label="Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
+        plt.legend()
+        plt.xlabel("Significance")
+        plt.yscale("log")
+        plt.ylim(1e-5, 1)
+        xmin, xmax = np.min(sig_resid), np.max(sig_resid)
+        plt.xlim(xmin, xmax)
 
-    obs_id = int(obs_id)
-    filename = f"results/models/{model.name}/plots/residuals-distribution/residuals-distribution_{obs_id:04d}.png"
-    save_figure(filename)
+        obs_id = int(obs_id)
+        filename = f"results/models/{model.name}/plots_{livetime.value:.0f}{livetime.unit}/residuals-distribution/residuals-distribution_{obs_id:04d}.png"
+        save_figure(filename)
 
 
 def read_best_fit_model(filename):
@@ -497,13 +523,24 @@ def read_best_fit_model(filename):
     pars = model_best_fit.parameters
     pars.covariance = np.loadtxt(str(path))
 
-    spectral_model_best_fit = model_best_fit[0].spectral_model
-    covar = pars.get_subcovariance(spectral_model_best_fit.parameters)
-    spectral_model_best_fit.parameters.covariance = covar
+    if model_best_fit[0].tag  == 'SkyDiffuseCube':
+        spectral_model_best_fit = model_best_fit[0]
+        covar = pars.get_subcovariance(spectral_model_best_fit.parameters)
+        spectral_model_best_fit.parameters.covariance = covar
+            
+#        spatial_model_best_fit = model_best_fit[0].spatial_model
+#        covar = pars.get_subcovariance(spatial_model_best_fit.parameters)
+#        spatial_model_best_fit.parameters.covariance = covar
 
-    spatial_model_best_fit = model_best_fit[0].spatial_model
-    covar = pars.get_subcovariance(spatial_model_best_fit.parameters)
-    spatial_model_best_fit.parameters.covariance = covar
+    else:
+        spectral_model_best_fit = model_best_fit[0].spectral_model
+        covar = pars.get_subcovariance(spectral_model_best_fit.parameters)
+        spectral_model_best_fit.parameters.covariance = covar
+        
+        spatial_model_best_fit = model_best_fit[0].spatial_model
+        covar = pars.get_subcovariance(spatial_model_best_fit.parameters)
+        spatial_model_best_fit.parameters.covariance = covar
+
     return model_best_fit
 
 
@@ -522,15 +559,15 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
     log.info(f"Reading {filename_model}")
     model = Models.read(filename_model)
 
-    path = get_filename_best_fit_model(filename_model, obs_id)
+    path = get_filename_best_fit_model(filename_model, obs_id, LIVETIME)
     model_best_fit = read_best_fit_model(path)
 
-    plot_spectra(model[0], model_best_fit[0], obs_id)
+    plot_spectra(model[0], model_best_fit[0], obs_id, LIVETIME)
 
     dataset = read_dataset(filename_dataset, filename_model, obs_id)
-    dataset.models = model_best_fit
-    plot_residuals(dataset, obs_id)
-    plot_residual_distribution(dataset, obs_id)
+    dataset.models.extend(model_best_fit)
+    plot_residuals(dataset, obs_id, LIVETIME)
+    plot_residual_distribution(dataset, obs_id, LIVETIME)
 
 
 @cli.command("plot-pull-distributions", help="Plot pull distributions for the given model")
@@ -545,11 +582,11 @@ def plot_pull_distribution_cmd(model, binned):
         models = [model]
 
     for model in models:
-        plot_pull_distribution(model_name=model, binned=binned)
+        plot_pull_distribution(model_name=model, livetime=LIVETIME, binned=binned)
 
 
-def plot_pull_distribution(model_name, binned=False):
-    name = "fit-results-all"
+def plot_pull_distribution(model_name, livetime, binned=False):
+    name = f"fit-results-all_{livetime.value:.0f}{livetime.unit}"
     if binned:
         name = "fit_binned-results-all"
     filename = BASE_PATH / f"results/models/{model_name}/{name}.fits.gz"
@@ -559,7 +596,7 @@ def plot_pull_distribution(model_name, binned=False):
     model_ref = Models.read(filename_ref)[0]
     names = [name for name in results.colnames if "err" not in name]
 
-    plots = "plots"
+    plots = f"plots_{livetime.value:.0f}{livetime.unit}"
     if binned:
         plots = "plots_fake"
     for name in names:
@@ -574,7 +611,8 @@ def plot_pull_distribution(model_name, binned=False):
 
         pull = (values - par.value) / values_err
 
-        plt.hist(pull, bins=21, normed=True)
+#        print("Number of fits beyond 5 sigmas: ",(np.where( (pull<-5) )))
+        plt.hist(pull, bins=21, normed=True, range=(-5,5))
         plt.xlim(-5, 5)
         plt.xlabel("(value - value_true) / error")
         plt.ylabel("PDF")

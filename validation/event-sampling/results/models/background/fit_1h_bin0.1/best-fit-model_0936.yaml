@@ -1,0 +1,8 @@
+components:
+-   name: dpbCeEN7
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9910948787133789, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: 0.006872423677120154, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [V9a5GSVe]

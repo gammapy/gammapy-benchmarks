@@ -1,0 +1,8 @@
+components:
+-   name: AbaOExe9
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9949375050115601, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: 0.008534470411943561, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [nftrwM8Q]

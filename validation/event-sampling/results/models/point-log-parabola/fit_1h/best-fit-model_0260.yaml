@@ -1,0 +1,21 @@
+components:
+-   name: point-log-parabola
+    type: SkyModel
+    spectral:
+        type: LogParabolaSpectralModel
+        parameters:
+        - {name: amplitude, value: 8.200005733191596e-13, unit: cm-2 s-1 TeV-1, min: .nan,
+            max: .nan, frozen: false}
+        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+        - {name: alpha, value: 2.0055643649513093, unit: '', min: .nan, max: .nan,
+            frozen: false}
+        - {name: beta, value: 0.15976630453455887, unit: '', min: .nan, max: .nan,
+            frozen: false}
+    spatial:
+        type: PointSpatialModel
+        frame: galactic
+        parameters:
+        - {name: lon_0, value: 0.0003037241450624352, unit: deg, min: .nan, max: .nan,
+            frozen: false}
+        - {name: lat_0, value: 0.0008211042962358306, unit: deg, min: -90.0, max: 90.0,
+            frozen: false}

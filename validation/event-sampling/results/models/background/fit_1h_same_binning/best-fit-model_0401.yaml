@@ -1,0 +1,8 @@
+components:
+-   name: 1ZKFv-Rg
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.007656904514521, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -0.006313155841134423, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [aw8rpjwV]

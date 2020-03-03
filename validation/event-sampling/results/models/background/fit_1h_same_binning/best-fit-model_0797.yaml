@@ -1,0 +1,8 @@
+components:
+-   name: w9dqbB9r
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.0192354753854236, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -0.009453452831950806, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [8Eo0Jgha]

@@ -1,0 +1,8 @@
+components:
+-   name: fWA3fgTB
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.99110889159404, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: 0.0034946417319966787, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [yClkDidi]

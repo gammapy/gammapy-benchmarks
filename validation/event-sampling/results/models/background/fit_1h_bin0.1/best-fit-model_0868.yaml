@@ -1,0 +1,8 @@
+components:
+-   name: S20QAyla
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9813628841037318, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: 0.009008230093712162, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [jfbnqOmU]

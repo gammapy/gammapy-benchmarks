@@ -1,0 +1,8 @@
+components:
+-   name: vmSzg_tX
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9857363040175902, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: 0.006946299649574699, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [Bhgru-mW]

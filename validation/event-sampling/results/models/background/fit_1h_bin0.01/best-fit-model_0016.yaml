@@ -1,0 +1,8 @@
+components:
+-   name: zgiB-HUo
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9975494433338228, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: 0.0062053869391117625, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [sgelR8Ou]

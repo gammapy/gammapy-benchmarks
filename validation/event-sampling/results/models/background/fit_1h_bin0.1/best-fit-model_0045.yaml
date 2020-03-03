@@ -1,0 +1,8 @@
+components:
+-   name: JDSFa-1u
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.0115826928658822, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -0.008374492214185942, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [0AzvTloU]

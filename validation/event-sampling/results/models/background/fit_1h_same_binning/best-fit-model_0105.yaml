@@ -1,0 +1,9 @@
+components:
+-   name: LCnOF-Wc
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.0030518959889747, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -0.0054637488669147805, unit: '', min: .nan, max: .nan,
+        frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [jbtelZdr]

@@ -1,0 +1,8 @@
+components:
+-   name: T9-K3C9C
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9926171669699277, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: 0.0026216223671017827, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [Y6dPBE97]

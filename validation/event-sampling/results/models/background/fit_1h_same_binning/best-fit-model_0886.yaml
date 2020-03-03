@@ -1,0 +1,9 @@
+components:
+-   name: siyiFv0c
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.0070341781963799, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -3.3573256891413807e-05, unit: '', min: .nan, max: .nan,
+        frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [858sa4Df]

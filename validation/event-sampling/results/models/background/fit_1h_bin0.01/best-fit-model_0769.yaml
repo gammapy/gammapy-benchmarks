@@ -1,0 +1,8 @@
+components:
+-   name: ERmyZkMB
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9828338961346765, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: 0.0062488405037705586, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [wTNFR8U9]

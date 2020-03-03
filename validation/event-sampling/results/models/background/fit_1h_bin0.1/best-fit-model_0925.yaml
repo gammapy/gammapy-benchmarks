@@ -1,0 +1,8 @@
+components:
+-   name: kmn-DMwx
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.02248358136326, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -0.014638705757970497, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [brMAodnp]

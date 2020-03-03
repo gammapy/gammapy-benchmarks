@@ -1,0 +1,8 @@
+components:
+-   name: f3s3_qpl
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.0006817461564639, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: 0.0009495710890266035, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [Y8Daf5Yr]
