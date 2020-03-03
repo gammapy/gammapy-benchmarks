@@ -6,10 +6,11 @@ from astropy.time import Time
 from astropy.table import Table
 from astropy.coordinates import SkyCoord, Angle
 from gammapy.irf import EffectiveAreaTable, EDispKernel
-from gammapy.spectrum import CountsSpectrum, SpectrumDataset, SpectrumDatasetOnOff
-from gammapy.cube import MapDataset, PSFKernel
+from gammapy.maps import CountsSpectrum
+from gammapy.datasets import SpectrumDataset, SpectrumDatasetOnOff, MapDataset
+from gammapy.irf import PSFKernel
 from gammapy.data import EventList, DataStore, GTI
-from gammapy.maps import HpxNDMap, MapAxis, Map, WcsGeom
+from gammapy.maps import HpxNDMap, MapAxis, Map, WcsGeom, MapCoord
 from gammapy.irf import EnergyDependentTablePSF
 from gammapy.utils.time import time_ref_from_dict
 
@@ -39,7 +40,7 @@ class FermiDatasetMaker:
     
     def _fill_psfmap(self, psf, dataset):
         # Fill each bin of the PSFMap with the psf table.
-        energy = dataset.psf.psf_map.geom.get_axis_by_name('energy')
+        energy = dataset.psf.psf_map.geom.get_axis_by_name('energy_true')
         theta = dataset.psf.psf_map.geom.get_axis_by_name('theta')
 
         values = psf.evaluate(
@@ -62,6 +63,8 @@ class FermiDatasetMaker:
         
         # recompute exposure on geom
         coords = geom.get_coord()
+        # this is to change the axis name. Can we avoid this?
+        coords = MapCoord.create(dict(skycoord=coords.skycoord, energy_true=coords['energy']))
         values = self.exposure.interp_by_coord(coords)
         dataset.exposure = Map.from_geom(geom, data=values, unit=self.exposure.unit)
 

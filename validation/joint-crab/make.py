@@ -14,7 +14,8 @@ from regions import CircleSkyRegion, CircleAnnulusSkyRegion
 from gammapy.analysis import Analysis, AnalysisConfig
 from gammapy.modeling.models import SkyModel
 from gammapy.modeling.models import LogParabolaSpectralModel
-from gammapy.modeling import Fit, Datasets
+from gammapy.modeling import Fit
+from gammapy.datasets import Datasets
 from gammapy.maps import MapAxis
 from gammapy.utils.scripts import make_path
 from joint_crab.extract_fermi import extract_spectrum_fermi
@@ -133,7 +134,7 @@ def data_reduction(instrument):
   
     # TODO remove when safe mask can be set on config
     if instrument is 'fact':
-        from gammapy.spectrum import SpectrumDatasetOnOff
+        from gammapy.datasets import SpectrumDatasetOnOff
         stacked = SpectrumDatasetOnOff.create(
             e_reco=analysis.datasets[0]._energy_axis.edges, 
             e_true=analysis.datasets[0]._energy_axis.edges, 
