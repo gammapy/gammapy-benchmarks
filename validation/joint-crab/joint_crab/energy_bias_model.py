@@ -19,11 +19,11 @@ class EnergyBiasSpectralModel(SpectralModel):
             self,
             spectral_model,
             name="bias",
-            bias=1.0,
+            bias=0.0,
     ):
         self.spectral_model = spectral_model
         self.parameter_name = name
-        self.bias_parameter = Parameter(name, bias, unit='', min=0., max=10., frozen=False)
+        self.bias_parameter = Parameter(name, bias, unit='', min=-1., max=2., frozen=False)
         parameters = Parameters([self.bias_parameter])
 
         super()._init_from_parameters(parameters)
@@ -37,7 +37,7 @@ class EnergyBiasSpectralModel(SpectralModel):
         # assign redshift value and remove it from dictionary
         # since it does not belong to the spectral model
         del kwargs[self.parameter_name]
-        new_energy = self.bias_parameter.value * energy
+        new_energy = (1+self.bias_parameter.value) * energy
         dnde = self.spectral_model.evaluate(energy=new_energy, **kwargs)
         return dnde
 
