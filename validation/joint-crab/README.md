@@ -27,7 +27,8 @@
 
 ### Joint
 
-- See [joint analysis summary page](results/joint_summary.md)
+- See [Joint summary page](results/joint_summary.md)
+
 
 ## Task
 
