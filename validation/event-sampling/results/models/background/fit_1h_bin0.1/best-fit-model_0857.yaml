@@ -1,0 +1,8 @@
+components:
+-   name: ytFMNj09
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.0197636219487567, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -0.004230595581791766, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [alAcxA4m]

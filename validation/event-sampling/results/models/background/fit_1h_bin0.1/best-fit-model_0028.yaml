@@ -1,0 +1,9 @@
+components:
+-   name: uf2ppowC
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9983922829031193, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -0.0009182640551465464, unit: '', min: .nan, max: .nan,
+        frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [Ia-LXx2B]

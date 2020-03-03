@@ -1,0 +1,9 @@
+components:
+-   name: SZGuVVpp
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9905235604809306, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: 0.00022216891717874573, unit: '', min: .nan, max: .nan,
+        frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [RKyo-8E1]

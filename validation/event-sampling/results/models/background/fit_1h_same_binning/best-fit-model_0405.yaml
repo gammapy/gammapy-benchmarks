@@ -1,0 +1,8 @@
+components:
+-   name: PUtEt5Ig
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.0013279653380862, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -0.001401212107533141, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [3tW6Op12]

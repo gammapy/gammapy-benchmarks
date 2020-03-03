@@ -1,0 +1,8 @@
+components:
+-   name: sK-S_d5A
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9994122380983348, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: 0.004343801726874738, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [YN62pyes]

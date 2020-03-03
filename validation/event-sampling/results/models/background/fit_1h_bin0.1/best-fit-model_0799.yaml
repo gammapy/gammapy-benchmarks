@@ -1,0 +1,8 @@
+components:
+-   name: LqP6-Qcw
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9901304990968285, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: 0.007371665222967333, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [wGTB7rHE]

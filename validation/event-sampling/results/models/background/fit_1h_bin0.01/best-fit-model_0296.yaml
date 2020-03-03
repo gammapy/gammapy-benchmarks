@@ -1,0 +1,9 @@
+components:
+-   name: LRT70nim
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.0003731137441672, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -0.00023773906340134496, unit: '', min: .nan, max: .nan,
+        frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [0Rq3kcE2]

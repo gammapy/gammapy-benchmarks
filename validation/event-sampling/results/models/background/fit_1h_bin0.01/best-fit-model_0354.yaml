@@ -1,0 +1,9 @@
+components:
+-   name: Mc-O0tgX
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9929387574509347, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: 1.0440233832341743e-05, unit: '', min: .nan, max: .nan,
+        frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [CnRNcjpv]

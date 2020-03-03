@@ -1,0 +1,8 @@
+components:
+-   name: 6CHIZiG0
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9998050194982377, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: 0.0024267819224927916, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [PnZI13Zi]

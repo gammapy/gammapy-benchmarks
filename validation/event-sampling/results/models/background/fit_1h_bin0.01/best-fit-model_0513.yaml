@@ -1,0 +1,9 @@
+components:
+-   name: lu8sC-p9
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9983248578592421, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -0.0009681699973261991, unit: '', min: .nan, max: .nan,
+        frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [ZQ4unJSI]

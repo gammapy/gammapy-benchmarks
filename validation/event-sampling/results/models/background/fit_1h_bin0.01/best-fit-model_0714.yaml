@@ -1,0 +1,8 @@
+components:
+-   name: sFcfDW2g
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9976403542472678, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: 0.005142398198909789, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [s4iogAGb]

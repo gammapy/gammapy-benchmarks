@@ -1,0 +1,8 @@
+components:
+-   name: 5TvczdMI
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.016660457146357, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -0.00631928038807252, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [3n9-49pW]

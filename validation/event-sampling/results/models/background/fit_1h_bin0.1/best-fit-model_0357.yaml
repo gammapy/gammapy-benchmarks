@@ -1,0 +1,8 @@
+components:
+-   name: ppto_9LX
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9961470561980674, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -0.00256232242238016, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [yjS6I5Ys]

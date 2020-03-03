@@ -1,0 +1,8 @@
+components:
+-   name: QY-lSalh
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9918074053326789, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: 0.003853837532872911, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [D-bhL0B2]

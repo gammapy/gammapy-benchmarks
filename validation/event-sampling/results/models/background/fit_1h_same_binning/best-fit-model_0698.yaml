@@ -1,0 +1,8 @@
+components:
+-   name: xyhl_7nf
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 0.9998452151988859, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: 0.0013696565010403985, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [0GzA-d5_]

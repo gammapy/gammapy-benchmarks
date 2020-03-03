@@ -1,0 +1,8 @@
+components:
+-   name: 2Peni8Pz
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.002757955026528, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -0.001013843709479726, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [29jB8aU2]

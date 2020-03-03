@@ -1,0 +1,8 @@
+components:
+-   name: KQTfKsUN
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.0070834913615827, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -0.004983535331618608, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [A-9SRYp-]

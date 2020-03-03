@@ -1,0 +1,9 @@
+components:
+-   name: 7-b3saHs
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.0011921787134717, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -0.0017759034065044674, unit: '', min: .nan, max: .nan,
+        frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [HIydPCJn]

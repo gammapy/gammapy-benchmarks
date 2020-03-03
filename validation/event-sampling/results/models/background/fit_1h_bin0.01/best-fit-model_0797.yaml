@@ -1,0 +1,8 @@
+components:
+-   name: 4wRmplnI
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.0192378905568988, unit: '', min: 0.0, max: .nan, frozen: false}
+    - {name: tilt, value: -0.009453332540668886, unit: '', min: .nan, max: .nan, frozen: false}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    datasets_names: [ICLC8LA7]
