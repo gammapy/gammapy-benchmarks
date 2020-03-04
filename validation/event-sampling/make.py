@@ -13,12 +13,9 @@ import astropy.units as u
 from astropy.convolution import Tophat2DKernel
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
-from gammapy.cube import (
-    MapDatasetEventSampler,
-)
 from gammapy.data import GTI, Observation, EventList
-from gammapy.datasets import MapDataset
-from gammapy.detect import LiMaMapEstimator as lima
+from gammapy.datasets import MapDataset, MapDatasetEventSampler
+from gammapy.estimators import LiMaMapEstimator as lima
 from gammapy.maps import MapAxis, WcsGeom, Map
 from gammapy.irf import EnergyDispersion2D, load_cta_irfs
 from gammapy.makers import MapDatasetMaker
@@ -55,7 +52,7 @@ ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds("0.03 TeV", "300 TeV", nbin=20, pe
 MIGRA_AXIS = MapAxis.from_bounds(0.5, 2, nbin=150, node_type="edges", name="migra")
 
 WCS_GEOM = WcsGeom.create(
-    skydir=POINTING, width=(4, 4), binsz=0.02, frame="galactic", axes=[ENERGY_AXIS]
+    skydir=POINTING, width=(8, 8), binsz=0.02, frame="galactic", axes=[ENERGY_AXIS]
 )
 
 
