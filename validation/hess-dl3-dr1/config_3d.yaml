@@ -18,7 +18,7 @@ datasets:
               frame: icrs
               lon: {ra}
               lat: {dec}
-          binsize: 0.02 deg
+          binsize: 0.05 deg
           fov:
               width: 3 deg
               height: 3 deg
@@ -28,25 +28,30 @@ datasets:
         axes:
           energy:
               min: 0.1 TeV
-              max: 10 TeV
-              nbins: 16
+              max: 100 TeV
+              nbins: 24
           energy_true:
-              min: 0.1 TeV
-              max: 10 TeV
+              min: 0.08 TeV
+              max: 150 TeV
               nbins: 48
+    background:
+        method: "fov_background"
     map_selection: ['counts', 'exposure', 'background', 'psf', 'edisp']
+    safe_mask:
+        methods: ['bkg-peak', 'edisp-bias']
 
 fit:
     fit_range:
         min: 0.1 TeV
-        max: 10 TeV
+        max: 100 TeV
 
 flux_points:
     energy:
-        min: 0.3 TeV # Todo: as soon as the safe mask will be properly set during data reduction, use min: 0.1 TeV
-        max: 10 TeV
-        nbins: 16
-
+        min: 0.1 TeV
+        max: 100 TeV
+        nbins: 36
+    source: {tag}
+    parameters: {{'reoptimize' : True}}
 
 
 
