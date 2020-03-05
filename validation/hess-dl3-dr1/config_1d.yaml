@@ -16,12 +16,12 @@ datasets:
         axes:
             energy:
                 min: 0.1 TeV
-                max: 60 TeV
+                max: 100 TeV
                 nbins: 24
             energy_true:
                 min: 0.08 TeV
-                max: 100 TeV
-                nbins: 48
+                max: 150 TeV
+                nbins: 80
     background:
         method: reflected
     on_region:
@@ -31,16 +31,16 @@ datasets:
         radius: {on_size}
     safe_mask:
         methods: ['bkg-peak', 'edisp-bias']
-    containment_correction: true
+    containment_correction: {containment_correction}
 
 fit:
     fit_range:
         min: 0.1 TeV
-        max: 60 TeV
+        max: 100 TeV
 
 flux_points:
     energy:
         min: 0.1 TeV
-        max: 60 TeV
-        nbins: 36
+        max: 100 TeV
+        nbins: 24
     source: {tag}

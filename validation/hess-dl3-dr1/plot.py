@@ -1,7 +1,7 @@
 import logging
 import yaml
 import matplotlib.pyplot as plt
-from gammapy.spectrum import FluxPoints
+from gammapy.estimators import FluxPoints
 from gammapy.modeling.models import Model
 from pathlib import Path
 
