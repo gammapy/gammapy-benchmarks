@@ -17,11 +17,11 @@ datasets:
             energy:
                 min: 0.1 TeV
                 max: 100 TeV
-                nbins: 24
+                nbins: 10
             energy_true:
                 min: 0.08 TeV
                 max: 150 TeV
-                nbins: 80
+                nbins: 48
     background:
         method: reflected
     on_region:
@@ -36,7 +36,7 @@ datasets:
 fit:
     fit_range:
         min: 0.1 TeV
-        max: 100 TeV
+        max: {emax_fit_1d}
 
 flux_points:
     energy:

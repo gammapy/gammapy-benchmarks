@@ -14,6 +14,8 @@
   tstop: "null"
   debug_run: 23592
   containment_correction: true
+  emax_fit_1d: 100 TeV
+  emax_fit_3d: 100 TeV
 - tag: msh1552
   name: MSH 15-52
   frame: icrs
@@ -30,6 +32,8 @@
   tstop: "null"
   debug_run: 20365
   containment_correction: false
+  emax_fit_1d: 100 TeV
+  emax_fit_3d: 100 TeV
 - tag: pks2155
   name: PKS 2155-304 (steady)
   frame: icrs
@@ -46,6 +50,9 @@
   tstop: 2008-08-29T00:00
   debug_run: 47802
   containment_correction: true
+  emax_fit_1d: 60 TeV
+  emax_fit_3d: 60 TeV
+
 
 
 
