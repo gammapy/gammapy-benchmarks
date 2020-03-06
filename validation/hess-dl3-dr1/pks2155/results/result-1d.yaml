@@ -1,7 +1,7 @@
-amplitude: 2.1077145150063562e-11
-amplitude_err: .nan
-index: 3.7931375045143922
-index_err: .nan
+amplitude: 1.699521923032034e-11
+amplitude_err: 2.969914211239482e-12
+index: 3.3533482953719163
+index_err: 0.30878418703809846
 lat_0: -30.229999999999997
 lat_0_err: 0.0
 lon_0: 329.72

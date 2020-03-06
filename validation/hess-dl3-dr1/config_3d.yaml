@@ -29,7 +29,7 @@ datasets:
           energy:
               min: 0.1 TeV
               max: 100 TeV
-              nbins: 24
+              nbins: 12
           energy_true:
               min: 0.08 TeV
               max: 150 TeV
