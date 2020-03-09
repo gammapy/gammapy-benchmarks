@@ -11,42 +11,42 @@ Validation of high-level analysis of HESS DL3 data.
 - Crab:
     - 1d :
         - fit results: 
-    [reference](crab/reference/gammapy_crab_1d_powerlaw.dat), 
-    [results](crab/results/results-summary-fit-1d.yaml) 
-        - flux points:
+    [reference](crab/reference/reference-1d.yaml), 
+    [validation](crab/results/result-1d.yaml) 
+        - plots:
     ![plots](crab/plots/flux-points-1d.png)
     - 3d: 
         - fit results: 
-    [reference](crab/reference/gammapy_crab_3d_powerlaw.dat), 
-    [results](crab/results/results-summary-fit-3d.yaml) 
-        - flux points: 
+    [reference](crab/reference/reference-3d.yaml), 
+    [validation](crab/results/result-3d.yaml) 
+        - plots: 
     ![plots](crab/plots/flux-points-3d.png)
-- PKS 2155-304:
-    - 1d /
-        - fit results:  
-    [reference](pks2155/reference/gammapy_pks2155_1d_powerlaw.dat), 
-    [results](pks2155/results/results-summary-fit-1d.yaml) 
-        - flux points:
-    ![plots](pks2155/plots/flux-points-1d.png)
-    - 3d / 
-        - fit results:     
-    [reference](pks2155/reference/gammapy_pks2155_3d_powerlaw.dat), 
-    [results](pks2155/results/results-summary-fit-3d.yaml)
-        - flux points:
-    ![plots](pks2155/plots/flux-points-3d.png)
 - MSH 1552:
     - 1d / 
         - fit results:     
-    [reference](msh1552/reference/gammapy_msh1552_1d_powerlaw.dat), 
-    [results](msh1552/results/results-summary-fit-1d.yaml)
-        - flux points:
+    [reference](msh1552/reference/reference-1d.yaml), 
+    [validation](msh1552/results/result-1d.yaml)
+        - plots:
     ![plots](msh1552/plots/flux-points-1d.png)
     - 3d / 
         - fit results:     
-    [reference](msh1552/reference/gammapy_msh1552_3d_powerlaw.dat), 
-    [results](msh1552/results/results-summary-fit-3d.yaml)
-        - flux points:
-    ![plots](msh1552/plots/flux-points-3d.png)
+    [reference](msh1552/reference/reference-2.52.53d.yaml), 
+    [validation](msh1552/results/result-3d.yaml)
+        - plots:
+    ![plots](msh1552/plots/flux-points-3d.png)un(self.model.parameters['norm'], steps, null_
+- PKS 2155-304:
+    - 1d /
+        - fit results:  
+    [reference](pks2155/reference/reference-1d.yaml), 
+    [validation](pks2155/results/result-1d.yaml) 
+        - plots:
+    ![plots](pks2155/plots/flux-points-1d.png)
+    - 3d / 
+        - fit results:     
+    [reference](pks2155/reference/reference-3d.yaml), 
+    [validation](pks2155/results/result-3d.yaml)
+        - plots:
+    ![plots](pks2155/plots/flux-points-3d.png)
 - RXJ1739-3946:
     - 1d / Not implemented
     - 3d / Not implemented
@@ -55,7 +55,7 @@ Validation of high-level analysis of HESS DL3 data.
 
 ## Execution
 
-To run a all analyses use:
+To run a all analyses (it takes ~10 min on this machines) use:
 
     python make.py run-analyses all-targets all-methods 
     
@@ -67,7 +67,7 @@ To run only e.g. 1d analysis, for all targets use:
 
     python make.py run-analyses all-targets 1d
 
-To run in debug mode (quickly):
+To run in debug mode (quickly, ~12 s on this machine):
 
     python make.py run-analyses all-targets all-methods --debug
     
@@ -85,13 +85,6 @@ The fit results are generally in acceptable (sometimes even good) agreement with
 ## TODO
 Some important pieces are still missing in the  gammapy HLI. Therefore there are a few TODOs (to be addressed 
 in gammapy):
- - During data reduction, apply (run-by-run) a safe mask using the proper `methods`. Right now, the choice of the
-  `method` is not customizable from the HLI. A workaround has been implemented
- - Implement a way to set the covariance automatically after the fit
- - For the 3D analysis, re-optimize the background norm in each energy bin. For now, this is not possible from the HLI.
- Notice that only the bkg norm is to be re-fitted (together with the model scaling), therefore all other spatial and 
- spectral parameters have to be frozen (which don't correspond to the default behavior of the `FluxPointsEstimator`
- with the setting `reoptimize=True`).
  - Implement a more uniform units handling schema between the analysis config and the model config: for now, in the former
  something like `10 deg` works, wherheas in the latter the value and units need to be separated.
  

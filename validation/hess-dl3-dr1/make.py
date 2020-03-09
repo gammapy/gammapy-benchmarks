@@ -2,6 +2,7 @@ import logging
 import yaml
 import click
 import warnings
+import time
 from pathlib import Path
 from gammapy.analysis import Analysis, AnalysisConfig
 
@@ -25,9 +26,11 @@ def cli(log_level, show_warnings):
 
 @cli.command("run-analyses", help="Run DL3 analysis validation")
 @click.option("--debug", is_flag=True)
+@click.option("--skip_flux_points", is_flag=True)
 @click.argument("targets", type=click.Choice(list(AVAILABLE_TARGETS) + ["all-targets"]))
 @click.argument("methods", type=click.Choice(list(AVAILABLE_METHODS) + ["all-methods"]))
-def run_analyses(debug, targets, methods):
+def run_analyses(debug,  skip_flux_points, targets, methods):
+    start_time = time.time()
     targets = list(AVAILABLE_TARGETS) if targets == "all-targets" else [targets]
     methods = list(AVAILABLE_METHODS) if methods == "all-methods" else [methods]
 
@@ -40,8 +43,10 @@ def run_analyses(debug, targets, methods):
 
         log.info(f"Processing source: {target}")
         for method in methods:
-            run_analysis(method, target_dict, debug)
-
+            run_analysis(method, target_dict, debug, skip_flux_points)
+    end_time = time.time()
+    duration = end_time - start_time
+    log.info(f"The time taken for the validation is: {duration} s ({duration/60} min)")
 
 def write_fit_summary(parameters, outfile):
     """Store fit results with uncertainties"""
@@ -49,15 +54,13 @@ def write_fit_summary(parameters, outfile):
     for parameter in parameters:
         value = parameter.value
         error = parameters.error(parameter)
-        unit = parameter.unit
         name = parameter.name
-        string = "{0:.2e} +- {1:.2e} {2}".format(value, error, unit)
-        fit_results_dict.update({name: string})
+        fit_results_dict.update({name: value})
+        fit_results_dict.update({name + "_err": float(error)})
     with open(str(outfile), "w") as f:
         yaml.dump(fit_results_dict, f)
 
-
-def run_analysis(method, target_dict, debug):
+def run_analysis(method, target_dict, debug, skip_flux_points):
     """If the method is "1d", runs joint spectral analysis for the selected target. If
     instead it is "3d", runs stacked 3D analysis."""
     tag = target_dict["tag"]
@@ -81,27 +84,19 @@ def run_analysis(method, target_dict, debug):
     log.info(f"Running data reduction")
     analysis.get_datasets()
 
-    # TODO: This is a workaround. We should somehow apply the safe mask (run by run) from the HLI
-    from gammapy.cube import SafeMaskMaker
-    datasets = []
-    maker_safe_mask = SafeMaskMaker(methods=["edisp-bias", "bkg-peak"], bias_percent=10)
-    for dataset in analysis.datasets:
-        dataset = maker_safe_mask.run(dataset)
-        datasets.append(dataset)
-    analysis.datasets = datasets
-
     log.info(f"Setting the model")
     txt = Path("model_config.yaml").read_text()
     txt = txt.format_map(target_dict)
-    log.info(txt)
     analysis.set_models(txt)
-    if method == "3d" and target_dict["spatial_model"] == "DiskSpatialModel":
-        analysis.models[0].spatial_model.e.frozen = False
-        analysis.models[0].spatial_model.phi.frozen = False
-        analysis.models[0].spatial_model.r_0.value = 0.3
-
+    if method == "3d":
+        analysis.datasets[0].background_model.norm.frozen = False
+        analysis.datasets[0].background_model.tilt.frozen = False
+        if target_dict["spatial_model"] == "DiskSpatialModel":
+            analysis.models[0].spatial_model.e.frozen = False
+            analysis.models[0].spatial_model.phi.frozen = False
+            analysis.models[0].spatial_model.r_0.value = 0.3
     log.info(f"Running fit ...")
-    analysis.run_fit()
+    analysis.run_fit(optimize_opts={"print_level" : 3})
 
     # TODO: This is a workaround. Set covariance automatically
     results = analysis.fit_result
@@ -116,29 +111,34 @@ def run_analysis(method, target_dict, debug):
 
     log.info(f"Writing {path_res}")
     write_fit_summary(
-        analysis.models[0].parameters, str(path_res / f"results-summary-fit-{method}.yaml")
+        analysis.models[0].parameters, str(path_res / f"result-{method}.yaml")
     )
 
-    log.info(f"Running flux points estimation")
-    # TODO:  For the 3D analysis, re-optimize the background norm in each energy
-    #  bin. For now, this is not possible from the HLI.
-    analysis.get_flux_points(source=tag)
-    flux_points = analysis.flux_points.data
-    flux_points.table["is_ul"] = flux_points.table["ts"] < 4
-    keys = [
-        "e_ref",
-        "e_min",
-        "e_max",
-        "dnde",
-        "dnde_errp",
-        "dnde_errn",
-        "is_ul",
-        "dnde_ul",
-    ]
-    log.info(f"Writing {path_res}")
-    flux_points.table_formatted[keys].write(
-        path_res / f"flux-points-{method}.ecsv", format="ascii.ecsv"
-    )
+    if not skip_flux_points:
+        log.info(f"Running flux points estimation")
+        # Freeze all parameters except the backround norm
+        if method == "3d":
+            dataset = analysis.datasets[0]
+            for parameter in dataset.models.parameters:
+                if parameter is not dataset.background_model.norm:
+                    parameter.frozen = True
+        analysis.get_flux_points()
+        flux_points = analysis.flux_points.data
+        flux_points.table["is_ul"] = flux_points.table["ts"] < 4
+        keys = [
+            "e_ref",
+            "e_min",
+            "e_max",
+            "dnde",
+            "dnde_errp",
+            "dnde_errn",
+            "is_ul",
+            "dnde_ul"
+        ]
+        log.info(f"Writing {path_res}")
+        flux_points.table_formatted[keys].write(
+            path_res / f"flux-points-{method}.ecsv", format="ascii.ecsv"
+        )
 
 
 if __name__ == "__main__":
