@@ -22,7 +22,7 @@ from joint_crab.extract_fermi import extract_spectrum_fermi
 
 log = logging.getLogger(__name__)
 
-AVAILABLE_DATA = ["hess","magic","veritas","fact", "fermi", "joint"]
+AVAILABLE_DATA = ["hess", "magic", "veritas", "fact", "fermi", "joint"]
 
 DATASETS = [
 
@@ -35,37 +35,38 @@ DATASETS = [
 ]
 
 instrument_opts = dict(
-    hess = {'on_radius':'0.11 deg', 
+    hess={'on_radius':'0.11 deg',
             'stack':False, 
             'containment':True, 
             'emin':'0.66 TeV', 
             'emax':'30 TeV',
             'color': "#002E63",},
-    magic = {'on_radius':'0.14 deg', 
+    magic={'on_radius':'0.14 deg',
              'stack':False, 
              'containment':False,
              'emin':'0.08 TeV', 
              'emax':'30 TeV',
              'color': "#FF9933",},
-    veritas = {'on_radius':'0.1 deg', 
+    veritas={'on_radius':'0.1 deg',
                'stack':False, 
                'containment':False,
                'emin':'0.15 TeV', 
                'emax':'30 TeV',
                'color': "#893F45",},
-    fact = {'on_radius':'0.1732 deg', 
-            'stack':False, 
+    fact={'on_radius':'0.1732 deg',
+            'stack': True,
             'containment':False,
             'emin':'0.4 TeV', 
             'emax':'30 TeV',
             'color': "#3EB489",},
-    fermi = {'on_radius':'0.3 deg', 
+    fermi={'on_radius':'0.3 deg',
             'stack':False, 
             'containment':True,
             'emin':'0.03 TeV',
             'emax':'2 TeV',
             'color': "#21ABCD",},
 )
+
 
 @click.group()
 @click.option(
@@ -104,6 +105,7 @@ def run_analyses(instruments, npoints=10):
         data_fitting(instrument, npoints)
         make_summary(instrument)
 
+
 @cli.command("run-fit", help="Run Gammapy fit: joint Crab")
 @click.argument("instruments", type=click.Choice(list(AVAILABLE_DATA) + ["all"]))
 @click.argument("npoints", required = False, type=int, default=10)
@@ -118,8 +120,7 @@ def run_fit(instruments, npoints=10):
         data_fitting(instrument, npoints)
         make_summary(instrument)
 
-        
-    
+
 def data_reduction(instrument):
     log.info(f"data_reduction: {instrument}")
     config = AnalysisConfig.read(f"config.yaml")
@@ -128,24 +129,15 @@ def data_reduction(instrument):
     config.datasets.containment_correction = instrument_opts[instrument]['containment']
     config.datasets.on_region.radius = instrument_opts[instrument]['on_radius']
 
+    if instrument == "fact":
+        config.datasets.safe_mask.methods = []
+
     analysis = Analysis(config)
     analysis.get_observations()
     analysis.get_datasets() 
-  
-    # TODO remove when safe mask can be set on config
-    if instrument is 'fact':
-        from gammapy.datasets import SpectrumDatasetOnOff
-        stacked = SpectrumDatasetOnOff.create(
-            e_reco=analysis.datasets[0]._energy_axis.edges, 
-            e_true=analysis.datasets[0]._energy_axis.edges, 
-            region=None
-        )
-        for ds in analysis.datasets:
-            ds.mask_safe[:] = True
-            stacked.stack(ds)
-        analysis.datasets = Datasets([stacked])
 
     analysis.datasets.write(f"reduced_{instrument}", overwrite=True)
+
 
 def data_reduction_fermi():
     log.info(f"data_reduction: fermi")
@@ -166,14 +158,14 @@ def data_reduction_fermi():
 
 
 def define_model():
-    crab_spectrum = LogParabolaSpectralModel(amplitude=1e-11/u.cm**2/u.s/u.TeV,
-                                         reference=1*u.TeV,
-                                         alpha=2.3,
-                                          beta=0.2)
+    crab_spectrum = LogParabolaSpectralModel(
+        amplitude=3e-11/u.cm**2/u.s/u.TeV, reference=1*u.TeV, alpha=2.3, beta=0.2
+    )
 
     crab_model = SkyModel(spatial_model=None, spectral_model=crab_spectrum, name="crab")
 
     return crab_model
+
 
 def make_contours(fit, result, npoints):
     log.info(f"Running contours with {npoints} points...")
@@ -207,6 +199,7 @@ def make_contours(fit, result, npoints):
    
     return contours
 
+
 def read_datasets_and_set_model(instrument, model):
     # Read from disk
     datasets = Datasets.read(f"reduced_{instrument}/_datasets.yaml",
@@ -218,9 +211,10 @@ def read_datasets_and_set_model(instrument, model):
     # Set model and fit range
     for ds in datasets:
         ds.models = model
-        ds.mask_fit = ds.counts.energy_mask(e_min, e_max)
+        ds.mask_fit = ds.counts.geom.energy_mask(e_min, e_max)
 
     return datasets
+
 
 def data_fitting(instrument, npoints):
     log.info("Running fit ...")
@@ -237,9 +231,10 @@ def data_fitting(instrument, npoints):
             ds_list = [*ds_list, *datasets]
         datasets = Datasets(ds_list)
 
+    print(datasets)
     # Perform fit
     fit = Fit(datasets)
-    result = fit.run()
+    result = fit.run(optimize_opts={"tol": 0.1, "strategy": 1})
     log.info(result.parameters.to_table())
     
     path = f"results/fit_{instrument}.rst"
@@ -278,6 +273,7 @@ def plot_contour_line(ax, x, y, **kwargs):
     ys = LSQUnivariateSpline(t, y, t_knots, k=5)(tp)
 
     ax.plot(xs, ys, **kwargs)
+
 
 def plot_contours(instrument):
     log.info(f"Plotting contours: {instrument}")
@@ -354,7 +350,6 @@ def plot_contours(instrument):
     plt.savefig(f"results/contours_{instrument}.png", bbox_inches="tight")
     plt.close()
 
-   
     
 def make_summary(instrument):
     log.info(f"Preparing summary: {instrument}")

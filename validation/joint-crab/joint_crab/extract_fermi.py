@@ -2,15 +2,10 @@
 import logging
 import numpy as np
 import astropy.units as u
-from astropy.time import Time
-from astropy.table import Table
-from astropy.coordinates import SkyCoord, Angle
-from gammapy.irf import EffectiveAreaTable, EDispKernel
-from gammapy.maps import CountsSpectrum
-from gammapy.datasets import SpectrumDataset, SpectrumDatasetOnOff, MapDataset
-from gammapy.irf import PSFKernel
-from gammapy.data import EventList, DataStore, GTI
-from gammapy.maps import HpxNDMap, MapAxis, Map, WcsGeom, MapCoord
+from gammapy.irf import EDispKernel
+from gammapy.datasets import SpectrumDatasetOnOff, MapDataset
+from gammapy.data import EventList, GTI
+from gammapy.maps import HpxNDMap,Map, WcsGeom, MapCoord
 from gammapy.irf import EnergyDependentTablePSF
 from gammapy.utils.time import time_ref_from_dict
 
@@ -37,7 +32,7 @@ class FermiDatasetMaker:
         tstop = self.events.table.meta['TSTOP']*u.s
         time_ref = time_ref_from_dict(self.events.table.meta)
         return GTI.create(tstart, tstop, time_ref)
-    
+
     def _fill_psfmap(self, psf, dataset):
         # Fill each bin of the PSFMap with the psf table.
         energy = dataset.psf.psf_map.geom.get_axis_by_name('energy_true')
@@ -48,19 +43,19 @@ class FermiDatasetMaker:
                             rad=theta.center,
                             method='linear'
         )
-        
+
         dataset.psf.psf_map.quantity *= 0
-        dataset.psf.psf_map.quantity += values[:,:,np.newaxis,np.newaxis]
-        
+        dataset.psf.psf_map.quantity += values[:, :, np.newaxis, np.newaxis]
+
     def run(self, geom):
         """Create and fill the map dataset"""
         dataset = MapDataset.create(geom, binsz_irf=1.0)
         dataset.counts.fill_events(self.events)
 
         dataset.gti = self._make_gti()
-       
+
         self._fill_psfmap(self.psf, dataset)
-        
+
         # recompute exposure on geom
         coords = geom.get_coord()
         # this is to change the axis name. Can we avoid this?
@@ -86,7 +81,8 @@ def extract_spectrum_fermi(on_region, off_region, energy, containment_correction
     
     spec_dataset = ds.to_spectrum_dataset(
         on_region,
-        containment_correction=containment_correction
+        containment_correction=containment_correction,
+        name="fermi"
     )
     on_mask=ds.counts.geom.region_mask([on_region])
     on_solid_angle = np.sum(ds.counts.geom.solid_angle()*on_mask)
