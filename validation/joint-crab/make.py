@@ -102,8 +102,8 @@ def run_analyses(instruments, npoints=10):
             else:
                 data_reduction_fermi()
 
-        data_fitting(instrument, npoints)
-        make_summary(instrument)
+        #data_fitting(instrument, npoints)
+        #make_summary(instrument)
 
 
 @cli.command("run-fit", help="Run Gammapy fit: joint Crab")
@@ -130,11 +130,16 @@ def data_reduction(instrument):
     config.datasets.on_region.radius = instrument_opts[instrument]['on_radius']
 
     if instrument == "fact":
-        config.datasets.safe_mask.methods = []
+        config.datasets.safe_mask.methods = ["aeff-default"]
 
     analysis = Analysis(config)
     analysis.get_observations()
-    analysis.get_datasets() 
+
+    analysis.get_datasets()
+    if instrument == "fact":
+        counts = analysis.datasets[0].counts
+        data = counts.geom.energy_mask(emin=0.4 * u.TeV)
+        analysis.datasets[0].mask_safe = counts.copy(data=data)
 
     analysis.datasets.write(f"reduced_{instrument}", overwrite=True)
 
@@ -161,6 +166,9 @@ def define_model():
     crab_spectrum = LogParabolaSpectralModel(
         amplitude=3e-11/u.cm**2/u.s/u.TeV, reference=1*u.TeV, alpha=2.3, beta=0.2
     )
+
+    crab_spectrum.beta.min = -0.5
+    crab_spectrum.beta.max = 1
 
     crab_model = SkyModel(spatial_model=None, spectral_model=crab_spectrum, name="crab")
 
@@ -231,7 +239,6 @@ def data_fitting(instrument, npoints):
             ds_list = [*ds_list, *datasets]
         datasets = Datasets(ds_list)
 
-    print(datasets)
     # Perform fit
     fit = Fit(datasets)
     result = fit.run(optimize_opts={"tol": 0.1, "strategy": 1})
