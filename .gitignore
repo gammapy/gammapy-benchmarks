@@ -106,3 +106,5 @@ ENV/
 
 validation/fermi-3fhl/data
 validation/fermi-3fhl/results
+
+validation/joint-crab/reduced_*
