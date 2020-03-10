@@ -15,7 +15,7 @@
    <tr>
     <td>amplitude</td>
     <td>3.491e-11 ± 3.045e-12</td>
-    <td>3.582e-11 ± 3.059e-12</td>
+    <td>3.580e-11 ± 3.220e-12</td>
    </tr>
    <tr>
     <td>reference</td>
@@ -25,12 +25,12 @@
    <tr>
     <td>alpha</td>
     <td>2.542e+00 ± 2.247e-01</td>
-    <td>2.577e+00 ± 2.208e-01</td>
+    <td>2.575e+00 ± 2.193e-01</td>
    </tr>
    <tr>
     <td>beta</td>
     <td>4.249e-01 ± 3.127e-01</td>
-    <td>4.154e-01 ± 3.145e-01</td>
+    <td>4.179e-01 ± 3.007e-01</td>
    </tr>
   </table>
  </body>
