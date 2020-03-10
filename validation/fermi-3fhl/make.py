@@ -11,20 +11,20 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from gammapy.data import EventList
-from gammapy.irf import EnergyDependentTablePSF, EnergyDispersion
+from gammapy.irf import EnergyDependentTablePSF, EDispKernel, PSFKernel
 from gammapy.maps import Map, MapAxis, WcsNDMap, WcsGeom
-from gammapy.modeling import Fit, Datasets
+from gammapy.modeling import Fit
+from gammapy.datasets import Datasets, MapDataset
+from gammapy.datasets.map import MapEvaluator
 from gammapy.modeling.models import (
     SkyDiffuseCube,
-    SkyModels,
+    Models,
     BackgroundModel,
     LogParabolaSpectralModel,
     PowerLawSpectralModel,
     create_fermi_isotropic_diffuse_model,
 )
-from gammapy.spectrum import FluxPoints, FluxPointsEstimator
-from gammapy.cube import MapDataset, PSFKernel
-from gammapy.cube.fit import MapEvaluator
+from gammapy.estimators import FluxPoints, FluxPointsEstimator
 from gammapy.catalog import SourceCatalog3FHL
 from matplotlib import cm
 from matplotlib.colors import LogNorm
@@ -114,7 +114,10 @@ class Validation_3FHL:
             raise ValueError(f"Invalid selection: {selection!r}")
 
         # fit options
-        self.optimize_opts = {"backend": "minuit", "tol": 10.0, "strategy": 2}
+        self.optimize_opts = {
+            "backend": "minuit",
+            "optimize_opts": {"tol": 10.0, "strategy": 2},
+        }
 
         # calculate flux points only for sources significant above this threshold
         self.sig_cut = 8.0
@@ -197,7 +200,7 @@ class Validation_3FHL:
             skydir=ROI_pos,
             width=width,
             proj="CAR",
-            coordsys="GAL",
+            frame="galactic",
             binsz=1 / 8.0,
             axes=[self.energy_axis],
             dtype=float,
@@ -207,25 +210,24 @@ class Validation_3FHL:
         )
 
         axis = MapAxis.from_nodes(
-            counts.geom.axes[0].center, name="energy", unit="GeV", interp="log"
+            counts.geom.axes[0].center, name="energy_true", unit="GeV", interp="log"
         )
         wcs = counts.geom.wcs
         geom = WcsGeom(wcs=wcs, npix=counts.geom.npix, axes=[axis])
-        coords = counts.geom.get_coord()
-
+        coords = geom.get_coord()
         # expo
         data = exposure_hpx.interp_by_coord(coords)
         exposure = WcsNDMap(geom, data, unit=exposure_hpx.unit, dtype=float)
 
         # read PSF
         psf_kernel = PSFKernel.from_table_psf(
-            self.psf, counts.geom, max_radius=self.psf_margin * u.deg
+            self.psf, geom, max_radius=self.psf_margin * u.deg
         )
 
         # Energy Dispersion
         e_true = exposure.geom.axes[0].edges
         e_reco = counts.geom.axes[0].edges
-        edisp = EnergyDispersion.from_diagonal_response(e_true=e_true, e_reco=e_reco)
+        edisp = EDispKernel.from_diagonal_response(e_true=e_true, e_reco=e_reco)
 
         # fit mask
         if coords["lon"].min() < 90 * u.deg and coords["lon"].max() > 270 * u.deg:
@@ -249,8 +251,11 @@ class Validation_3FHL:
         bkg_iso = eval_iso.compute_npred()
 
         # merge iem and iso, only one local normalization is fitted
+        dataset_name = "3FHL_ROI_num" + str(kr)
         background_total = bkg_iem + bkg_iso
-        background_model = BackgroundModel(background_total)
+        background_model = BackgroundModel(
+            background_total, name="bkg_iem+iso", datasets_names=[dataset_name]
+        )
         background_model.parameters["norm"].min = 0.0
 
         # Sources model
@@ -269,7 +274,7 @@ class Validation_3FHL:
                     model.spectral_model.parameters["alpha"].max = 10.0
 
                 FHL3_roi.append(model)
-        model_total = SkyModels(FHL3_roi)
+        model_total = Models([background_model] + FHL3_roi)
 
         # Dataset
         dataset = MapDataset(
@@ -278,15 +283,14 @@ class Validation_3FHL:
             exposure=exposure,
             psf=psf_kernel,
             edisp=edisp,
-            background_model=background_model,
             mask_fit=mask_fermi,
-            name="3FHL_ROI_num" + str(kr),
+            name=dataset_name,
         )
         cat_stat = dataset.stat_sum()
 
         datasets = Datasets([dataset])
         fit = Fit(datasets)
-        results = fit.run(optimize_opts=self.optimize_opts)
+        results = fit.run(**self.optimize_opts)
         print("ROI_num", str(kr), "\n", results)
         fit_stat = datasets.stat_sum()
 
@@ -333,7 +337,7 @@ class Validation_3FHL:
             except (FileNotFoundError, IOError):
                 continue
 
-            pars = dataset.parameters
+            pars = dataset.models.parameters
             pars.covariance = np.load(self.resdir / f"{dataset.name}_covariance.npy")
 
             infos = np.load(self.resdir / f"3FHL_ROI_num{kr}_fit_infos.npz")
@@ -345,7 +349,8 @@ class Validation_3FHL:
 
             for model in dataset.models:
                 if (
-                    self.FHL3[model.name].data["ROI_num"] == kr
+                    isinstance(model, BackgroundModel) is False
+                    and self.FHL3[model.name].data["ROI_num"] == kr
                     and self.FHL3[model.name].data["Signif_Avg"] >= self.sig_cut
                 ):
 
@@ -661,7 +666,7 @@ def extrapolate_iem_model(logEc_extra):
     )
     iem_extra = 10 ** finterp(logEc_extra)
     Ec_ax = MapAxis.from_nodes(
-        10 ** logEc_extra, unit="MeV", name="energy", interp="log"
+        10 ** logEc_extra, unit="MeV", name="energy_true", interp="log"
     )
     geom_3D = iem_fermi.geom.to_image().to_cube([Ec_ax])
 

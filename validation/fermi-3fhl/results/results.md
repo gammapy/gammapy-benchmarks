@@ -23,9 +23,9 @@ Optimization failed. Estimated distance to minimum too large. 0.0
  ![](results/Cash_stat_corr.png)
 
 flux_points   
-Rel. err. <10%: 66.66666666666667   
-Rel. err. <30%: 88.88888888888889   
-Rel. err. mean: -9.820566866062885   
+Rel. err. <10%: 0.0   
+Rel. err. <30%: 0.0   
+Rel. err. mean: 89733.42159400324   
 
  ![](results/flux_points_errel.png)
 
@@ -36,7 +36,7 @@ dx/x <30% :  100.0
  ![](results/PL_index_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: 0.001932594545421759   
+Rel. err. mean: 0.05356289201729432   
 compatibility: 100.0   
 
  ![](results/PL_index_errel.png)
@@ -50,7 +50,7 @@ dx/x <30% :  100.0
  ![](results/PL_amplitude_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -0.06190976021331562   
+Rel. err. mean: -0.6692253031983249   
 compatibility: 100.0   
 
  ![](results/PL_amplitude_errel.png)
@@ -64,7 +64,7 @@ dx/x <30% :  100.0
  ![](results/LP_alpha_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -0.6537768216827252   
+Rel. err. mean: -0.28706571003012726   
 compatibility: 100.0   
 
  ![](results/LP_alpha_errel.png)
@@ -72,13 +72,13 @@ compatibility: 100.0
  ![](results/LP_alpha_error_errel.png)
 
 LP_beta   
-dx/x <10% :  50.0   
+dx/x <10% :  25.0   
 dx/x <30% :  75.0   
 
  ![](results/LP_beta_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -2.541797584828875   
+Rel. err. mean: -2.5788970692823905   
 compatibility: 100.0   
 
  ![](results/LP_beta_errel.png)
@@ -92,7 +92,7 @@ dx/x <30% :  100.0
  ![](results/LP_amplitude_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -0.7584257321833152   
+Rel. err. mean: -0.7715532411396713   
 compatibility: 100.0   
 
  ![](results/LP_amplitude_errel.png)
