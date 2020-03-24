@@ -57,7 +57,9 @@ def data_prep():
 
     datasets = Datasets([])
     for idx, obs in enumerate(observations):
-        cutout = stacked.cutout(obs.pointing_radec, width=2 * offset_max, name=f"dataset{idx}")
+        cutout = stacked.cutout(
+            obs.pointing_radec, width=2 * offset_max, name=f"dataset{idx}"
+        )
         dataset = maker.run(cutout, obs)
         dataset = safe_mask_maker.run(dataset, obs)
         dataset.models.append(model)

@@ -17,14 +17,13 @@ from gammapy.modeling.models import (
 )
 from gammapy.maps import MapAxis
 from gammapy.estimators import LightCurveEstimator
-from gammapy.makers import (
-    SpectrumDatasetMaker,
-)
+from gammapy.makers import SpectrumDatasetMaker
 from gammapy.modeling import Fit
 
 N_OBS = int(os.environ.get("GAMMAPY_BENCH_N_OBS", 10))
 
 gti_t0 = Time("2020-03-01")
+
 
 def simulate():
 
@@ -51,13 +50,11 @@ def simulate():
     )
     temporal_model = ExpDecayTemporalModel(t0="6 h", t_ref=gti_t0.mjd)
     model_simu = SkyModel(
-        spectral_model=spectral_model,
-        temporal_model=temporal_model,
-        name="model-simu",
+        spectral_model=spectral_model, temporal_model=temporal_model, name="model-simu",
     )
 
-    lvtm = np.ones(N_OBS) * 1.0* u.hr
-    tstart = 1.0 *u.hr
+    lvtm = np.ones(N_OBS) * 1.0 * u.hr
+    tstart = 1.0 * u.hr
 
     datasets = []
     for i in range(N_OBS):
@@ -79,7 +76,7 @@ def simulate():
         dataset.models = model_simu
         dataset.fake()
         datasets.append(dataset)
-        tstart = tstart + 2.0 *u.hr
+        tstart = tstart + 2.0 * u.hr
 
     return datasets
 
@@ -88,12 +85,10 @@ def get_lc(datasets):
     spectral_model = PowerLawSpectralModel(
         index=3, amplitude="1e-11 cm-2 s-1 TeV-1", reference="1 TeV"
     )
-    model_fit = SkyModel(spectral_model=spectral_model, name="model-fit", )
+    model_fit = SkyModel(spectral_model=spectral_model, name="model-fit",)
     for dataset in datasets:
         dataset.models = model_fit
-    lc_maker_1d = LightCurveEstimator(
-        datasets, source="model-fit", reoptimize=False
-    )
+    lc_maker_1d = LightCurveEstimator(datasets, source="model-fit", reoptimize=False)
     lc_1d = lc_maker_1d.run(e_ref=1 * u.TeV, e_min=1.0 * u.TeV, e_max=10.0 * u.TeV)
 
 
