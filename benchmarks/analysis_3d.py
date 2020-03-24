@@ -9,12 +9,12 @@ from gammapy.modeling.models import (
     ExpCutoffPowerLawSpectralModel,
     PointSpatialModel,
 )
-from gammapy.modeling import Fit, Datasets
-from gammapy.spectrum import FluxPointsEstimator
+from gammapy.modeling import Fit
+from gammapy.estimators import FluxPointsEstimator
 from gammapy.data import DataStore
 from gammapy.maps import MapAxis, WcsGeom
-from gammapy.cube import MapDataset, MapDatasetMaker, SafeMaskMaker
-
+from gammapy.datasets import MapDataset, Datasets
+from gammapy.makers import MapDatasetMaker, SafeMaskMaker
 
 N_OBS = int(os.environ.get("GAMMAPY_BENCH_N_OBS", 10))
 
@@ -59,7 +59,7 @@ def data_prep():
         spatial_model=spatial_model, spectral_model=spectral_model, name="gc-source"
     )
 
-    stacked.models = model
+    stacked.models.append(model)
     return Datasets([stacked])
 
 

@@ -8,16 +8,24 @@ import yaml
 from astropy.coordinates import SkyCoord, Angle
 from regions import CircleSkyRegion
 from gammapy.maps import Map, MapAxis
-from gammapy.modeling import Fit, Datasets
+from gammapy.modeling import Fit
 from gammapy.data import DataStore
-from gammapy.modeling.models import PowerLawSpectralModel, PointSpatialModel, SkyModel
-from gammapy.spectrum import (
-    SpectrumDatasetMaker,
-    SpectrumDatasetOnOff,
-    FluxPointsEstimator,
-    ReflectedRegionsBackgroundMaker,
+from gammapy.modeling.models import (
+    PowerLawSpectralModel,
+    PointSpatialModel,
+    SkyModel
 )
-from gammapy.cube import SafeMaskMaker
+from gammapy.makers import (
+    SpectrumDatasetMaker,
+    ReflectedRegionsBackgroundMaker,
+    SafeMaskMaker
+)
+from gammapy.datasets import (
+    SpectrumDatasetOnOff,
+    Datasets,
+    SpectrumDataset
+)
+from gammapy.estimators import FluxPointsEstimator
 
 
 N_OBS = int(os.environ.get("GAMMAPY_BENCH_N_OBS", 10))
