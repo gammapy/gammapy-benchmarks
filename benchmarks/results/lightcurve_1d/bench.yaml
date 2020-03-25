@@ -1,3 +1,4 @@
 n_obs: 10
-data_preparation: 7.957509994506836
-data_fitting: 0.7677602767944336
+simulations: 1.125018835067749
+lc estimation: 0.8062641620635986
+temporal fitting: 5.424860000610352
