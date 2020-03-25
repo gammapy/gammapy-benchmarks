@@ -4,17 +4,17 @@ import yaml
 from pathlib import Path
 import numpy as np
 import astropy.units as u
-from astropy.coordinates import SkyCoord
 from gammapy.modeling.models import (
     SkyModel,
     ExpCutoffPowerLawSpectralModel,
     PointSpatialModel,
 )
-from gammapy.spectrum import FluxPointsEstimator
-from gammapy.modeling import Fit, Datasets
+from gammapy.modeling import Fit
+from gammapy.estimators import FluxPointsEstimator
 from gammapy.data import DataStore
 from gammapy.maps import MapAxis, WcsGeom
-from gammapy.cube import MapDatasetMaker, MapDataset, SafeMaskMaker
+from gammapy.datasets import MapDataset, Datasets
+from gammapy.makers import MapDatasetMaker, SafeMaskMaker
 
 N_OBS = int(os.environ.get("GAMMAPY_BENCH_N_OBS", 10))
 
@@ -57,10 +57,12 @@ def data_prep():
 
     datasets = Datasets([])
     for idx, obs in enumerate(observations):
-        cutout = stacked.cutout(obs.pointing_radec, width=2 * offset_max, name=f"dataset{idx}")
+        cutout = stacked.cutout(
+            obs.pointing_radec, width=2 * offset_max, name=f"dataset{idx}"
+        )
         dataset = maker.run(cutout, obs)
         dataset = safe_mask_maker.run(dataset, obs)
-        dataset.models = model
+        dataset.models.append(model)
         datasets.append(dataset)
     return datasets
 

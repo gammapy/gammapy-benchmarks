@@ -4,70 +4,109 @@ import time
 import yaml
 from pathlib import Path
 import astropy.units as u
-from astropy.coordinates import SkyCoord, Angle
 from regions import CircleSkyRegion
+from astropy.coordinates import SkyCoord, Angle
+from astropy.time import Time
+from gammapy.data import Observation
+from gammapy.irf import load_cta_irfs
+from gammapy.datasets import SpectrumDataset
+from gammapy.modeling.models import (
+    PowerLawSpectralModel,
+    ExpDecayTemporalModel,
+    SkyModel,
+)
 from gammapy.maps import MapAxis
-from gammapy.data import DataStore, GTI
-from gammapy.modeling.models import PowerLawSpectralModel
-from gammapy.spectrum import SpectrumDatasetMaker, ReflectedRegionsBackgroundMaker, SpectrumDatasetOnOff
-from gammapy.cube import SafeMaskMaker
-from gammapy.time import LightCurveEstimator
+from gammapy.estimators import LightCurveEstimator
+from gammapy.makers import SpectrumDatasetMaker
+from gammapy.modeling import Fit
 
 N_OBS = int(os.environ.get("GAMMAPY_BENCH_N_OBS", 10))
 
+gti_t0 = Time("2020-03-01")
 
-def data_prep():
-    data_store = DataStore.from_dir("$GAMMAPY_DATA/hess-dl3-dr1/")
-    OBS_ID = 23523
-    obs_ids = OBS_ID * np.ones(N_OBS)
-    observations = data_store.get_observations(obs_ids)
-    
-    target_position = SkyCoord(ra=83.63308, dec=22.01450, unit="deg")
 
-    e_reco = MapAxis.from_bounds(0.1, 40, nbin=40, interp="log", unit="TeV").edges
-    e_true = MapAxis.from_bounds(0.05, 100, nbin=200, interp="log", unit="TeV").edges
+def simulate():
+
+    irfs = load_cta_irfs(
+        "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits"
+    )
+
+    # Reconstructed and true energy axis
+    center = SkyCoord(0.0, 0.0, unit="deg", frame="galactic")
+    energy_axis = MapAxis.from_edges(
+        np.logspace(-0.5, 1.0, 10), unit="TeV", name="energy", interp="log"
+    )
+    energy_axis_true = MapAxis.from_edges(
+        np.logspace(-1.2, 2.0, 31), unit="TeV", name="energy", interp="log"
+    )
 
     on_region_radius = Angle("0.11 deg")
-    on_region = CircleSkyRegion(center=target_position, radius=on_region_radius)
+    on_region = CircleSkyRegion(center=center, radius=on_region_radius)
 
-    dataset_maker = SpectrumDatasetMaker(
-         containment_correction=True, selection=["counts", "aeff", "edisp"]
-    )
-
-    empty = SpectrumDatasetOnOff.create(region=on_region, e_reco=e_reco, e_true=e_true)
-
-    bkg_maker = ReflectedRegionsBackgroundMaker()
-    safe_mask_masker = SafeMaskMaker(methods=["aeff-max"], aeff_percent=10)
+    pointing = SkyCoord(0.5, 0.5, unit="deg", frame="galactic")
 
     spectral_model = PowerLawSpectralModel(
-        index=2.6, amplitude=2.0e-11 * u.Unit("1 / (cm2 s TeV)"), reference=1 * u.TeV
+        index=3, amplitude="1e-11 cm-2 s-1 TeV-1", reference="1 TeV"
     )
-    spectral_model.index.frozen = False
+    temporal_model = ExpDecayTemporalModel(t0="6 h", t_ref=gti_t0.mjd)
+    model_simu = SkyModel(
+        spectral_model=spectral_model, temporal_model=temporal_model, name="model-simu",
+    )
 
-    model = spectral_model.copy()
-    model.name = "crab"
+    lvtm = np.ones(N_OBS) * 1.0 * u.hr
+    tstart = 1.0 * u.hr
 
-    datasets_1d = []
+    datasets = []
+    for i in range(N_OBS):
+        obs = Observation.create(
+            pointing=pointing,
+            livetime=lvtm[i],
+            tstart=tstart,
+            irfs=irfs,
+            reference_time=gti_t0,
+        )
+        empty = SpectrumDataset.create(
+            e_reco=energy_axis.edges,
+            e_true=energy_axis_true.edges,
+            region=on_region,
+            name=f"dataset_{i}",
+        )
+        maker = SpectrumDatasetMaker(selection=["aeff", "background", "edisp"])
+        dataset = maker.run(empty, obs)
+        dataset.models = model_simu
+        dataset.fake()
+        datasets.append(dataset)
+        tstart = tstart + 2.0 * u.hr
 
-    for observation in observations:
-
-        dataset = dataset_maker.run(dataset=empty.copy(), observation=observation)
-
-        dataset_on_off = bkg_maker.run(dataset, observation)
-        dataset_on_off = safe_mask_masker.run(dataset_on_off, observation)
-        datasets_1d.append(dataset_on_off)
-
-    for dataset in datasets_1d:
-        model = spectral_model.copy()
-        model.name = "crab"
-        dataset.model = model
-
-    return datasets_1d
+    return datasets
 
 
-def data_fit(datasets):
-    lc_maker_1d = LightCurveEstimator(datasets, source="crab", reoptimize=False)
+def get_lc(datasets):
+    spectral_model = PowerLawSpectralModel(
+        index=3, amplitude="1e-11 cm-2 s-1 TeV-1", reference="1 TeV"
+    )
+    model_fit = SkyModel(spectral_model=spectral_model, name="model-fit",)
+    for dataset in datasets:
+        dataset.models = model_fit
+    lc_maker_1d = LightCurveEstimator(datasets, source="model-fit", reoptimize=False)
     lc_1d = lc_maker_1d.run(e_ref=1 * u.TeV, e_min=1.0 * u.TeV, e_max=10.0 * u.TeV)
+
+
+def fit_lc(datasets):
+    spectral_model = PowerLawSpectralModel(
+        index=2.0, amplitude="1e-12 cm-2 s-1 TeV-1", reference="1 TeV"
+    )
+    temporal_model1 = ExpDecayTemporalModel(t0="10 h", t_ref=gti_t0.mjd)
+    model = SkyModel(
+        spectral_model=spectral_model,
+        temporal_model=temporal_model1,
+        name="model-test",
+    )
+    for dataset in datasets:
+        dataset.models = model
+    fit = Fit(datasets)
+    result = fit.optimize()
+    print(result.parameters.to_table())
 
 
 def run_benchmark():
@@ -75,12 +114,16 @@ def run_benchmark():
 
     t = time.time()
 
-    datasets = data_prep()
-    info["data_preparation"] = time.time() - t
+    datasets = simulate()
+    info["simulations"] = time.time() - t
     t = time.time()
 
-    data_fit(datasets)
-    info["data_fitting"] = time.time() - t
+    get_lc(datasets)
+    info["lc estimation"] = time.time() - t
+    t = time.time()
+
+    fit_lc(datasets)
+    info["temporal fitting"] = time.time() - t
     t = time.time()
 
     Path("bench.yaml").write_text(yaml.dump(info, sort_keys=False, indent=4))

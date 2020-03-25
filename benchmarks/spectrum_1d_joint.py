@@ -8,16 +8,16 @@ import yaml
 from astropy.coordinates import SkyCoord, Angle
 from regions import CircleSkyRegion
 from gammapy.maps import Map, MapAxis
-from gammapy.modeling import Fit, Datasets
+from gammapy.modeling import Fit
 from gammapy.data import DataStore
 from gammapy.modeling.models import PowerLawSpectralModel, PointSpatialModel, SkyModel
-from gammapy.spectrum import (
+from gammapy.makers import (
     SpectrumDatasetMaker,
-    SpectrumDatasetOnOff,
-    FluxPointsEstimator,
     ReflectedRegionsBackgroundMaker,
+    SafeMaskMaker,
 )
-from gammapy.cube import SafeMaskMaker
+from gammapy.datasets import SpectrumDatasetOnOff, Datasets, SpectrumDataset
+from gammapy.estimators import FluxPointsEstimator
 
 
 N_OBS = int(os.environ.get("GAMMAPY_BENCH_N_OBS", 10))
@@ -48,9 +48,11 @@ def data_prep():
     e_reco = MapAxis.from_bounds(0.1, 40, nbin=40, interp="log", unit="TeV").edges
     e_true = MapAxis.from_bounds(0.05, 100, nbin=200, interp="log", unit="TeV").edges
 
-    empty = SpectrumDatasetOnOff.create(region=on_region, e_reco=e_reco, e_true=e_true, )
+    empty = SpectrumDatasetOnOff.create(region=on_region, e_reco=e_reco, e_true=e_true,)
 
-    dataset_maker = SpectrumDatasetMaker(containment_correction=True, selection=["counts", "aeff", "edisp"])
+    dataset_maker = SpectrumDatasetMaker(
+        containment_correction=True, selection=["counts", "aeff", "edisp"]
+    )
     bkg_maker = ReflectedRegionsBackgroundMaker(exclusion_mask=exclusion_mask)
     safe_mask_masker = SafeMaskMaker(methods=["aeff-max"], aeff_percent=10)
 
