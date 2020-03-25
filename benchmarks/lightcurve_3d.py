@@ -83,10 +83,13 @@ def simulate():
 
 def get_lc(datasets):
     spatial_model1 = GaussianSpatialModel(
-        lon_0="0.1 deg", lat_0="0.1 deg", sigma="0.5 deg", frame="galactic"
+        lon_0="0.2 deg", lat_0="0.1 deg", sigma="0.3 deg", frame="galactic"
     )
+    spatial_model1.parameters["lon_0"].frozen = True
+    spatial_model1.parameters["lat_0"].frozen = True
+    spatial_model1.parameters["sigma"].frozen = True
     spectral_model1 = PowerLawSpectralModel(
-        index=2, amplitude="1e-11 cm-2 s-1 TeV-1", reference="1 TeV"
+        index=3, amplitude="1e-11 cm-2 s-1 TeV-1", reference="1 TeV"
     )
     model_fit = SkyModel(
         spatial_model=spatial_model1, spectral_model=spectral_model1, name="model_fit",
