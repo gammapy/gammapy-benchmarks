@@ -34,7 +34,7 @@ AVAILABLE_MODELS = ["point-pwl", "point-ecpl", "point-log-parabola",
                     "point-template", "diffuse-cube",
                     "disk-pwl", "gauss-pwl",
                     "gauss-pwlsimple", "point-pwlsimple", "disk-pwlsimple",
-                    "point-pwltest", "test"]
+                    "point-pwltest", "point-pwl-time"]
 
 DPI = 120
 
