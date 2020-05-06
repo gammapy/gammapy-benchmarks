@@ -32,3 +32,7 @@ jobs:
         run: |
           cd benchmarks
           python make.py run-benchmark all
+      - name: commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4.1.6
+        with:
+          commit_message: commit results from benchmarks
