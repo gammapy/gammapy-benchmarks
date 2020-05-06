@@ -22,9 +22,9 @@ jobs:
           conda info
           conda list
           gammapy info
-      - name: download datasets
-        run: gammapy download datasets
       - name: checkout repo
         uses: actions/checkout@v2
+      - name: download datasets
+        run: gammapy download datasets
       - name: display content
         run: ls -la
