@@ -27,3 +27,5 @@ jobs:
       - name: download datasets
         shell: bash -l {0}
         run: gammapy download datasets
+      - name: checkout repo
+        uses: actions/checkout@v2
