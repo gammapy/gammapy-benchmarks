@@ -6,8 +6,11 @@ jobs:
     defaults:
       run:
         shell: bash -l {0}
-        working-directory: .
+    env:
+      GAMMAPY_DATA: /home/runner/work/gammapy-benchmarks/gammapy-benchmarks/gammapy-datasets
     steps:
+      - name: checkout repo
+        uses: actions/checkout@v2
       - name: get env file
         run: curl -O https://raw.githubusercontent.com/gammapy/gammapy/master/environment-dev.yml
       - name: create and activate env
@@ -22,9 +25,11 @@ jobs:
           conda info
           conda list
           gammapy info
-      - name: checkout repo
-        uses: actions/checkout@v2
       - name: download datasets
         run: gammapy download datasets
       - name: display content
-        run: ls -la
+        run: |
+          cd benchmarks
+          ls -la
+      - name: display env vars
+        run: echo $GAMMAPY_DATA
