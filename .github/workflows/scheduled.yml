@@ -27,9 +27,7 @@ jobs:
           gammapy info
       - name: download datasets
         run: gammapy download datasets
-      - name: display content
+      - name: run benchmarks
         run: |
           cd benchmarks
-          ls -la
-      - name: display env vars
-        run: echo $GAMMAPY_DATA
+          python make.py run-benchmark all
