@@ -1,0 +1,4 @@
+datasets:
+- name: Fermi-LAT
+  type: MapDataset
+  filename: $GAMMAPY_DATA/fermi-3fhl-crab/Fermi-LAT-3FHL_data_Fermi-LAT.fits

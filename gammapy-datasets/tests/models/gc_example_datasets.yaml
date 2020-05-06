@@ -1,0 +1,7 @@
+datasets:
+- name: gc
+  type: MapDataset
+  filename: $GAMMAPY_DATA/tests/models/gc_example_data_gc.fits
+- name: g09
+  type: MapDataset
+  filename: $GAMMAPY_DATA/tests/models/gc_example_data_g09.fits
