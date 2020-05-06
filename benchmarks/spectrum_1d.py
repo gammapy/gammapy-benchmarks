@@ -99,8 +99,8 @@ def data_fit(stacked):
 
 def flux_point(stacked):
     e_edges = MapAxis.from_bounds(0.7, 30, nbin=11, interp="log", unit="TeV").edges
-    fpe = FluxPointsEstimator(datasets=stacked, e_edges=e_edges)
-    fpe.run()
+    fpe = FluxPointsEstimator(e_edges=e_edges)
+    fpe.run(datasets=stacked)
 
 
 def run_benchmark():

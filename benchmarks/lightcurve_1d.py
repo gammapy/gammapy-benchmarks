@@ -48,7 +48,7 @@ def simulate():
     spectral_model = PowerLawSpectralModel(
         index=3, amplitude="1e-11 cm-2 s-1 TeV-1", reference="1 TeV"
     )
-    temporal_model = ExpDecayTemporalModel(t0="6 h", t_ref=gti_t0.mjd)
+    temporal_model = ExpDecayTemporalModel(t0="6 h", t_ref=gti_t0.mjd * u.d)
     model_simu = SkyModel(
         spectral_model=spectral_model, temporal_model=temporal_model, name="model-simu",
     )
@@ -88,15 +88,17 @@ def get_lc(datasets):
     model_fit = SkyModel(spectral_model=spectral_model, name="model-fit",)
     for dataset in datasets:
         dataset.models = model_fit
-    lc_maker_1d = LightCurveEstimator(datasets, source="model-fit", reoptimize=False)
-    lc_1d = lc_maker_1d.run(e_ref=1 * u.TeV, e_min=1.0 * u.TeV, e_max=10.0 * u.TeV)
+    lc_maker_1d = LightCurveEstimator(
+        energy_range=[1.0, 10.0] * u.TeV, source="model-fit", reoptimize=False
+    )
+    lc_1d = lc_maker_1d.run(datasets)
 
 
 def fit_lc(datasets):
     spectral_model = PowerLawSpectralModel(
         index=2.0, amplitude="1e-12 cm-2 s-1 TeV-1", reference="1 TeV"
     )
-    temporal_model1 = ExpDecayTemporalModel(t0="10 h", t_ref=gti_t0.mjd)
+    temporal_model1 = ExpDecayTemporalModel(t0="10 h", t_ref=gti_t0.mjd * u.d)
     model = SkyModel(
         spectral_model=spectral_model,
         temporal_model=temporal_model1,

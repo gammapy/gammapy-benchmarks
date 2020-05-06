@@ -21,12 +21,12 @@ THIS_REPO = Path(__file__).parent
 
 AVAILABLE_BENCHMARKS = {
     "io": "io.py",
-    # "analysis_3d": "analysis_3d.py",
-    # "analysis_3d_joint": "analysis_3d_joint.py",
-    # "lightcurve_1d": "lightcurve_1d.py",
-    # "lightcurve_3d": "lightcurve_3d.py",
-    # "spectrum_1d": "spectrum_1d.py",
-    # "spectrum_1d_joint": "spectrum_1d_joint.py",
+    "analysis_3d": "analysis_3d.py",
+    "analysis_3d_joint": "analysis_3d_joint.py",
+    "lightcurve_1d": "lightcurve_1d.py",
+    "lightcurve_3d": "lightcurve_3d.py",
+    "spectrum_1d": "spectrum_1d.py",
+    "spectrum_1d_joint": "spectrum_1d_joint.py",
 }
 
 MONITOR_OPTIONS = {"duration": None, "interval": 0.5, "include_children": True}
@@ -34,11 +34,14 @@ MONITOR_OPTIONS = {"duration": None, "interval": 0.5, "include_children": True}
 
 def get_provenance():
     """Compute provenance info about software and data used."""
-    data = {"env": {
-        "user": getpass.getuser(),
-        "machine": platform.machine(),
-        "system": platform.system(),
-    }, "software": {}}
+    data = {
+        "env": {
+            "user": getpass.getuser(),
+            "machine": platform.machine(),
+            "system": platform.system(),
+        },
+        "software": {},
+    }
 
     data["software"]["python_executable"] = sys.executable
     data["software"]["python_version"] = platform.python_version()

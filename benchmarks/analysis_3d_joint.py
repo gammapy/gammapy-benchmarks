@@ -82,9 +82,8 @@ def data_fit(datasets):
 
 def flux_point(datasets):
     e_edges = [0.3, 1, 3, 10] * u.TeV
-    fpe = FluxPointsEstimator(datasets=datasets, e_edges=e_edges, source="gc-source")
-
-    fpe.run()
+    fpe = FluxPointsEstimator(e_edges=e_edges, source="gc-source")
+    fpe.run(datasets=datasets)
 
 
 def run_benchmark():

@@ -79,8 +79,8 @@ def data_fit(stacked):
 
 def flux_point(stacked):
     e_edges = [0.3, 1, 3, 10] * u.TeV
-    fpe = FluxPointsEstimator(datasets=stacked, e_edges=e_edges, source="gc-source")
-    fpe.run()
+    fpe = FluxPointsEstimator(e_edges=e_edges, source="gc-source")
+    fpe.run(datasets=stacked)
 
 
 def run_benchmark():
