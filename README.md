@@ -10,3 +10,5 @@ Executing this is manually for now, not part of a continuous integration / deplo
 
 - [validation](validation) - Gammapy correctness checks (model fitting, spectra, lightcurves, ...)
 - [benchmarks](benchmarks) - Gammapy Performance checks (time, CPU, RAM)
+
+![](https://github.com/gammapy/gammapy-benchmarks/workflows/checks/badge.svg)

@@ -1,4 +1,4 @@
-name: Benchmarks and validations
+name: checks
 on: push
 jobs:
   benchmarks:
