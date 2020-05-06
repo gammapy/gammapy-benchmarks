@@ -1,0 +1,29 @@
+name: Benchmarks and validations
+on: push
+jobs:
+  benchmarks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - name: get env file
+        shell: bash -l {0}
+        run: curl -O https://raw.githubusercontent.com/gammapy/gammapy/master/environment-dev.yml
+      - name: create and activate env
+        uses: goanpeca/setup-miniconda@v1
+        with:
+          activate-environment: gammapy-dev
+          environment-file: environment-dev.yml
+          auto-update-conda: true
+      - name: install gammapy
+        shell: bash -l {0}
+        run: |
+          pip install git+https://github.com/gammapy/gammapy.git#egg=gammapy
+          conda info
+          conda list
+          gammapy info
+          ls
+      - name: download datasets
+        shell: bash -l {0}
+        run: gammapy download datasets
