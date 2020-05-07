@@ -37,6 +37,7 @@ jobs:
           python make.py run-benchmark all
       - name: commit changes
         uses: stefanzweifel/git-auto-commit-action@v4.1.6
+        if: success()
         with:
           commit_message: commit results from benchmarks
       - name: slack notification
@@ -77,6 +78,7 @@ jobs:
           python make.py run-validation all
       - name: commit changes
         uses: stefanzweifel/git-auto-commit-action@v4.1.6
+        if: success()
         with:
           commit_message: commit results from validations
       - name: slack notification
