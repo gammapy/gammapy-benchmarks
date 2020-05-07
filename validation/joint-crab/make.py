@@ -124,7 +124,7 @@ def run_fit(instruments, npoints=10):
 def data_reduction(instrument):
     log.info(f"data_reduction: {instrument}")
     config = AnalysisConfig.read(f"config.yaml")
-    config.observations.datastore = f"$JOINT_CRAB/data/{instrument}"
+    config.observations.datastore = str(Path().resolve().parent/"data"/"joint-crab"/instrument)
     config.datasets.stack = instrument_opts[instrument]['stack']
     config.datasets.containment_correction = instrument_opts[instrument]['containment']
     config.datasets.on_region.radius = instrument_opts[instrument]['on_radius']
@@ -210,8 +210,8 @@ def make_contours(fit, result, npoints):
 
 def read_datasets_and_set_model(instrument, model):
     # Read from disk
-    datasets = Datasets.read(f"reduced_{instrument}/_datasets.yaml",
-                             f"reduced_{instrument}/_models.yaml")
+    datasets = Datasets.read(f"reduced_{instrument}", f"_datasets.yaml",
+                            "_models.yaml")
 
     e_min = u.Quantity(instrument_opts[instrument]['emin'])
     e_max = u.Quantity(instrument_opts[instrument]['emax'])
@@ -285,8 +285,8 @@ def plot_contour_line(ax, x, y, **kwargs):
 def plot_contours(instrument):
     log.info(f"Plotting contours: {instrument}")
     
-    filename = make_path("$JOINT_CRAB/results/fit/")
-    filename = filename / f"contours_{instrument}.yaml"
+    filename = make_path(str(Path().resolve().parent/"data"/"joint-crab"/"published"/"fit"))
+    filename = filename/f"contours_{instrument}.yaml"
     with open(filename,'r') as file:
         paper_contours = yaml.safe_load(file)
 
@@ -369,8 +369,8 @@ def make_summary(instrument):
     tab.add_index("name")
     dt = "U30"
     comp_tab = Table(names=("Param", "joint crab paper", "gammapy"), dtype=[dt, dt, dt])
-        
-    filename = make_path("$JOINT_CRAB/results/fit/")
+
+    filename = make_path(str(Path().resolve().parent/"data"/"joint-crab"/"published"/"fit"))
     filename = filename / f"fit_{instrument}.yaml"
     with open(filename,'r') as file:
          paper_result = yaml.safe_load(file)
