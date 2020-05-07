@@ -80,12 +80,7 @@ def cli(log_level, show_warnings):
 
 @cli.command("run-benchmark", help="Run Gammapy benchmarks")
 @click.argument("benchmarks", type=click.Choice(list(AVAILABLE_BENCHMARKS) + ["all"]))
-@click.option(
-    "--tag",
-    help="Assign a tag to the benchmark run, so results will"
-    " be stored under this tag.",
-)
-def run_benchmarks(benchmarks, tag):
+def run_benchmarks(benchmarks):
     info = get_provenance()
 
     if benchmarks == "all":

@@ -71,9 +71,10 @@ jobs:
           gammapy info
       - name: download datasets
         run: gammapy download datasets
-      - name: run benchmarks
+      - name: run validations
         run: |
           cd validation
+          python make.py run-validation all
       - name: commit changes
         uses: stefanzweifel/git-auto-commit-action@v4.1.6
         with:
