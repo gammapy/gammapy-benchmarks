@@ -98,8 +98,8 @@ def data_fit(datasets):
 
 def flux_point(datasets):
     e_edges = MapAxis.from_bounds(0.7, 30, nbin=11, interp="log", unit="TeV").edges
-    fpe = FluxPointsEstimator(datasets=datasets, e_edges=e_edges)
-    fpe.run()
+    fpe = FluxPointsEstimator(e_edges=e_edges)
+    fpe.run(datasets=datasets)
 
 
 def run_benchmark():
