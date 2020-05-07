@@ -23,7 +23,8 @@ AVAILABLE_VALIDATIONS = {
     # "event-sampling": {"folder": "event-sampling", "command": "make.py", "args": ["all"]},
     # "fermi-3fhl": {"folder": "fermi-3fhl", "command": "make.py", "args": []},
     # "hess-dl3-dr1": {"folder": "hess-dl3-dr1", "command": "make.py", "args": ["run-analyses", "all-targets" "all-methods"]},
-    "joint-crab": {"folder": "joint-crab", "command": "make.py", "args": ["run-analyses", "all"]},
+    "joint-crab_analyses": {"folder": "joint-crab", "command": "make.py", "args": ["run-analyses", "all"]},
+    "joint-crab_fit": {"folder": "joint-crab", "command": "make.py", "args": ["run-fit", "all"]},
 }
 
 
@@ -102,7 +103,7 @@ def run_single_validation(cfg, **kwargs):
     for arg in cfg["args"]:
         cmd.append(arg)
     log.info(f"Executing command: {cmd}")
-    subprocess.run(cmd, cwd=cfg["folder"])
+    subprocess.run(cmd, cwd=cfg["folder"], check=True)
 
 
 if __name__ == "__main__":
