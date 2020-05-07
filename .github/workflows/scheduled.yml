@@ -36,3 +36,8 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4.1.6
         with:
           commit_message: commit results from benchmarks
+      - name: slack notification
+        uses: rtCamp/action-slack-notify@v2.0.0
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_MESSAGE: 'Checks test'
