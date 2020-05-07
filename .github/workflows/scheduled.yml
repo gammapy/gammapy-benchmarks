@@ -1,6 +1,6 @@
 name: workflows
 on:
-  # push:
+  push:
   schedule:
     - cron:  '0 1 * * *'
 jobs:
