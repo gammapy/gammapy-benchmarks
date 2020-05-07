@@ -2,7 +2,7 @@ general:
     log: {level: INFO, filename: null, filemode: null, format: null, datefmt: null}
     outdir: .
 observations:
-    datastore: $JOINT_CRAB/hess
+    datastore: ../data/joint-crab/hess
     obs_ids: []
     obs_file: null
     obs_cone: {frame: null, lon: null, lat: null, radius: null}

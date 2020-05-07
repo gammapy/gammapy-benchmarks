@@ -15,9 +15,9 @@ log = logging.getLogger(__name__)
 class FermiDatasetMaker:
     """Simple class to perform aperture photometry and produce SpectrumDatasetOnOff"""
     def __init__(self,
-                 evt_file="$JOINT_CRAB/data/fermi/events.fits.gz",
-                 exp_file="$JOINT_CRAB/data/fermi/exposure_cube.fits.gz",
-                 psf_file="$JOINT_CRAB/data/fermi/psf.fits.gz",
+                 evt_file="../data/joint-crab/fermi/events.fits.gz",
+                 exp_file="../data/joint-crab/fermi/exposure_cube.fits.gz",
+                 psf_file="../data/joint-crab/fermi/psf.fits.gz",
                  max_psf_radius='0.5 deg'
                 ):
         # Read data
