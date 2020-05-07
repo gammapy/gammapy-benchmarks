@@ -77,7 +77,6 @@ jobs:
           commit_message: commit results from benchmarks
       - name: slack notification
         uses: rtCamp/action-slack-notify@v2.0.0
-        if: failure()
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_MESSAGE: 'Validations checks failed'
+          SLACK_MESSAGE: 'Validations checks passed, well they are still not implemented :)'
