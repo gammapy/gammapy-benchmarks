@@ -43,6 +43,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4.1.6
         if: success()
         with:
+          commit_author: GitHub Actions <actions@github.com>
           commit_message: commit results from benchmarks and validations
       - name: slack notification
         uses: rtCamp/action-slack-notify@v2.0.0
