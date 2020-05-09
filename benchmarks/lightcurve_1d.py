@@ -107,7 +107,8 @@ def fit_lc(datasets):
     for dataset in datasets:
         dataset.models = model
     fit = Fit(datasets)
-    result = fit.optimize()
+    result = fit.run()
+    print(result)
     print(result.parameters.to_table())
 
 

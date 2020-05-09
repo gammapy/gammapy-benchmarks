@@ -36,10 +36,10 @@ def simulate():
     )
     pointing = SkyCoord(0.5, 0.5, unit="deg", frame="galactic")
     geom = WcsGeom.create(
-        skydir=center, binsz=0.02, width=(6, 6), frame="galactic", axes=[energy_reco],
+        skydir=center, binsz=0.02, width=(4, 4), frame="galactic", axes=[energy_reco],
     )
     energy_true = MapAxis.from_edges(
-        np.logspace(-1.5, 1.5, 30), unit="TeV", name="energy", interp="log"
+        np.logspace(-1.5, 1.5, 30), unit="TeV", name="energy_true", interp="log"
     )
 
     spectral_model = PowerLawSpectralModel(
@@ -68,7 +68,7 @@ def simulate():
             irfs=irfs,
             reference_time=gti_t0,
         )
-        empty = MapDataset.create(geom, name=f"dataset_{i}")
+        empty = MapDataset.create(geom, name=f"dataset_{i}", energy_axis_true=energy_true)
         maker = MapDatasetMaker(selection=["exposure", "background", "psf", "edisp"])
         maker_safe_mask = SafeMaskMaker(methods=["offset-max"], offset_max=4.0 * u.deg)
         dataset = maker.run(empty, obs)
@@ -77,6 +77,7 @@ def simulate():
         dataset.fake()
         datasets.append(dataset)
         tstart = tstart + 2.0 * u.hr
+        print(dataset.npred().data.sum())
 
     return datasets
 
@@ -100,32 +101,34 @@ def get_lc(datasets):
         energy_range=[1.0, 10.0] * u.TeV, source="model_fit", reoptimize=False
     )
     lc = lc_maker.run(datasets)
-    print(lc.table)
+    print(lc.table["flux"])
 
 
 def fit_lc(datasets):
     spatial_model1 = GaussianSpatialModel(
         lon_0="0.2 deg", lat_0="0.1 deg", sigma="0.3 deg", frame="galactic"
     )
-    spatial_model1.parameters["lon_0"].frozen = True
-    spatial_model1.parameters["lat_0"].frozen = True
+    spatial_model1.parameters["lon_0"].frozen = False
+    spatial_model1.parameters["lat_0"].frozen = False
     spatial_model1.parameters["sigma"].frozen = True
     spectral_model1 = PowerLawSpectralModel(
-        index=2, amplitude="2e-11 cm-2 s-1 TeV-1", reference="1 TeV"
+        index=3, amplitude="2e-11 cm-2 s-1 TeV-1", reference="1 TeV"
     )
     temporal_model1 = ExpDecayTemporalModel(t0="10 h", t_ref=gti_t0.mjd * u.d)
     model_fit = SkyModel(
         spatial_model=spatial_model1,
         spectral_model=spectral_model1,
         temporal_model=temporal_model1,
-        name="model_fit",
+        name="fit",
     )
 
     for dataset in datasets:
-        dataset.models[1] = model_fit
-        dataset.background_model.parameters["norm"].frozen = True
+        dataset.models.remove(dataset.models[1])
+        dataset.models.append(model_fit)
+        dataset.models[0].parameters["norm"].frozen = True
     fit = Fit(datasets)
-    result = fit.optimize()
+    result = fit.run()
+    print(result.success)
     print(result.parameters.to_table())
 
 

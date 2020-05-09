@@ -95,6 +95,7 @@ def data_fit(stacked):
     # Data fitting
     fit = Fit(stacked)
     result = fit.run(optimize_opts={"print_level": 1})
+    print(result.success)
 
 
 def flux_point(stacked):
