@@ -88,7 +88,7 @@ def run_benchmarks(benchmarks):
     else:
         benchmarks = [benchmarks]
 
-    result = {}  # condenses the results from each benachmark
+    result = {}  # condenses the results from each benchmark
 
     for benchmark in benchmarks:
         results_folder = THIS_REPO / f"results/{benchmark}"

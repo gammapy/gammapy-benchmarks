@@ -39,6 +39,7 @@ jobs:
         run: |
           cd validation
           python make.py run-validation all
+          pytest -v
       - name: commit changes
         uses: stefanzweifel/git-auto-commit-action@v4.1.6
         if: success()
