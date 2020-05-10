@@ -35,6 +35,8 @@ jobs:
         run: |
           cd benchmarks
           python make.py run-benchmark all
+          cd results
+          python track_evolution.py
       - name: run validations
         run: |
           cd validation
