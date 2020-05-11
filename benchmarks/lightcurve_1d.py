@@ -34,10 +34,10 @@ def simulate():
     # Reconstructed and true energy axis
     center = SkyCoord(0.0, 0.0, unit="deg", frame="galactic")
     energy_axis = MapAxis.from_edges(
-        np.logspace(-0.5, 1.0, 10), unit="TeV", name="energy", interp="log"
+        np.logspace(-0.5, 1.0, 10), unit="TeV", name="energy", interp="log",
     )
     energy_axis_true = MapAxis.from_edges(
-        np.logspace(-1.2, 2.0, 31), unit="TeV", name="energy", interp="log"
+        np.logspace(-1.2, 2.0, 31), unit="TeV", name="energy_true", interp="log",
     )
 
     on_region_radius = Angle("0.11 deg")
@@ -66,8 +66,8 @@ def simulate():
             reference_time=gti_t0,
         )
         empty = SpectrumDataset.create(
-            e_reco=energy_axis.edges,
-            e_true=energy_axis_true.edges,
+            e_reco=energy_axis,
+            e_true=energy_axis_true,
             region=on_region,
             name=f"dataset_{i}",
         )

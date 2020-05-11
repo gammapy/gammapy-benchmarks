@@ -45,8 +45,12 @@ def data_prep():
     mask = exclusion_mask.geom.region_mask([exclusion_region], inside=False)
     exclusion_mask.data = mask
 
-    e_reco = MapAxis.from_bounds(0.1, 40, nbin=40, interp="log", unit="TeV").edges
-    e_true = MapAxis.from_bounds(0.05, 100, nbin=200, interp="log", unit="TeV").edges
+    e_reco = MapAxis.from_bounds(
+        0.1, 40, nbin=40, interp="log", unit="TeV", name="energy"
+    )
+    e_true = MapAxis.from_bounds(
+        0.05, 100, nbin=200, interp="log", unit="TeV", name="energy_true"
+    )
 
     stacked = SpectrumDatasetOnOff.create(
         region=on_region, e_reco=e_reco, e_true=e_true, name="stacked"
@@ -88,7 +92,9 @@ def write(stacked, filename):
 
 
 def read(filename):
-    return Datasets.read(os.getcwd(), f"{filename}_datasets.yaml", f"{filename}_models.yaml")
+    return Datasets.read(
+        os.getcwd(), f"{filename}_datasets.yaml", f"{filename}_models.yaml"
+    )
 
 
 def data_fit(stacked):

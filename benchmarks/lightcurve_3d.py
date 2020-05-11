@@ -68,7 +68,9 @@ def simulate():
             irfs=irfs,
             reference_time=gti_t0,
         )
-        empty = MapDataset.create(geom, name=f"dataset_{i}", energy_axis_true=energy_true)
+        empty = MapDataset.create(
+            geom, name=f"dataset_{i}", energy_axis_true=energy_true
+        )
         maker = MapDatasetMaker(selection=["exposure", "background", "psf", "edisp"])
         maker_safe_mask = SafeMaskMaker(methods=["offset-max"], offset_max=4.0 * u.deg)
         dataset = maker.run(empty, obs)
@@ -77,7 +79,6 @@ def simulate():
         dataset.fake()
         datasets.append(dataset)
         tstart = tstart + 2.0 * u.hr
-        print(dataset.npred().data.sum())
 
     return datasets
 
