@@ -26,6 +26,9 @@ datasets:
               min: {emin}
               max: {emax}
               nbins: {nbin}
+    safe_mask:
+        methods: ['aeff-default', 'offset-max']
+
     map_selection: ['counts', 'exposure', 'background', 'psf', 'edisp']
 
 

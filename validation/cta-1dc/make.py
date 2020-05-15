@@ -48,11 +48,12 @@ def analysis_3d_data_reduction(target):
     log.info(f"analysis_3d_data_reduction: {target}")
 
     opts = yaml.safe_load(open("targets.yaml"))[target]
-
     txt = Path("config_template.yaml").read_text()
     txt = txt.format_map(opts)
+
     config = AnalysisConfig.from_yaml(txt)
     config.flux_points.source = target
+    config.datasets.safe_mask.parameters = {'offset_max' : 5*u.deg}
 
     analysis = Analysis(config)
     analysis.get_observations()
@@ -71,11 +72,6 @@ def analysis_3d_data_reduction(target):
     analysis.fit_result.parameters.to_table().write(
         path, format="ascii.rst", overwrite=True
     )
-
-    #    analysis.get_flux_points(source=f"{target}")
-    #    path = f"{target}/{target}_3d_fluxpoints.fits"
-    #    log.info(f"Writing {path}")
-    #    analysis.flux_points.write(path, overwrite=True)
 
     analysis.get_flux_points()
     path = f"{target}/{target}_3d_fluxpoints.ecsv"
@@ -127,13 +123,8 @@ def analysis_3d_summary(analysis, target):
     plt.close()
 
     ax_sed, ax_residuals = analysis.flux_points.peek() # Cannot specify flux_unit outputs in cm-2 s-1 TeV-1. Default to erg 
-    ref_dict=ref_model.parameters.to_dict() 
-    spec_comp_id={'cas_a':2, 'hess_j1702':5} #REally bad hack
-    print(spec_comp_id[target])
-#    print(ref_dict['parameters'])
-#    ref_dict_spectral = {'parameters': ref_dict['parameters'][spec_comp_id[target]:] } #keep only spectral parameters. Is there a better way ?
+
     pwl = ref_model[target].spectral_model
-#    pwl = PowerLawSpectralModel.from_dict( ref_dict_spectral ) #need to find a way to find spectral model auto
     ax_sed=pwl.plot((0.1,50)*u.TeV, ax=ax_sed, energy_power=2, flux_unit='cm-2 s-1 erg-1', label='Reference', ls='--')
     ax_sed.legend()
     plt.savefig(f"{target}/{target}_fluxpoints.png", bbox_inches="tight")
