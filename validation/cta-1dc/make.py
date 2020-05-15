@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from astropy.table import Table
 from astropy import units as u
 from gammapy.analysis import Analysis, AnalysisConfig
-from gammapy.modeling.models import SkyModels
+from gammapy.modeling.models import Models
 from gammapy.modeling.models import PowerLawSpectralModel
 
 log = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ def analysis_3d_data_reduction(target):
     txt = Path("config_template.yaml").read_text()
     txt = txt.format_map(opts)
     config = AnalysisConfig.from_yaml(txt)
-
+    config.flux_points.source = target
 
     analysis = Analysis(config)
     analysis.get_observations()
@@ -77,7 +77,7 @@ def analysis_3d_data_reduction(target):
     #    log.info(f"Writing {path}")
     #    analysis.flux_points.write(path, overwrite=True)
 
-    analysis.get_flux_points(source=f"{target}")
+    analysis.get_flux_points()
     path = f"{target}/{target}_3d_fluxpoints.ecsv"
     log.info(f"Writing {path}")
     keys = ["e_ref", "e_min", "e_max", "dnde", "dnde_errp", "dnde_errn", "is_ul"]
@@ -104,7 +104,7 @@ def analysis_3d_summary(analysis, target):
     dt = "U30"
     comp_tab = Table(names=("Param", "DC1 Ref", "gammapy 3d"), dtype=[dt, dt, dt])
 
-    ref_model = SkyModels.read(f"{target}/reference/dc1_model_3d.yaml")
+    ref_model = Models.read(f"{target}/reference/dc1_model_3d.yaml")
     pars = ref_model.parameters.names
     pars.remove("reference")  # need to find a better way to handle this
 
@@ -113,7 +113,7 @@ def analysis_3d_summary(analysis, target):
         value = tab.loc[par]["value"]
         name = tab.loc[par]["name"]
         error = tab.loc[par]["error"]
-        comp_tab.add_row([name, ref, f"{value}±{error}"])
+        comp_tab.add_row([name, str(ref), f"{value}±{error}"])
 
 
     analysis.datasets["stacked"].counts.sum_over_axes().plot(add_cbar=True)
@@ -129,9 +129,11 @@ def analysis_3d_summary(analysis, target):
     ax_sed, ax_residuals = analysis.flux_points.peek() # Cannot specify flux_unit outputs in cm-2 s-1 TeV-1. Default to erg 
     ref_dict=ref_model.parameters.to_dict() 
     spec_comp_id={'cas_a':2, 'hess_j1702':5} #REally bad hack
-    ref_dict_spectral = {'parameters': ref_dict['parameters'][spec_comp_id[target]:] } #keep only spectral parameters. Is there a better way ?
-
-    pwl = PowerLawSpectralModel.from_dict( ref_dict_spectral ) #need to find a way to find spectral model auto
+    print(spec_comp_id[target])
+#    print(ref_dict['parameters'])
+#    ref_dict_spectral = {'parameters': ref_dict['parameters'][spec_comp_id[target]:] } #keep only spectral parameters. Is there a better way ?
+    pwl = ref_model[target].spectral_model
+#    pwl = PowerLawSpectralModel.from_dict( ref_dict_spectral ) #need to find a way to find spectral model auto
     ax_sed=pwl.plot((0.1,50)*u.TeV, ax=ax_sed, energy_power=2, flux_unit='cm-2 s-1 erg-1', label='Reference', ls='--')
     ax_sed.legend()
     plt.savefig(f"{target}/{target}_fluxpoints.png", bbox_inches="tight")
