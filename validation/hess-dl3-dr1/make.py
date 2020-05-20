@@ -53,7 +53,7 @@ def write_fit_summary(parameters, outfile):
     fit_results_dict = {}
     for parameter in parameters:
         value = parameter.value
-        error = parameters.error(parameter)
+        error = parameter.error
         name = parameter.name
         fit_results_dict.update({name: value})
         fit_results_dict.update({name + "_err": float(error)})
@@ -99,16 +99,6 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
     analysis.run_fit(optimize_opts={"print_level" : 3})
 
     # TODO: This is a workaround. Set covariance automatically
-    results = analysis.fit_result
-    names = ["spectral_model", "spatial_model"]
-    for name in names:
-        if name == "spatial_model" and method == "1d":
-            continue
-        model = getattr(analysis.models[0], name)
-        model.parameters.covariance = results.parameters.get_subcovariance(
-            model.parameters.names
-        )
-
     log.info(f"Writing {path_res}")
     write_fit_summary(
         analysis.models[0].parameters, str(path_res / f"result-{method}.yaml")
