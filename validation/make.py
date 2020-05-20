@@ -17,12 +17,15 @@ log = logging.getLogger(__name__)
 THIS_REPO = Path(__file__).parent
 
 AVAILABLE_VALIDATIONS = {
-    # "catalog": {"folder": "catalog", "command": "catalog_checks.py", "args": []},
     # "cta-1dc_cas_a": {"folder": "cta-1dc", "command": "make.py", "args": ["run-analyses", "cas_a"]},
     # "cta-1dc_hess_j1702": {"folder": "cta-1dc", "command": "make.py", "args": ["run-analyses", "hess_j1702"]},
+    # cta-1dc validations disabled in Github actions because needs proprietary dataset
+    #
+    #
+    # "catalog": {"folder": "catalog", "command": "catalog_checks.py", "args": []},
     # "event-sampling": {"folder": "event-sampling", "command": "make.py", "args": ["all"]},
     # "fermi-3fhl": {"folder": "fermi-3fhl", "command": "make.py", "args": []},
-    # "hess-dl3-dr1": {"folder": "hess-dl3-dr1", "command": "make.py", "args": ["run-analyses", "all-targets" "all-methods"]},
+    "hess-dl3-dr1": {"folder": "hess-dl3-dr1", "command": "make.py", "args": ["run-analyses", "all-targets", "all-methods"]},
     "joint-crab_analyses": {"folder": "joint-crab", "command": "make.py", "args": ["run-analyses", "all"]},
     "joint-crab_fit": {"folder": "joint-crab", "command": "make.py", "args": ["run-fit", "all"]},
 }
