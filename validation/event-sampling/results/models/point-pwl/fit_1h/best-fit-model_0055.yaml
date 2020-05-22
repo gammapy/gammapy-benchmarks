@@ -1,19 +1,29 @@
 components:
+-   name: 1nYKyizE-bkg
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.0, unit: '', min: 0.0, max: .nan, frozen: true, error: 0.0}
+    - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
+        error: 0.0}
+    datasets_names: [1nYKyizE]
 -   name: point-pwl
     type: SkyModel
     spectral:
         type: PowerLawSpectralModel
         parameters:
-        - {name: index, value: 1.8990210489774466, unit: '', min: .nan, max: .nan,
-            frozen: false}
-        - {name: amplitude, value: 9.910516892800134e-13, unit: cm-2 s-1 TeV-1, min: .nan,
-            max: .nan, frozen: false}
-        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+        - {name: index, value: 1.941726588010211, unit: '', min: .nan, max: .nan,
+            frozen: false, error: 0.06433794368637619}
+        - {name: amplitude, value: 8.972352506585928e-13, unit: cm-2 s-1 TeV-1, min: .nan,
+            max: .nan, frozen: false, error: 9.197710206705068e-14}
+        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
+            error: 0.0}
     spatial:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: 0.00016634928743582475, unit: deg, min: .nan, max: .nan,
-            frozen: false}
-        - {name: lat_0, value: 0.0026238715052357975, unit: deg, min: -90.0, max: 90.0,
-            frozen: false}
+        - {name: lon_0, value: -0.0024964811414137106, unit: deg, min: .nan, max: .nan,
+            frozen: false, error: 0.0034860773018077344}
+        - {name: lat_0, value: -0.0003285732362728243, unit: deg, min: .nan, max: .nan,
+            frozen: false, error: 0.0038266099936148895}
+covariance: results/models/point-pwl/fit_1h/best-fit-model_0055_covariance.dat

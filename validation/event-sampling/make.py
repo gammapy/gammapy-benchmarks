@@ -15,7 +15,8 @@ from astropy.coordinates import SkyCoord
 from astropy.table import Table
 from gammapy.data import GTI, Observation, EventList
 from gammapy.datasets import MapDataset, MapDatasetEventSampler
-from gammapy.estimators import LiMaMapEstimator as lima
+#from gammapy.estimators import LiMaMapEstimator as lima
+from gammapy.estimators import TSMapEstimator as ts
 from gammapy.maps import MapAxis, WcsGeom, Map
 from gammapy.irf import EnergyDispersion2D, load_cta_irfs
 from gammapy.makers import MapDatasetMaker
@@ -86,9 +87,10 @@ def get_filename_best_fit_model(filename_model, obs_id, livetime):
 
 def get_filename_covariance(filename_best_fit_model):
     filename = filename_best_fit_model.name
-    filename = filename.replace("best-fit-model", "covariance")
-    filename = filename.replace(".yaml", ".txt")
-    return filename_best_fit_model.parent / "covariance" / filename
+#    filename = filename.replace("best-fit-model", "covariance")
+    filename = filename.replace(".yaml", "_covariance.dat")
+#    return filename_best_fit_model.parent / "covariance" / filename
+    return filename_best_fit_model.parent / filename
 
 
 @click.group()
@@ -354,17 +356,18 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
     if binned:
         path = Path(str(path).replace("/fit","/fit_fake"))
     log.info(f"Writing {path}")
-    models.write(str(path), overwrite=True)
+#   write best-fit model and covariance
+    dataset.models.write(str(path), overwrite=True)
 
     # write covariance
-    path = get_filename_covariance(path)
-    if binned:
-        path = Path(str(path).replace("/fit","/fit_fake"))
-    log.info(f"Writing {path}")
+#    path = get_filename_covariance(path)
+#    if binned:
+#        path = Path(str(path).replace("/fit","/fit_fake"))
+#    log.info(f"Writing {path}")
 
     # TODO: exclude background parameters for now, as they are fixed anyway
-    covariance = result.parameters.get_subcovariance(models.parameters)
-    np.savetxt(path, covariance)
+#    covariance = result.parameters.get_subcovariance(models.parameters)
+#    np.savetxt(path, covariance)
 
 
 @cli.command("fit-gather", help="Gather fit results from the given model")
@@ -390,12 +393,14 @@ def fit_gather(model_name, livetime, binned=False):
         path = Path(str(path).replace("/fit","/fit_fake"))
 
     for filename in path.glob("*.yaml"):
-        model_best_fit = read_best_fit_model(filename)
+#        model_best_fit = read_best_fit_model(filename)
+        model_best_fit = Models.read(filename)
+        model_best_fit = model_best_fit[model_name]
         row = {}
 
         for par in model_best_fit.parameters:
             row[par.name] = par.value
-            row[par.name + "_err"] = model_best_fit.parameters.error(par)
+            row[par.name + "_err"] = par.error
 
         rows.append(row)
 
@@ -456,9 +461,9 @@ def plot_spectra(model, model_best_fit, obs_id, livetime):
         save_figure(filename)
 
 
-def plot_residuals(dataset, obs_id, livetime):
+def plot_residuals(dataset, obs_id, livetime, model_name):
     # plot residuals
-    model = dataset.models[1]
+    model = dataset.models[model_name]
 
     if model.tag == "SkyDiffuseCube":
         log.info(f"SkyDiffuseCube: no spectral model to plot")
@@ -482,9 +487,13 @@ def plot_residual_distribution(dataset, obs_id, livetime):
     if model.tag == 'SkyDiffuseCube':
         log.info(f"SkyDiffuseCube: no spectral model to plot")
     else:
-        tophat_2D_kernel = Tophat2DKernel(5)
-        l_m = lima.compute_lima_image(dataset.counts.sum_over_axes(keepdims=False), dataset.npred().sum_over_axes(keepdims=False), tophat_2D_kernel)
-        sig_resid = l_m["significance"].data[np.isfinite(l_m["significance"].data)]
+        lima = ts(model=model, kernel_width='0.1 deg')
+        l_m = lima.run(dataset, steps=["ts", "sqrt_ts", "flux", "niter"])
+        sig_resid = l_m['sqrt_ts'].data[np.isfinite(l_m["sqrt_ts"].data)]
+        
+#        tophat_2D_kernel = Tophat2DKernel(5)
+#        l_m = lima.compute_lima_image(dataset.counts.sum_over_axes(keepdims=False), dataset.npred().sum_over_axes(keepdims=False), tophat_2D_kernel)
+#        sig_resid = l_m["significance"].data[np.isfinite(l_m["significance"].data)]
 
     #    resid = dataset.residuals()
     #    sig_resid = resid.data[np.isfinite(resid.data)]
@@ -510,36 +519,36 @@ def plot_residual_distribution(dataset, obs_id, livetime):
         filename = f"results/models/{model.name}/plots_{livetime.value:.0f}{livetime.unit}/residuals-distribution/residuals-distribution_{obs_id:04d}.png"
         save_figure(filename)
 
-
-def read_best_fit_model(filename):
-    log.info(f"Reading {filename}")
-    model_best_fit = Models.read(filename)
-
-    path = get_filename_covariance(filename)
-    log.info(f"Reading {path}")
-    pars = model_best_fit.parameters
-    pars.covariance = np.loadtxt(str(path))
-
-    if model_best_fit[0].tag  == 'SkyDiffuseCube':
-        spectral_model_best_fit = model_best_fit[0]
-        covar = pars.get_subcovariance(spectral_model_best_fit.parameters)
-        spectral_model_best_fit.parameters.covariance = covar
-            
-#        spatial_model_best_fit = model_best_fit[0].spatial_model
+# OBSOLETE...
+#def read_best_fit_model(filename):
+#    log.info(f"Reading {filename}")
+#    model_best_fit = Models.read(filename)
+#
+#    path = get_filename_covariance(filename)
+#    log.info(f"Reading {path}")
+#    pars = model_best_fit.parameters
+#    pars.covariance = np.loadtxt(str(path))
+#
+#    if model_best_fit[1].tag  == 'SkyDiffuseCube':
+#        spectral_model_best_fit = model_best_fit[1]
+#        covar = pars.get_subcovariance(spectral_model_best_fit.parameters)
+#        spectral_model_best_fit.parameters.covariance = covar
+#            
+##        spatial_model_best_fit = model_best_fit[0].spatial_model
+##        covar = pars.get_subcovariance(spatial_model_best_fit.parameters)
+##        spatial_model_best_fit.parameters.covariance = covar
+#
+#    else:
+#        spectral_model_best_fit = model_best_fit[1].spectral_model
+#        covar = pars.get_subcovariance(spectral_model_best_fit.parameters)
+#        spectral_model_best_fit.parameters.covariance = covar
+#        
+#        spatial_model_best_fit = model_best_fit[1].spatial_model
 #        covar = pars.get_subcovariance(spatial_model_best_fit.parameters)
 #        spatial_model_best_fit.parameters.covariance = covar
-
-    else:
-        spectral_model_best_fit = model_best_fit[0].spectral_model
-        covar = pars.get_subcovariance(spectral_model_best_fit.parameters)
-        spectral_model_best_fit.parameters.covariance = covar
-        
-        spatial_model_best_fit = model_best_fit[0].spatial_model
-        covar = pars.get_subcovariance(spatial_model_best_fit.parameters)
-        spatial_model_best_fit.parameters.covariance = covar
-
-    return model_best_fit
-
+#
+#    return model_best_fit
+#
 
 def plot_results(filename_model, obs_id, filename_dataset=None):
     """Plot the best-fit spectrum, the residual map and the residual significance distribution.
@@ -557,13 +566,15 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
     model = Models.read(filename_model)
 
     path = get_filename_best_fit_model(filename_model, obs_id, LIVETIME)
-    model_best_fit = read_best_fit_model(path)
+#    model_best_fit = read_best_fit_model(path)
+    model_best_fit =  Models.read(path)
 
-    plot_spectra(model[0], model_best_fit[0], obs_id, LIVETIME)
+    plot_spectra(model[model.names[0]], model_best_fit[model.names[0]], obs_id, LIVETIME)
 
     dataset = read_dataset(filename_dataset, filename_model, obs_id)
-    dataset.models.extend(model_best_fit)
-    plot_residuals(dataset, obs_id, LIVETIME)
+    mod = Models(model_best_fit[model.names[0]])
+    dataset.models.extend(mod)
+    plot_residuals(dataset, obs_id, LIVETIME, model.names[0])
     plot_residual_distribution(dataset, obs_id, LIVETIME)
 
 
