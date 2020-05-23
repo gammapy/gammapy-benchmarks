@@ -9,37 +9,10 @@ from pathlib import Path
 
 from gammapy.modeling.models import Models
 
-#
-#
-#from pathlib import Path
-#import logging
-#import warnings
-#import click
-#import multiprocessing
-#from itertools import repeat
-
-#from scipy.stats import norm
-#import matplotlib.pyplot as plt
-#import astropy.units as u
-#from astropy.convolution import Tophat2DKernel
-#from astropy.coordinates import SkyCoord
-#from astropy.table import Table
-#from gammapy.data import GTI, Observation, EventList
-#from gammapy.datasets import MapDataset, MapDatasetEventSampler
-##from gammapy.estimators import LiMaMapEstimator as lima
-#from gammapy.estimators import TSMapEstimator as ts
-#from gammapy.maps import MapAxis, WcsGeom, Map
-#from gammapy.irf import EnergyDispersion2D, load_cta_irfs
-#from gammapy.makers import MapDatasetMaker
-#from gammapy.modeling import Fit
-#from gammapy.modeling.models import Models
-#from gammapy.utils.table import table_from_row_data
-#from regions import CircleSkyRegion
-#
 #log = logging.getLogger(__name__)
 
 # path config
-BASE_PATH = Path("make.py").parent
+BASE_PATH = Path("/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/")
 
 def test_sims():
     model_name = "point-pwltest"
@@ -47,7 +20,7 @@ def test_sims():
     
     name = f"fit-results-all_{LIVETIME.value:.0f}{LIVETIME.unit}"
 
-    filename = BASE_PATH / f"results/models/{model_name}/{name}.fits.gz"
+    filename = BASE_PATH / f"event_sampling/results/models/{model_name}/{name}.fits.gz"
     results = Table.read(str(filename))
 
     filename_ref = BASE_PATH / f"models/{model_name}.yaml"
