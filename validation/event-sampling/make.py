@@ -15,7 +15,7 @@ from astropy.coordinates import SkyCoord
 from astropy.table import Table
 from gammapy.data import GTI, Observation, EventList
 from gammapy.datasets import MapDataset, MapDatasetEventSampler
-#from gammapy.estimators import LiMaMapEstimator as lima
+# from gammapy.estimators import LiMaMapEstimator as lima
 from gammapy.estimators import TSMapEstimator as ts
 from gammapy.maps import MapAxis, WcsGeom, Map
 from gammapy.irf import EnergyDispersion2D, load_cta_irfs
@@ -41,7 +41,7 @@ DPI = 120
 
 # observation config
 IRF_FILE = "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits"
-#IRF_FILE = "$GAMMAPY_DATA/cta-prod3b/caldb/data/cta/prod3b-v2/bcf/South_z20_50h/irf_file.fits"
+# IRF_FILE = "$GAMMAPY_DATA/cta-prod3b/caldb/data/cta/prod3b-v2/bcf/South_z20_50h/irf_file.fits"
 
 POINTING = SkyCoord(0.0, 0.5, frame="galactic", unit="deg")
 LIVETIME = 1 * u.hr
@@ -68,8 +68,7 @@ def get_filename_events(filename_dataset, filename_model, obs_id):
     filename_events = filename_dataset.name.replace("dataset", "events")
     filename_events = BASE_PATH / f"data/models/{model_str}/" / filename_events
     filename_events = filename_events.name.replace(".fits.gz", f"_{obs_id:04d}.fits.gz")
-    path = BASE_PATH / f"data/models/{model_str}/" / filename_events
-    return path
+    return BASE_PATH / f"data/models/{model_str}/" / filename_events
 
 
 def get_filename_best_fit_model(filename_model, obs_id, livetime):
@@ -87,9 +86,9 @@ def get_filename_best_fit_model(filename_model, obs_id, livetime):
 
 def get_filename_covariance(filename_best_fit_model):
     filename = filename_best_fit_model.name
-#    filename = filename.replace("best-fit-model", "covariance")
+    # filename = filename.replace("best-fit-model", "covariance")
     filename = filename.replace(".yaml", "_covariance.dat")
-#    return filename_best_fit_model.parent / "covariance" / filename
+    # return filename_best_fit_model.parent / "covariance" / filename
     return filename_best_fit_model.parent / filename
 
 
@@ -120,11 +119,7 @@ def cli(log_level, show_warnings):
               "--core", default=4, nargs=1, help="Number of cores to be used", type=int
               )
 def all_cmd(model, obs_ids, obs_all, simple, core):
-    if model == "all":
-        models = AVAILABLE_MODELS
-    else:
-        models = [model]
-
+    models = AVAILABLE_MODELS if model == 'all' else [model]
     binned = False
     filename_dataset = get_filename_dataset(LIVETIME)
     filename_model = BASE_PATH / f"models/{model}.yaml"
@@ -136,9 +131,9 @@ def all_cmd(model, obs_ids, obs_all, simple, core):
     else:
         prepare_dataset(filename_dataset)
 
-    if obs_all:
-        for model in models:
-            simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
+    for model in models:
+        simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
+        if obs_all:
             obs_ids = f"0:{obs_ids}"
             obs_ids = parse_obs_ids(obs_ids, model)
             with multiprocessing.Pool(processes=core) as pool:
@@ -147,9 +142,7 @@ def all_cmd(model, obs_ids, obs_all, simple, core):
 
             fit_gather(model,LIVETIME)
             plot_pull_distribution(model, LIVETIME)
-    else:
-        for model in models:
-            simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
+        else:
             fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=str(obs_ids-1), binned=binned, simple=simple)
             plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=str(obs_ids-1))
 
@@ -189,15 +182,15 @@ def prepare_dataset_simple(filename_dataset):
                                             offset=[0, 2, 4, 6, 8] * u.deg)
 
     irfs["edisp"] = edisp_gauss
-#    irfs["aeff"].data.data = np.ones_like(irfs["aeff"].data.data) * 1e6
+    # irfs["aeff"].data.data = np.ones_like(irfs["aeff"].data.data) * 1e6
 
     observation = Observation.create(
                                      obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs
                                      )
 
     empty = MapDataset.create(WCS_GEOM, energy_axis_true=ENERGY_AXIS_TRUE, migra_axis=MIGRA_AXIS)
-#    maker = MapDatasetMaker(selection=["exposure", "edisp"])
-#    maker = MapDatasetMaker(selection=["exposure", "edisp", "background"])
+    # maker = MapDatasetMaker(selection=["exposure", "edisp"])
+    # maker = MapDatasetMaker(selection=["exposure", "edisp", "background"])
     maker = MapDatasetMaker(selection=["exposure", "edisp", "psf", "background"])
     dataset = maker.run(empty, observation)
 
@@ -212,11 +205,7 @@ def prepare_dataset_simple(filename_dataset):
               "--nobs", default=1, nargs=1, help="How many observations to simulate"
               )
 def simulate_events_cmd(model, nobs):
-    if model == "all":
-        models = AVAILABLE_MODELS
-    else:
-        models = [model]
-
+    models = AVAILABLE_MODELS if model == 'all' else [model]
     filename_dataset = get_filename_dataset(LIVETIME)
 
     for model in models:
@@ -244,7 +233,7 @@ def simulate_events(filename_model, filename_dataset, nobs):
 
     log.info(f"Reading {filename_model}")
     models = Models.read(filename_model)
-#    dataset.models = models
+    # dataset.models = models
     dataset.models.extend(models)
     
     sampler = MapDatasetEventSampler(random_state=0)
@@ -291,11 +280,7 @@ def parse_obs_ids(obs_ids_str, model):
               "--core", default=4, nargs=1, help="Number of cores to be used", type=int
               )
 def fit_model_cmd(model, obs_ids, binned, simple, core):
-    if model == "all":
-        models = AVAILABLE_MODELS
-    else:
-        models = [model]
-
+    models = AVAILABLE_MODELS if model == 'all' else [model]
     filename_dataset = get_filename_dataset(LIVETIME)
 
     for model in models:
@@ -303,7 +288,7 @@ def fit_model_cmd(model, obs_ids, binned, simple, core):
         filename_model = BASE_PATH / f"models/{model}.yaml"
         with multiprocessing.Pool(processes=core) as pool:
             args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids, repeat(binned), repeat(simple))
-            results = pool.starmap(fit_model, args)
+            pool.starmap(fit_model, args)
 
 
 def read_dataset(filename_dataset, filename_model, obs_id):
@@ -337,7 +322,7 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
     log.info(f"Reading {filename_model}")
     models = Models.read(filename_model)
 
-#    dataset.models = models
+    # dataset.models = models
     dataset.models.extend(models)
     if binned:
         dataset.fake()
@@ -356,18 +341,18 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
     if binned:
         path = Path(str(path).replace("/fit","/fit_fake"))
     log.info(f"Writing {path}")
-#   write best-fit model and covariance
+    # write best-fit model and covariance
     dataset.models.write(str(path), overwrite=True)
 
     # write covariance
-#    path = get_filename_covariance(path)
-#    if binned:
-#        path = Path(str(path).replace("/fit","/fit_fake"))
-#    log.info(f"Writing {path}")
+    # path = get_filename_covariance(path)
+    # if binned:
+    #    path = Path(str(path).replace("/fit","/fit_fake"))
+    # log.info(f"Writing {path}")
 
     # TODO: exclude background parameters for now, as they are fixed anyway
-#    covariance = result.parameters.get_subcovariance(models.parameters)
-#    np.savetxt(path, covariance)
+    # covariance = result.parameters.get_subcovariance(models.parameters)
+    # np.savetxt(path, covariance)
 
 
 @cli.command("fit-gather", help="Gather fit results from the given model")
@@ -376,11 +361,7 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
               "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
               )
 def fit_gather_cmd(model, binned):
-    if model == "all":
-        models = AVAILABLE_MODELS
-    else:
-        models = [model]
-
+    models = AVAILABLE_MODELS if model == 'all' else [model]
     for model in models:
         fit_gather(model, LIVETIME, binned)
 
@@ -393,7 +374,7 @@ def fit_gather(model_name, livetime, binned=False):
         path = Path(str(path).replace("/fit","/fit_fake"))
 
     for filename in path.glob("*.yaml"):
-#        model_best_fit = read_best_fit_model(filename)
+        # model_best_fit = read_best_fit_model(filename)
         model_best_fit = Models.read(filename)
         model_best_fit = model_best_fit[model_name]
         row = {}
@@ -419,11 +400,7 @@ def fit_gather(model_name, livetime, binned=False):
               "--obs_ids", default="0", nargs=1, help="Which observation to choose.", type=str
               )
 def plot_results_cmd(model, obs_ids):
-    if model == "all":
-        models = AVAILABLE_MODELS
-    else:
-        models = [model]
-
+    models = AVAILABLE_MODELS if model == 'all' else [model]
     filename_dataset = get_filename_dataset(LIVETIME)
     for model in models:
         for obs_id in parse_obs_ids(obs_ids, model):
@@ -440,10 +417,9 @@ def save_figure(filename):
     plt.close()
 
 
-
 def plot_spectra(model, model_best_fit, obs_id, livetime):
     """Plot spectral models"""
-    # plot spectral models
+
     if model.tag == "SkyDiffuseCube":
         log.info(f"SkyDiffuseCube: no spectral model to plot")
     else:
@@ -462,9 +438,9 @@ def plot_spectra(model, model_best_fit, obs_id, livetime):
 
 
 def plot_residuals(dataset, obs_id, livetime, model_name):
-    # plot residuals
-    model = dataset.models[model_name]
+    """Plot residuals"""
 
+    model = dataset.models[model_name]
     if model.tag == "SkyDiffuseCube":
         log.info(f"SkyDiffuseCube: no spectral model to plot")
     else:
@@ -481,7 +457,8 @@ def plot_residuals(dataset, obs_id, livetime, model_name):
 
 
 def plot_residual_distribution(dataset, obs_id, livetime):
-    # plot residual significance distribution
+    """Plot residual significance distribution"""
+
     model = dataset.models[1]
 
     if model.tag == 'SkyDiffuseCube':
@@ -491,12 +468,12 @@ def plot_residual_distribution(dataset, obs_id, livetime):
         l_m = lima.run(dataset, steps=["ts", "sqrt_ts", "flux", "niter"])
         sig_resid = l_m['sqrt_ts'].data[np.isfinite(l_m["sqrt_ts"].data)]
         
-#        tophat_2D_kernel = Tophat2DKernel(5)
-#        l_m = lima.compute_lima_image(dataset.counts.sum_over_axes(keepdims=False), dataset.npred().sum_over_axes(keepdims=False), tophat_2D_kernel)
-#        sig_resid = l_m["significance"].data[np.isfinite(l_m["significance"].data)]
-
-    #    resid = dataset.residuals()
-    #    sig_resid = resid.data[np.isfinite(resid.data)]
+        # tophat_2D_kernel = Tophat2DKernel(5)
+        # l_m = lima.compute_lima_image(dataset.counts.sum_over_axes(keepdims=False), dataset.npred().sum_over_axes(keepdims=False), tophat_2D_kernel)
+        # sig_resid = l_m["significance"].data[np.isfinite(l_m["significance"].data)]
+        #
+        # resid = dataset.residuals()
+        # sig_resid = resid.data[np.isfinite(resid.data)]
 
         plt.hist(
             sig_resid, density=True, alpha=0.5, color="red", bins=100,
@@ -520,7 +497,7 @@ def plot_residual_distribution(dataset, obs_id, livetime):
         save_figure(filename)
 
 # OBSOLETE...
-#def read_best_fit_model(filename):
+# def read_best_fit_model(filename):
 #    log.info(f"Reading {filename}")
 #    model_best_fit = Models.read(filename)
 #
@@ -533,22 +510,23 @@ def plot_residual_distribution(dataset, obs_id, livetime):
 #        spectral_model_best_fit = model_best_fit[1]
 #        covar = pars.get_subcovariance(spectral_model_best_fit.parameters)
 #        spectral_model_best_fit.parameters.covariance = covar
-#            
-##        spatial_model_best_fit = model_best_fit[0].spatial_model
-##        covar = pars.get_subcovariance(spatial_model_best_fit.parameters)
-##        spatial_model_best_fit.parameters.covariance = covar
+#
+#       # spatial_model_best_fit = model_best_fit[0].spatial_model
+#       # covar = pars.get_subcovariance(spatial_model_best_fit.parameters)
+#       # spatial_model_best_fit.parameters.covariance = covar
 #
 #    else:
 #        spectral_model_best_fit = model_best_fit[1].spectral_model
 #        covar = pars.get_subcovariance(spectral_model_best_fit.parameters)
 #        spectral_model_best_fit.parameters.covariance = covar
-#        
+#
 #        spatial_model_best_fit = model_best_fit[1].spatial_model
 #        covar = pars.get_subcovariance(spatial_model_best_fit.parameters)
 #        spatial_model_best_fit.parameters.covariance = covar
 #
 #    return model_best_fit
 #
+
 
 def plot_results(filename_model, obs_id, filename_dataset=None):
     """Plot the best-fit spectrum, the residual map and the residual significance distribution.
@@ -566,7 +544,7 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
     model = Models.read(filename_model)
 
     path = get_filename_best_fit_model(filename_model, obs_id, LIVETIME)
-#    model_best_fit = read_best_fit_model(path)
+    # model_best_fit = read_best_fit_model(path)
     model_best_fit =  Models.read(path)
 
     plot_spectra(model[model.names[0]], model_best_fit[model.names[0]], obs_id, LIVETIME)
@@ -584,11 +562,7 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
               "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
               )
 def plot_pull_distribution_cmd(model, binned):
-    if model == "all":
-        models = AVAILABLE_MODELS
-    else:
-        models = [model]
-
+    models = AVAILABLE_MODELS if model == 'all' else [model]
     for model in models:
         plot_pull_distribution(model_name=model, livetime=LIVETIME, binned=binned)
 
@@ -619,7 +593,7 @@ def plot_pull_distribution(model_name, livetime, binned=False):
 
         pull = (values - par.value) / values_err
 
-#        print("Number of fits beyond 5 sigmas: ",(np.where( (pull<-5) )))
+        # print("Number of fits beyond 5 sigmas: ",(np.where( (pull<-5) )))
         plt.hist(pull, bins=21, normed=True, range=(-5,5))
         plt.xlim(-5, 5)
         plt.xlabel("(value - value_true) / error")

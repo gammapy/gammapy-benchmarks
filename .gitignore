@@ -110,5 +110,7 @@ ENV/
 
 validation/fermi-3fhl/data
 validation/fermi-3fhl/results
-
 validation/joint-crab/reduced_*
+validation/event-sampling/data/*.fits
+validation/event-sampling/data/*.fits.gz
+validation/event-sampling/data/models/*/*.fits.gz
