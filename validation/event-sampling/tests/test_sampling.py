@@ -4,6 +4,7 @@ from scipy.stats import norm
 from astropy.table import Table
 from numpy.testing import assert_allclose
 from pathlib import Path
+import logging
 
 from gammapy.modeling.models import Models
 
