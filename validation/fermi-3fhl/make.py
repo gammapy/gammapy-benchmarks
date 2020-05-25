@@ -298,10 +298,6 @@ class Validation_3FHL:
             pass
         else:
             datasets.write(path=Path(self.resdir), prefix=dataset.name, overwrite=True)
-            np.save(
-                self.resdir / f"3FHL_ROI_num{kr}_covariance.npy",
-                results.parameters.covariance,
-            )
             np.savez(
                 self.resdir / f"3FHL_ROI_num{kr}_fit_infos.npz",
                 message=results.message,
@@ -317,11 +313,8 @@ class Validation_3FHL:
                     and self.FHL3[model.name].data["Signif_Avg"] >= self.sig_cut
                 ):
                     flux_points = FluxPointsEstimator(
-                        datasets=datasets,
-                        e_edges=self.El_flux,
-                        source=model.name,
-                        sigma_ul=2.0,
-                    ).run()
+                        e_edges=self.El_flux, source=model.name, sigma_ul=2.0,
+                    ).run(datasets=datasets)
                     filename = self.resdir / f"{model.name}_flux_points.fits"
                     flux_points.write(filename, overwrite=True)
 
@@ -330,15 +323,12 @@ class Validation_3FHL:
 
     def read_regions(self):
         for kr in self.ROIs_sel:
-            filedata = self.resdir / f"3FHL_ROI_num{kr}_datasets.yaml"
-            filemodel = self.resdir / f"3FHL_ROI_num{kr}_models.yaml"
+            filedata = f"3FHL_ROI_num{kr}_datasets.yaml"
+            filemodel = f"3FHL_ROI_num{kr}_models.yaml"
             try:
-                dataset = list(Datasets.read(filedata, filemodel))[0]
+                dataset = list(Datasets.read(self.resdir, filedata, filemodel))[0]
             except (FileNotFoundError, IOError):
                 continue
-
-            pars = dataset.models.parameters
-            pars.covariance = np.load(self.resdir / f"{dataset.name}_covariance.npy")
 
             infos = np.load(self.resdir / f"3FHL_ROI_num{kr}_fit_infos.npz")
             self.diags["message"].append(infos["message"])
@@ -354,15 +344,6 @@ class Validation_3FHL:
                     and self.FHL3[model.name].data["Signif_Avg"] >= self.sig_cut
                 ):
 
-                    model.spatial_model.parameters.covariance = pars.get_subcovariance(
-                        model.spatial_model.parameters
-                    )
-                    model.spectral_model.parameters.covariance = pars.get_subcovariance(
-                        model.spectral_model.parameters
-                    )
-                    dataset.background_model.parameters.covariance = pars.get_subcovariance(
-                        dataset.background_model.parameters
-                    )
                     res_spec = model.spectral_model
                     cat_spec = self.FHL3[model.name].spectral_model()
 
@@ -444,16 +425,16 @@ class Validation_3FHL:
                 [
                     cat_spec.parameters["index"].value,
                     res_spec.parameters["index"].value,
-                    cat_spec.parameters.error("index"),
-                    res_spec.parameters.error("index"),
+                    cat_spec.parameters["index"].error,
+                    res_spec.parameters["index"].error,
                 ]
             )
             self.diags["params"]["PL_amplitude"].append(
                 [
                     cat_spec.parameters["amplitude"].value,
                     res_spec.parameters["amplitude"].value,
-                    cat_spec.parameters.error("amplitude"),
-                    res_spec.parameters.error("amplitude"),
+                    cat_spec.parameters["amplitude"].error,
+                    res_spec.parameters["amplitude"].error,
                 ]
             )
             self.diags["params"]["PL_tags"].append([dataset.name, model.name])
@@ -463,24 +444,24 @@ class Validation_3FHL:
                 [
                     cat_spec.parameters["alpha"].value,
                     res_spec.parameters["alpha"].value,
-                    cat_spec.parameters.error("alpha"),
-                    res_spec.parameters.error("alpha"),
+                    cat_spec.parameters["alpha"].error,
+                    res_spec.parameters["alpha"].error,
                 ]
             )
             self.diags["params"]["LP_beta"].append(
                 [
                     cat_spec.parameters["beta"].value,
                     res_spec.parameters["beta"].value,
-                    cat_spec.parameters.error("beta"),
-                    res_spec.parameters.error("beta"),
+                    cat_spec.parameters["beta"].error,
+                    res_spec.parameters["beta"].error,
                 ]
             )
             self.diags["params"]["LP_amplitude"].append(
                 [
                     cat_spec.parameters["amplitude"].value,
                     res_spec.parameters["amplitude"].value,
-                    cat_spec.parameters.error("amplitude"),
-                    res_spec.parameters.error("amplitude"),
+                    cat_spec.parameters["amplitude"].error,
+                    res_spec.parameters["amplitude"].error,
                 ]
             )
             self.diags["params"]["LP_tags"].append([dataset.name, model.name])
@@ -502,11 +483,14 @@ class Validation_3FHL:
 
         # likelihood
         message = np.array(self.diags["message"])
+
+        print("\n-", message, "-\n")
         msgs = [
             "Optimization terminated successfully.",
             "Optimization failed.",
             "Optimization failed. Estimated distance to minimum too large.",
         ]
+
         for msg in msgs:
             print(msg, 100 * sum(message == msg) / len(message), "  ")
 
