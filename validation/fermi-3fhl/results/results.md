@@ -16,6 +16,16 @@
 
  All following values are given in percent 
 
+
+- ['Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'] -
+
 Optimization terminated successfully. 100.0   
 Optimization failed. 0.0   
 Optimization failed. Estimated distance to minimum too large. 0.0   
@@ -25,7 +35,7 @@ Optimization failed. Estimated distance to minimum too large. 0.0
 flux_points   
 Rel. err. <10%: 0.0   
 Rel. err. <30%: 0.0   
-Rel. err. mean: 89733.42159400324   
+Rel. err. mean: 89741.15820995877   
 
  ![](results/flux_points_errel.png)
 
@@ -36,7 +46,7 @@ dx/x <30% :  100.0
  ![](results/PL_index_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: 0.05356289201729432   
+Rel. err. mean: 0.017535300615335175   
 compatibility: 100.0   
 
  ![](results/PL_index_errel.png)
@@ -50,7 +60,7 @@ dx/x <30% :  100.0
  ![](results/PL_amplitude_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -0.6692253031983249   
+Rel. err. mean: -0.6112775458323697   
 compatibility: 100.0   
 
  ![](results/PL_amplitude_errel.png)
@@ -64,7 +74,7 @@ dx/x <30% :  100.0
  ![](results/LP_alpha_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -0.28706571003012726   
+Rel. err. mean: -0.3767060258667286   
 compatibility: 100.0   
 
  ![](results/LP_alpha_errel.png)
@@ -78,7 +88,7 @@ dx/x <30% :  75.0
  ![](results/LP_beta_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -2.5788970692823905   
+Rel. err. mean: -2.2509052836554777   
 compatibility: 100.0   
 
  ![](results/LP_beta_errel.png)
@@ -92,7 +102,7 @@ dx/x <30% :  100.0
  ![](results/LP_amplitude_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -0.7715532411396713   
+Rel. err. mean: -0.7670066892759597   
 compatibility: 100.0   
 
  ![](results/LP_amplitude_errel.png)
