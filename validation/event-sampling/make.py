@@ -33,9 +33,7 @@ BASE_PATH = Path(__file__).parent
 AVAILABLE_MODELS = ["point-pwl", "point-ecpl", "point-log-parabola",
                     "point-pwl2", "point-ecpl-3fgl", "point-ecpl-4fgl",
                     "point-template", "diffuse-cube",
-                    "disk-pwl", "gauss-pwl",
-                    "gauss-pwlsimple", "point-pwlsimple", "disk-pwlsimple",
-                    "point-pwltest", "point-pwl-time"]
+                    "disk-pwl", "gauss-pwl", "disk-pwlsimple"]
 
 DPI = 120
 
@@ -105,7 +103,7 @@ def cli(log_level, show_warnings):
 
 
 @cli.command("all", help="Run all steps")
-@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS)))
+@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all-models"]))
 @click.option(
               "--obs_ids", default=1, nargs=1, help="Select a single observation", type=int
               )
@@ -119,7 +117,8 @@ def cli(log_level, show_warnings):
               "--core", default=4, nargs=1, help="Number of cores to be used", type=int
               )
 def all_cmd(model, obs_ids, obs_all, simple, core):
-    models = AVAILABLE_MODELS if model == 'all' else [model]
+    models = AVAILABLE_MODELS if model == 'all-models' else [model]
+    print(models)
     binned = False
     filename_dataset = get_filename_dataset(LIVETIME)
     filename_model = BASE_PATH / f"models/{model}.yaml"
@@ -200,12 +199,12 @@ def prepare_dataset_simple(filename_dataset):
 
 
 @cli.command("simulate-events", help="Simulate events for given model and livetime")
-@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
+@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all-models"]))
 @click.option(
               "--nobs", default=1, nargs=1, help="How many observations to simulate"
               )
 def simulate_events_cmd(model, nobs):
-    models = AVAILABLE_MODELS if model == 'all' else [model]
+    models = AVAILABLE_MODELS if model == 'all-models' else [model]
     filename_dataset = get_filename_dataset(LIVETIME)
 
     for model in models:
@@ -266,7 +265,7 @@ def parse_obs_ids(obs_ids_str, model):
 
 
 @cli.command("fit-model", help="Fit given model")
-@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
+@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all-models"]))
 @click.option(
               "--obs_ids", default="all", nargs=1, help="Which observation to choose.", type=str
               )
@@ -280,7 +279,7 @@ def parse_obs_ids(obs_ids_str, model):
               "--core", default=4, nargs=1, help="Number of cores to be used", type=int
               )
 def fit_model_cmd(model, obs_ids, binned, simple, core):
-    models = AVAILABLE_MODELS if model == 'all' else [model]
+    models = AVAILABLE_MODELS if model == 'all-models' else [model]
     filename_dataset = get_filename_dataset(LIVETIME)
 
     for model in models:
@@ -356,12 +355,12 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
 
 
 @cli.command("fit-gather", help="Gather fit results from the given model")
-@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
+@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all-models"]))
 @click.option(
               "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
               )
 def fit_gather_cmd(model, binned):
-    models = AVAILABLE_MODELS if model == 'all' else [model]
+    models = AVAILABLE_MODELS if model == 'all-models' else [model]
     for model in models:
         fit_gather(model, LIVETIME, binned)
 
@@ -395,12 +394,12 @@ def fit_gather(model_name, livetime, binned=False):
 
 
 @cli.command("plot-results", help="Plot results for given model")
-@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
+@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all-models"]))
 @click.option(
               "--obs_ids", default="0", nargs=1, help="Which observation to choose.", type=str
               )
 def plot_results_cmd(model, obs_ids):
-    models = AVAILABLE_MODELS if model == 'all' else [model]
+    models = AVAILABLE_MODELS if model == 'all-models' else [model]
     filename_dataset = get_filename_dataset(LIVETIME)
     for model in models:
         for obs_id in parse_obs_ids(obs_ids, model):
@@ -557,12 +556,12 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
 
 
 @cli.command("plot-pull-distributions", help="Plot pull distributions for the given model")
-@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
+@click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all-models"]))
 @click.option(
               "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
               )
 def plot_pull_distribution_cmd(model, binned):
-    models = AVAILABLE_MODELS if model == 'all' else [model]
+    models = AVAILABLE_MODELS if model == 'all-models' else [model]
     for model in models:
         plot_pull_distribution(model_name=model, livetime=LIVETIME, binned=binned)
 
