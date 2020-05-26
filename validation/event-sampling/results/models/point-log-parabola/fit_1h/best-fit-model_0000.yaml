@@ -1,21 +1,31 @@
 components:
+-   name: 084Zh0u7-bkg
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.0, unit: '', min: 0.0, max: .nan, frozen: true, error: 0.0}
+    - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
+        error: 0.0}
+    datasets_names: [084Zh0u7]
 -   name: point-log-parabola
     type: SkyModel
     spectral:
         type: LogParabolaSpectralModel
         parameters:
-        - {name: amplitude, value: 1.204768682677204e-12, unit: cm-2 s-1 TeV-1, min: .nan,
-            max: .nan, frozen: false}
-        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-        - {name: alpha, value: 1.939686621873174, unit: '', min: .nan, max: .nan,
-            frozen: false}
-        - {name: beta, value: 0.17313472631728127, unit: '', min: .nan, max: .nan,
-            frozen: false}
+        - {name: amplitude, value: 1.0998157395418132e-12, unit: cm-2 s-1 TeV-1, min: .nan,
+            max: .nan, frozen: false, error: 1.3760700245217964e-13}
+        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
+            error: 0.0}
+        - {name: alpha, value: 1.8504870426668527, unit: '', min: .nan, max: .nan,
+            frozen: false, error: 0.11226324765130637}
+        - {name: beta, value: 0.21368346617279965, unit: '', min: .nan, max: .nan,
+            frozen: false, error: 0.06644735834754102}
     spatial:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: -0.005077034121303422, unit: deg, min: .nan, max: .nan,
-            frozen: false}
-        - {name: lat_0, value: 0.0013562701837059876, unit: deg, min: -90.0, max: 90.0,
-            frozen: false}
+        - {name: lon_0, value: -0.005271206525793983, unit: deg, min: .nan, max: .nan,
+            frozen: false, error: 0.0037816661452376365}
+        - {name: lat_0, value: 0.0006431603913116272, unit: deg, min: .nan, max: .nan,
+            frozen: false, error: 0.0040130636748774845}
+covariance: best-fit-model_0000_covariance.dat

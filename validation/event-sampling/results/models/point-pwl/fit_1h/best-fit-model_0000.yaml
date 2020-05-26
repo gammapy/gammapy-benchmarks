@@ -1,29 +1,29 @@
 components:
--   name: rQ83YIw--bkg
+-   name: YyJ0Jx3H-bkg
     type: BackgroundModel
     parameters:
     - {name: norm, value: 1.0, unit: '', min: 0.0, max: .nan, frozen: true, error: 0.0}
     - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
     - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
         error: 0.0}
-    datasets_names: [rQ83YIw-]
+    datasets_names: [YyJ0Jx3H]
 -   name: point-pwl
     type: SkyModel
     spectral:
         type: PowerLawSpectralModel
         parameters:
-        - {name: index, value: 1.936858235112095, unit: '', min: .nan, max: .nan,
-            frozen: false, error: 0.06360291763636607}
-        - {name: amplitude, value: 9.441913058850835e-13, unit: cm-2 s-1 TeV-1, min: .nan,
-            max: .nan, frozen: false, error: 9.492253459302025e-14}
+        - {name: index, value: 1.9371394766566756, unit: '', min: .nan, max: .nan,
+            frozen: false, error: 0.06360861631360035}
+        - {name: amplitude, value: 9.446661537417942e-13, unit: cm-2 s-1 TeV-1, min: .nan,
+            max: .nan, frozen: false, error: 9.495471019449474e-14}
         - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
             error: 0.0}
     spatial:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: -0.0001557397861142025, unit: deg, min: .nan, max: .nan,
-            frozen: false, error: 0.0035584580391972414}
-        - {name: lat_0, value: 0.0033524432568505687, unit: deg, min: .nan, max: .nan,
-            frozen: false, error: 0.0035084129067696392}
-covariance: results/models/point-pwl/fit_1h/best-fit-model_0000_covariance.dat
+        - {name: lon_0, value: -0.00016131924391471852, unit: deg, min: .nan, max: .nan,
+            frozen: false, error: 0.003558234885257775}
+        - {name: lat_0, value: 0.0033476955396851767, unit: deg, min: .nan, max: .nan,
+            frozen: false, error: 0.0035083874464881975}
+covariance: best-fit-model_0000_covariance.dat

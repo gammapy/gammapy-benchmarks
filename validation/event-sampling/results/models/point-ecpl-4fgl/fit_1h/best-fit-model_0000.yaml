@@ -1,23 +1,33 @@
 components:
+-   name: BcE2sBAF-bkg
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.0, unit: '', min: 0.0, max: .nan, frozen: true, error: 0.0}
+    - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
+        error: 0.0}
+    datasets_names: [BcE2sBAF]
 -   name: point-ecpl-4fgl
     type: SkyModel
     spectral:
         type: SuperExpCutoffPowerLaw4FGLSpectralModel
         parameters:
-        - {name: amplitude, value: 9.969474553615269e-13, unit: cm-2 s-1 TeV-1, min: .nan,
-            max: .nan, frozen: false}
-        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-        - {name: expfactor, value: 0.1956416104442181, unit: '', min: .nan, max: .nan,
-            frozen: false}
-        - {name: index_1, value: 1.7112178396586757, unit: '', min: .nan, max: .nan,
-            frozen: false}
-        - {name: index_2, value: 3.7487955152037524, unit: '', min: .nan, max: .nan,
-            frozen: false}
+        - {name: amplitude, value: 7.785953824993269e-13, unit: cm-2 s-1 TeV-1, min: .nan,
+            max: .nan, frozen: false, error: 2.9085880636170286e-13}
+        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
+            error: 0.0}
+        - {name: expfactor, value: 0.5856229291333607, unit: '', min: .nan, max: .nan,
+            frozen: false, error: 1.2549892034688537}
+        - {name: index_1, value: 1.4464545597261267, unit: '', min: .nan, max: .nan,
+            frozen: false, error: 1.3722790377782776}
+        - {name: index_2, value: 2.3120886527232223, unit: '', min: .nan, max: .nan,
+            frozen: false, error: 1.6198779732635136}
     spatial:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: 0.0009178402272268504, unit: deg, min: .nan, max: .nan,
-            frozen: false}
-        - {name: lat_0, value: 0.005899552393543672, unit: deg, min: -90.0, max: 90.0,
-            frozen: false}
+        - {name: lon_0, value: 0.0005885448932898559, unit: deg, min: .nan, max: .nan,
+            frozen: false, error: 0.006996180895057836}
+        - {name: lat_0, value: 0.0074840488023426854, unit: deg, min: .nan, max: .nan,
+            frozen: false, error: 0.007062246875080223}
+covariance: best-fit-model_0000_covariance.dat

@@ -1,13 +1,22 @@
 components:
+-   name: kzu-nRfj-bkg
+    type: BackgroundModel
+    parameters:
+    - {name: norm, value: 1.0, unit: '', min: 0.0, max: .nan, frozen: true, error: 0.0}
+    - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
+    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
+        error: 0.0}
+    datasets_names: [kzu-nRfj]
 -   name: point-template
     type: SkyModel
     spectral:
         type: TemplateSpectralModel
         parameters:
-        - {name: norm, value: 1.0477818877877212, unit: '', min: .nan, max: .nan,
-            frozen: false}
-        - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true}
-        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+        - {name: norm, value: 0.9607862255096045, unit: '', min: .nan, max: .nan,
+            frozen: false, error: 0.08505958779642575}
+        - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
+        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
+            error: 0.0}
         energy:
             data: [0.10000000000000002, 0.12589254117941673, 0.15848931924611137,
                 0.199526231496888, 0.25118864315095807, 0.316227766016838, 0.39810717055349737,
@@ -34,7 +43,8 @@ components:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: 0.001412747442319881, unit: deg, min: .nan, max: .nan,
-            frozen: false}
-        - {name: lat_0, value: 0.002263136455084691, unit: deg, min: -90.0, max: 90.0,
-            frozen: false}
+        - {name: lon_0, value: 0.0016651242677351668, unit: deg, min: .nan, max: .nan,
+            frozen: false, error: 0.0030635018766641993}
+        - {name: lat_0, value: 0.001757355736089039, unit: deg, min: -90.0, max: 90.0,
+            frozen: false, error: 0.003031014774769741}
+covariance: best-fit-model_0000_covariance.dat
