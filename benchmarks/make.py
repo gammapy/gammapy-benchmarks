@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 """Run gammapy benchmarks"""
-import shutil
-import numpy as np
-import subprocess
-import yaml
-import logging
-import warnings
 import getpass
-import platform
-import sys
 import importlib
+import logging
+import platform
+import shutil
+import subprocess
+import sys
 import tempfile
+import warnings
 from pathlib import Path
+
 import click
+import numpy as np
+import yaml
 from psrecord.main import monitor
 
 log = logging.getLogger(__name__)

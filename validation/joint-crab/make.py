@@ -1,22 +1,23 @@
 #!/usr/bin/env python
 """Run Gammapy validation: CTA 1DC"""
 import logging
-from pathlib import Path
-import yaml
-import click
 import warnings
+from pathlib import Path
+
+import click
 import matplotlib.pyplot as plt
 import numpy as np
-from astropy.table import Table
+import yaml
 from astropy import units as u
 from astropy.coordinates import Angle, SkyCoord
-from regions import CircleSkyRegion, CircleAnnulusSkyRegion
+from astropy.table import Table
+from regions import CircleAnnulusSkyRegion, CircleSkyRegion
+
 from gammapy.analysis import Analysis, AnalysisConfig
-from gammapy.modeling.models import SkyModel
-from gammapy.modeling.models import LogParabolaSpectralModel
-from gammapy.modeling import Fit
 from gammapy.datasets import Datasets
 from gammapy.maps import MapAxis
+from gammapy.modeling import Fit
+from gammapy.modeling.models import LogParabolaSpectralModel, SkyModel
 from gammapy.utils.scripts import make_path
 from joint_crab.extract_fermi import extract_spectrum_fermi
 

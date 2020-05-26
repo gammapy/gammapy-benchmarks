@@ -1,20 +1,19 @@
-import numpy as np
-import astropy.units as u
-import time
-import yaml
 import os
+import time
 from pathlib import Path
-from gammapy.modeling.models import (
-    SkyModel,
-    ExpCutoffPowerLawSpectralModel,
-    PointSpatialModel,
-)
-from gammapy.modeling import Fit
-from gammapy.estimators import FluxPointsEstimator
+
+import astropy.units as u
+import numpy as np
+import yaml
+
 from gammapy.data import DataStore
-from gammapy.maps import MapAxis, WcsGeom
-from gammapy.datasets import MapDataset, Datasets
+from gammapy.datasets import Datasets, MapDataset
+from gammapy.estimators import FluxPointsEstimator
 from gammapy.makers import MapDatasetMaker, SafeMaskMaker
+from gammapy.maps import MapAxis, WcsGeom
+from gammapy.modeling import Fit
+from gammapy.modeling.models import (ExpCutoffPowerLawSpectralModel,
+                                     PointSpatialModel, SkyModel)
 
 N_OBS = int(os.environ.get("GAMMAPY_BENCH_N_OBS", 10))
 

@@ -1,8 +1,9 @@
-from astropy.table import Table
-from numpy.testing import assert_allclose
 from pathlib import Path
+
 import numpy as np
 import yaml
+from astropy.table import Table
+from numpy.testing import assert_allclose
 
 AVAILABLE_DATA = ["hess", "magic", "veritas", "fact", "fermi", "joint"]
 THIS_FOLDER = Path(__file__).resolve().parent

@@ -1,11 +1,13 @@
 import logging
-from pathlib import Path
-import yaml
-import click
 import warnings
+from pathlib import Path
+
+import click
 import matplotlib.pyplot as plt
-from astropy.table import Table
+import yaml
 from astropy import units as u
+from astropy.table import Table
+
 from gammapy.analysis import Analysis, AnalysisConfig
 from gammapy.modeling.models import Models
 

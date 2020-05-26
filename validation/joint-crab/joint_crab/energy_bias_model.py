@@ -1,5 +1,5 @@
-from gammapy.modeling.models import SpectralModel
 from gammapy.modeling import Parameter, Parameters
+from gammapy.modeling.models import SpectralModel
 
 
 class EnergyBiasSpectralModel(SpectralModel):

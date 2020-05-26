@@ -1,7 +1,8 @@
 """Prepare Fermi-LAT data for this paper."""
 import subprocess
+
+from astropy.coordinates import Angle, SkyCoord
 from astropy.io import fits
-from astropy.coordinates import SkyCoord, Angle
 
 
 def download():

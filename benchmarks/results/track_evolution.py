@@ -2,6 +2,7 @@
 """Script run in scheduled Github actions to make daily evolution plots for benchmarks"""
 
 from datetime import date
+
 import matplotlib.pyplot as plt
 import numpy as np
 import yaml

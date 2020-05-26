@@ -1,30 +1,29 @@
-from pathlib import Path
 import logging
-import warnings
-import click
 import multiprocessing
+import warnings
 from itertools import repeat
+from pathlib import Path
 
-import numpy as np
-from scipy.stats import norm
-import matplotlib.pyplot as plt
 import astropy.units as u
-
+import click
+import matplotlib.pyplot as plt
+import numpy as np
 # from astropy.convolution import Tophat2DKernel
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
-from gammapy.data import GTI, Observation, EventList
-from gammapy.datasets import MapDataset, MapDatasetEventSampler
+from regions import CircleSkyRegion
+from scipy.stats import norm
 
+from gammapy.data import GTI, EventList, Observation
+from gammapy.datasets import MapDataset, MapDatasetEventSampler
 # from gammapy.estimators import LiMaMapEstimator as lima
 from gammapy.estimators import TSMapEstimator as ts
-from gammapy.maps import MapAxis, WcsGeom, Map
 from gammapy.irf import EnergyDispersion2D, load_cta_irfs
 from gammapy.makers import MapDatasetMaker
+from gammapy.maps import Map, MapAxis, WcsGeom
 from gammapy.modeling import Fit
 from gammapy.modeling.models import Models
 from gammapy.utils.table import table_from_row_data
-from regions import CircleSkyRegion
 
 log = logging.getLogger(__name__)
 
@@ -145,6 +144,7 @@ def all_cmd(model, obs_ids, obs_all, simple, core):
     binned = False
     filename_dataset = get_filename_dataset(LIVETIME)
 
+    log.info(f"Preparing datasets")
     if simple:
         filename_dataset = Path(
             str(filename_dataset).replace("dataset", "dataset_simple")

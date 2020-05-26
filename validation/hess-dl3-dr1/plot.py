@@ -1,9 +1,11 @@
 import logging
-import yaml
+from pathlib import Path
+
 import matplotlib.pyplot as plt
+import yaml
+
 from gammapy.estimators import FluxPoints
 from gammapy.modeling.models import Model
-from pathlib import Path
 
 log = logging.getLogger(__name__)
 

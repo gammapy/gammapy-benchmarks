@@ -1,9 +1,11 @@
 import logging
-import yaml
-import click
-import warnings
 import time
+import warnings
 from pathlib import Path
+
+import click
+import yaml
+
 from gammapy.analysis import Analysis, AnalysisConfig
 
 log = logging.getLogger(__name__)

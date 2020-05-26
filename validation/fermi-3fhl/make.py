@@ -1,35 +1,33 @@
-import subprocess
-from pathlib import Path
-import sys
-from time import time
-import numpy as np
 import logging
 import multiprocessing as mp
-import yaml
+import subprocess
+import sys
+from pathlib import Path
+from time import time
+
 import click
+import matplotlib.pyplot as plt
+import numpy as np
+import yaml
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
-from gammapy.data import EventList
-from gammapy.irf import EnergyDependentTablePSF, EDispKernel, PSFKernel
-from gammapy.maps import Map, MapAxis, WcsNDMap, WcsGeom
-from gammapy.modeling import Fit
-from gammapy.datasets import Datasets, MapDataset
-from gammapy.datasets.map import MapEvaluator
-from gammapy.modeling.models import (
-    SkyDiffuseCube,
-    Models,
-    BackgroundModel,
-    LogParabolaSpectralModel,
-    PowerLawSpectralModel,
-    create_fermi_isotropic_diffuse_model,
-)
-from gammapy.estimators import FluxPoints, FluxPointsEstimator
-from gammapy.catalog import SourceCatalog3FHL
 from matplotlib import cm
 from matplotlib.colors import LogNorm
-import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
+
+from gammapy.catalog import SourceCatalog3FHL
+from gammapy.data import EventList
+from gammapy.datasets import Datasets, MapDataset
+from gammapy.datasets.map import MapEvaluator
+from gammapy.estimators import FluxPoints, FluxPointsEstimator
+from gammapy.irf import EDispKernel, EnergyDependentTablePSF, PSFKernel
+from gammapy.maps import Map, MapAxis, WcsGeom, WcsNDMap
+from gammapy.modeling import Fit
+from gammapy.modeling.models import (BackgroundModel, LogParabolaSpectralModel,
+                                     Models, PowerLawSpectralModel,
+                                     SkyDiffuseCube,
+                                     create_fermi_isotropic_diffuse_model)
 from gammapy.utils.scripts import make_path
 
 log = logging.getLogger(__name__)

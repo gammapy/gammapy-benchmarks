@@ -1,12 +1,13 @@
 """Extract 1D spectrum information for Fermi-LAT"""
 import logging
-import numpy as np
+
 import astropy.units as u
-from gammapy.irf import EDispKernel
-from gammapy.datasets import SpectrumDatasetOnOff, MapDataset
-from gammapy.data import EventList, GTI
-from gammapy.maps import HpxNDMap, Map, WcsGeom, MapCoord
-from gammapy.irf import EnergyDependentTablePSF
+import numpy as np
+
+from gammapy.data import GTI, EventList
+from gammapy.datasets import MapDataset, SpectrumDatasetOnOff
+from gammapy.irf import EDispKernel, EnergyDependentTablePSF
+from gammapy.maps import HpxNDMap, Map, MapCoord, WcsGeom
 from gammapy.utils.time import time_ref_from_dict
 
 log = logging.getLogger(__name__)

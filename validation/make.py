@@ -1,14 +1,15 @@
 """Run gammapy validations"""
-import subprocess
-import yaml
-import logging
-import warnings
 import getpass
-import platform
-import sys
 import importlib
+import logging
+import platform
+import subprocess
+import sys
+import warnings
 from pathlib import Path
+
 import click
+import yaml
 
 log = logging.getLogger(__name__)
 

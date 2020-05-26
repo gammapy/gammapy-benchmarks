@@ -15,8 +15,9 @@
 __version__ = "2018-02-16"
 # these modules come with the standard Python
 import argparse
+import os
+import sys
 import xml.etree.ElementTree as ET
-import sys, os
 
 try:
     import numpy as np

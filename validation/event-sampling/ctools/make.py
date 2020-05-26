@@ -1,20 +1,24 @@
-from pathlib import Path
 import logging
-import warnings
-import click
 import multiprocessing
-from itertools import repeat
+import os
+import sys
+import warnings
 import xml.etree.ElementTree as ET
+from itertools import repeat
+from pathlib import Path
 
-import Plot_SED
-import gammalib, ctools, cscripts
-from astropy.coordinates import SkyCoord
-from astropy.table import Table
-import sys, os
-import numpy as np
 import astropy.units as u
-from astropy.modeling import models
+import click
 import matplotlib.pyplot as plt
+import numpy as np
+from astropy.coordinates import SkyCoord
+from astropy.modeling import models
+from astropy.table import Table
+
+import cscripts
+import ctools
+import gammalib
+import Plot_SED
 
 ###
 # export CALDB="$GAMMAPY_DATA/cta-1dc/caldb"
