@@ -1,9 +1,11 @@
 import logging
-import yaml
+from pathlib import Path
+
 import matplotlib.pyplot as plt
+import yaml
+
 from gammapy.estimators import FluxPoints
 from gammapy.modeling.models import Model
-from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -54,7 +56,12 @@ def main():
 
             # Plot
             fig = make_plots(
-                reference_spectrum, reference_spectrum_errors, result_spectrum, result_spectrum_errors, reference_fpoints, result_fpoints
+                reference_spectrum,
+                reference_spectrum_errors,
+                result_spectrum,
+                result_spectrum_errors,
+                reference_fpoints,
+                result_fpoints,
             )
             log.info(f"Writing {path_plot}")
             fig.savefig(str(path_plot) + f"/flux-points-{ndim}d.png")
@@ -69,7 +76,7 @@ def make_plots(
     result_fpoints,
 ):
     fig, ax = plt.subplots(figsize=(7, 5))
-    plt.rc('text', usetex=True)
+    plt.rc("text", usetex=True)
     opts = {"energy_power": 2, "ax": ax}
 
     reference_spectrum.plot(
@@ -78,8 +85,8 @@ def make_plots(
         color="red",
         alpha=0.8,
         label=f"Reference: \n    -$\Gamma$={reference_spectrum.index.value:5.2f} $\pm$ {reference_spectrum_errors['index_err']:5.2f},"
-              f"\n    -$\Phi_0$: {reference_spectrum.amplitude.value:5.2e} $\pm$ {reference_spectrum_errors['amplitude_err']:5.2e} "
-              f"TeV-1 cm-2 s-1",
+        f"\n    -$\Phi_0$: {reference_spectrum.amplitude.value:5.2e} $\pm$ {reference_spectrum_errors['amplitude_err']:5.2e} "
+        f"TeV-1 cm-2 s-1",
     )
     result_spectrum.plot(
         **opts,
@@ -87,9 +94,8 @@ def make_plots(
         color="blue",
         alpha=0.8,
         label=f"Validation: \n    -$\Gamma$={result_spectrum.index.value:5.2f} $\pm$ {result_spectrum_errors['index_err']:5.2f},"
-              f"\n    -$\Phi_0$: {result_spectrum.amplitude.value:5.2e} $\pm$ {result_spectrum_errors['amplitude_err']:5.2e} "
-              f"TeV-1 cm-2 s-1",
-
+        f"\n    -$\Phi_0$: {result_spectrum.amplitude.value:5.2e} $\pm$ {result_spectrum_errors['amplitude_err']:5.2e} "
+        f"TeV-1 cm-2 s-1",
     )
 
     reference_fpoints.plot(**opts, color="red")

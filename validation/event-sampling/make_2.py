@@ -1,49 +1,57 @@
 # simulate bright sources
 
-from pathlib import Path
 import logging
-import warnings
-import click
 import multiprocessing
+import warnings
 from itertools import repeat
+from pathlib import Path
 
-import numpy as np
-from scipy.stats import norm
-import matplotlib.pyplot as plt
 import astropy.units as u
+import click
+import matplotlib.pyplot as plt
+import numpy as np
 from astropy.convolution import Tophat2DKernel
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
-from gammapy.cube import (
-    MapDataset,
-    MapDatasetEventSampler,
-    MapDatasetMaker,
-)
-from gammapy.data import GTI, Observation, EventList
+from regions import CircleSkyRegion
+from scipy.stats import norm
+
+from gammapy.cube import MapDataset, MapDatasetEventSampler, MapDatasetMaker
+from gammapy.data import GTI, EventList, Observation
 from gammapy.detect import LiMaMapEstimator as lima
-from gammapy.maps import MapAxis, WcsGeom, Map
 from gammapy.irf import EnergyDispersion2D, load_cta_irfs
+from gammapy.maps import Map, MapAxis, WcsGeom
 from gammapy.modeling import Fit
 from gammapy.modeling.models import Models
 from gammapy.utils.table import table_from_row_data
-from regions import CircleSkyRegion
 
 log = logging.getLogger(__name__)
 
 # path config
 BASE_PATH = Path(__file__).parent
 
-AVAILABLE_MODELS = ["point-pwl", "point-ecpl", "point-log-parabola",
-                    "point-pwl2", "point-ecpl-3fgl", "point-ecpl-4fgl",
-                    "point-template", "diffuse-cube",
-                    "disk-pwl", "gauss-pwl",
-                    "gauss-pwlsimple", "point-pwlsimple", "disk-pwlsimple", "point-pwltest"]
+AVAILABLE_MODELS = [
+    "point-pwl",
+    "point-ecpl",
+    "point-log-parabola",
+    "point-pwl2",
+    "point-ecpl-3fgl",
+    "point-ecpl-4fgl",
+    "point-template",
+    "diffuse-cube",
+    "disk-pwl",
+    "gauss-pwl",
+    "gauss-pwlsimple",
+    "point-pwlsimple",
+    "disk-pwlsimple",
+    "point-pwltest",
+]
 
 DPI = 120
 
 # observation config
 IRF_FILE = "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits"
-#IRF_FILE = "$GAMMAPY_DATA/cta-prod3b/caldb/data/cta/prod3b-v2/bcf/South_z20_50h/irf_file.fits"
+# IRF_FILE = "$GAMMAPY_DATA/cta-prod3b/caldb/data/cta/prod3b-v2/bcf/South_z20_50h/irf_file.fits"
 
 POINTING = SkyCoord(0.0, 0.5, frame="galactic", unit="deg")
 LIVETIME = 1 * u.hr
@@ -51,7 +59,9 @@ GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
 
 # dataset config
 ENERGY_AXIS = MapAxis.from_energy_bounds("0.1 TeV", "100 TeV", nbin=10, per_decade=True)
-ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds("0.03 TeV", "300 TeV", nbin=20, per_decade=True)
+ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds(
+    "0.03 TeV", "300 TeV", nbin=20, per_decade=True
+)
 MIGRA_AXIS = MapAxis.from_bounds(0.5, 2, nbin=150, node_type="edges", name="migra")
 
 WCS_GEOM = WcsGeom.create(
@@ -65,7 +75,7 @@ def get_filename_dataset(livetime):
 
 
 def get_filename_events(filename_dataset, filename_model, obs_id):
-    obs_id=int(obs_id)
+    obs_id = int(obs_id)
     model_str = filename_model.name.replace(filename_model.suffix, "")
     filename_events = filename_dataset.name.replace("dataset", "events")
     filename_events = BASE_PATH / f"data/models/{model_str}/" / filename_events
@@ -75,7 +85,7 @@ def get_filename_events(filename_dataset, filename_model, obs_id):
 
 
 def get_filename_best_fit_model(filename_model, obs_id):
-    obs_id=int(obs_id)
+    obs_id = int(obs_id)
     model_str = filename_model.name.replace(filename_model.suffix, "")
     filename = f"results/models/{model_str}/fit/best-fit-model_{obs_id:04d}.yaml"
     return BASE_PATH / filename
@@ -103,17 +113,23 @@ def cli(log_level, show_warnings):
 @cli.command("all", help="Run all steps")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS)))
 @click.option(
-              "--obs_ids", default=1, nargs=1, help="Select a single observation", type=int
-              )
+    "--obs_ids", default=1, nargs=1, help="Select a single observation", type=int
+)
 @click.option(
-              "--obs_all", default=False, nargs=1, help="Iterate over all observations", is_flag=True
-              )
+    "--obs_all",
+    default=False,
+    nargs=1,
+    help="Iterate over all observations",
+    is_flag=True,
+)
 @click.option(
-              "--simple", default=False, nargs=1, help="Simplify the dataset preparation", type=str
-              )
-@click.option(
-              "--core", default=4, nargs=1, help="Number of cores to be used", type=int
-              )
+    "--simple",
+    default=False,
+    nargs=1,
+    help="Simplify the dataset preparation",
+    type=str,
+)
+@click.option("--core", default=4, nargs=1, help="Number of cores to be used", type=int)
 def all_cmd(model, obs_ids, obs_all, simple, core):
     if model == "all":
         models = AVAILABLE_MODELS
@@ -125,7 +141,9 @@ def all_cmd(model, obs_ids, obs_all, simple, core):
     filename_model = BASE_PATH / f"models/{model}.yaml"
 
     if simple:
-        filename_dataset = Path(str(filename_dataset).replace("dataset","dataset_simple"))
+        filename_dataset = Path(
+            str(filename_dataset).replace("dataset", "dataset_simple")
+        )
         prepare_dataset_simple(filename_dataset)
 
     else:
@@ -138,21 +156,46 @@ def all_cmd(model, obs_ids, obs_all, simple, core):
             obs_ids = f"0:{obs_ids}"
             obs_ids = parse_obs_ids(obs_ids, model)
             with multiprocessing.Pool(processes=core) as pool:
-                args = zip(repeat(filename_model), repeat(filename_dataset), repeat(dataset), obs_ids)
+                args = zip(
+                    repeat(filename_model),
+                    repeat(filename_dataset),
+                    repeat(dataset),
+                    obs_ids,
+                )
                 pool.starmap(simulate_events, args)
 
-#            simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
+            #            simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
             with multiprocessing.Pool(processes=core) as pool:
-                args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids, repeat(binned), repeat(simple))
+                args = zip(
+                    repeat(filename_model),
+                    repeat(filename_dataset),
+                    obs_ids,
+                    repeat(binned),
+                    repeat(simple),
+                )
                 results = pool.starmap(fit_model, args)
 
             fit_gather(model)
             plot_pull_distribution(model)
     else:
         for model in models:
-            simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
-            fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=str(obs_ids-1), binned=binned, simple=simple)
-            plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=str(obs_ids-1))
+            simulate_events(
+                filename_model=filename_model,
+                filename_dataset=filename_dataset,
+                nobs=obs_ids,
+            )
+            fit_model(
+                filename_model=filename_model,
+                filename_dataset=filename_dataset,
+                obs_id=str(obs_ids - 1),
+                binned=binned,
+                simple=simple,
+            )
+            plot_results(
+                filename_model=filename_model,
+                filename_dataset=filename_dataset,
+                obs_id=str(obs_ids - 1),
+            )
 
 
 @cli.command("prepare-dataset", help="Prepare map dataset used for event simulation")
@@ -169,7 +212,9 @@ def prepare_dataset(filename_dataset):
         obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs
     )
 
-    empty = MapDataset.create(WCS_GEOM, energy_axis_true=ENERGY_AXIS_TRUE, migra_axis=MIGRA_AXIS)
+    empty = MapDataset.create(
+        WCS_GEOM, energy_axis_true=ENERGY_AXIS_TRUE, migra_axis=MIGRA_AXIS
+    )
     maker = MapDatasetMaker(selection=["exposure", "background", "psf", "edisp"])
     dataset = maker.run(empty, observation)
 
@@ -184,21 +229,26 @@ def prepare_dataset_simple(filename_dataset):
 
     irfs = load_cta_irfs(IRF_FILE)
 
-    edisp_gauss = EnergyDispersion2D.from_gauss(e_true=ENERGY_AXIS_TRUE.edges,
-                                            migra=MIGRA_AXIS.edges,
-                                            sigma=0.1, bias=0,
-                                            offset=[0, 2, 4, 6, 8] * u.deg)
+    edisp_gauss = EnergyDispersion2D.from_gauss(
+        e_true=ENERGY_AXIS_TRUE.edges,
+        migra=MIGRA_AXIS.edges,
+        sigma=0.1,
+        bias=0,
+        offset=[0, 2, 4, 6, 8] * u.deg,
+    )
 
     irfs["edisp"] = edisp_gauss
-#    irfs["aeff"].data.data = np.ones_like(irfs["aeff"].data.data) * 1e6
+    #    irfs["aeff"].data.data = np.ones_like(irfs["aeff"].data.data) * 1e6
 
     observation = Observation.create(
-                                     obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs
-                                     )
+        obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs
+    )
 
-    empty = MapDataset.create(WCS_GEOM, energy_axis_true=ENERGY_AXIS_TRUE, migra_axis=MIGRA_AXIS)
-#    maker = MapDatasetMaker(selection=["exposure", "edisp"])
-#    maker = MapDatasetMaker(selection=["exposure", "edisp", "background"])
+    empty = MapDataset.create(
+        WCS_GEOM, energy_axis_true=ENERGY_AXIS_TRUE, migra_axis=MIGRA_AXIS
+    )
+    #    maker = MapDatasetMaker(selection=["exposure", "edisp"])
+    #    maker = MapDatasetMaker(selection=["exposure", "edisp", "background"])
     maker = MapDatasetMaker(selection=["exposure", "edisp", "psf", "background"])
     dataset = maker.run(empty, observation)
 
@@ -209,9 +259,7 @@ def prepare_dataset_simple(filename_dataset):
 
 @cli.command("simulate-events", help="Simulate events for given model and livetime")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
-@click.option(
-              "--nobs", default=1, nargs=1, help="How many observations to simulate"
-              )
+@click.option("--nobs", default=1, nargs=1, help="How many observations to simulate")
 def simulate_events_cmd(model, nobs):
     if model == "all":
         models = AVAILABLE_MODELS
@@ -227,13 +275,19 @@ def simulate_events_cmd(model, nobs):
     for model in models:
         filename_model = BASE_PATH / f"models/{model}.yaml"
         with multiprocessing.Pool(processes=core) as pool:
-            args = zip(repeat(filename_model), repeat(filename_dataset), repeat(dataset), obs_ids)
+            args = zip(
+                repeat(filename_model),
+                repeat(filename_dataset),
+                repeat(dataset),
+                obs_ids,
+            )
             pool.starmap(simulate_events, args)
+
 
 #        simulate_events(filename_model=filename_model, dataset=dataset, obs_id=nobs)
 
 
-#def simulate_parallel(obs_id, POINTING, LIVETIME, irfs, dataset, filename_dataset, filename_model):
+# def simulate_parallel(obs_id, POINTING, LIVETIME, irfs, dataset, filename_dataset, filename_model):
 ##    for obs_id in np.arange(nobs):
 #        observation = Observation.create(
 #                                     obs_id=obs_id, pointing=POINTING, livetime=LIVETIME, irfs=irfs
@@ -262,24 +316,23 @@ def simulate_events(filename_model, filename_dataset, dataset, obs_id):
     log.info(f"Reading {IRF_FILE}")
     irfs = load_cta_irfs(IRF_FILE)
 
-#    log.info(f"Reading {filename_dataset}")
-#    dataset = MapDataset.read(filename_dataset)
+    #    log.info(f"Reading {filename_dataset}")
+    #    dataset = MapDataset.read(filename_dataset)
 
     log.info(f"Reading {filename_model}")
     models = Models.read(filename_model)
-#    dataset.models = models
+    #    dataset.models = models
     dataset.models.extend(models)
-    
+
     sampler = MapDatasetEventSampler(random_state=0)
 
-#    obs_id = np.arange(nobs)
-#    with multiprocessing.Pool(processes=core) as pool:
-#        args1 = zip(obs_id, repeat(POINTING), repeat(LIVETIME), repeat(irfs),
-#                    repeat(dataset), repeat(filename_dataset), repeat(filename_model))
-#        pool.starmap(simulate_parallel, args1)
+    #    obs_id = np.arange(nobs)
+    #    with multiprocessing.Pool(processes=core) as pool:
+    #        args1 = zip(obs_id, repeat(POINTING), repeat(LIVETIME), repeat(irfs),
+    #                    repeat(dataset), repeat(filename_dataset), repeat(filename_model))
+    #        pool.starmap(simulate_parallel, args1)
 
-
-#    for obs_id in np.arange(nobs):
+    #    for obs_id in np.arange(nobs):
     observation = Observation.create(
         obs_id=obs_id, pointing=POINTING, livetime=LIVETIME, irfs=irfs
     )
@@ -302,24 +355,22 @@ def parse_obs_ids(obs_ids_str, model):
         n_obs = len(list(BASE_PATH.glob(f"data/models/{model}/events_*.fits.gz")))
         obs_ids = np.arange(n_obs)
     else:
-         obs_ids = [int(obs_ids_str)]
+        obs_ids = [int(obs_ids_str)]
     return obs_ids
 
 
 @cli.command("fit-model", help="Fit given model")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
 @click.option(
-              "--obs_ids", default="all", nargs=1, help="Which observation to choose.", type=str
-              )
+    "--obs_ids", default="all", nargs=1, help="Which observation to choose.", type=str
+)
 @click.option(
-              "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
-              )
+    "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
+)
 @click.option(
-              "--simple", default=False, nargs=1, help="Select a single observation", type=str
-              )
-@click.option(
-              "--core", default=4, nargs=1, help="Number of cores to be used", type=int
-              )
+    "--simple", default=False, nargs=1, help="Select a single observation", type=str
+)
+@click.option("--core", default=4, nargs=1, help="Number of cores to be used", type=int)
 def fit_model_cmd(model, obs_ids, binned, simple, core):
     if model == "all":
         models = AVAILABLE_MODELS
@@ -332,7 +383,13 @@ def fit_model_cmd(model, obs_ids, binned, simple, core):
         obs_ids = parse_obs_ids(obs_ids, model)
         filename_model = BASE_PATH / f"models/{model}.yaml"
         with multiprocessing.Pool(processes=core) as pool:
-            args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids, repeat(binned), repeat(simple))
+            args = zip(
+                repeat(filename_model),
+                repeat(filename_dataset),
+                obs_ids,
+                repeat(binned),
+                repeat(simple),
+            )
             results = pool.starmap(fit_model, args)
 
 
@@ -367,16 +424,16 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
     log.info(f"Reading {filename_model}")
     models = Models.read(filename_model)
 
-#    dataset.models = models
+    #    dataset.models = models
     dataset.models.extend(models)
     if binned:
         dataset.fake()
-    
+
     if dataset.background_model:
         dataset.background_model.parameters["norm"].frozen = True
 
     fit = Fit([dataset])
-    
+
     result = fit.run(optimize_opts={"print_level": 1})
 
     log.info(f"Fit info: {result}")
@@ -384,14 +441,14 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
     # write best fit model
     path = get_filename_best_fit_model(filename_model, obs_id)
     if binned:
-        path = Path(str(path).replace("/fit/","/fit_fake/"))
+        path = Path(str(path).replace("/fit/", "/fit_fake/"))
     log.info(f"Writing {path}")
     models.write(str(path), overwrite=True)
 
     # write covariance
     path = get_filename_covariance(path)
     if binned:
-        path = Path(str(path).replace("/fit/","/fit_fake/"))
+        path = Path(str(path).replace("/fit/", "/fit_fake/"))
     log.info(f"Writing {path}")
 
     # TODO: exclude background parameters for now, as they are fixed anyway
@@ -402,8 +459,8 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
 @cli.command("fit-gather", help="Gather fit results from the given model")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
 @click.option(
-              "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
-              )
+    "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
+)
 def fit_gather_cmd(model, binned):
     if model == "all":
         models = AVAILABLE_MODELS
@@ -417,9 +474,9 @@ def fit_gather_cmd(model, binned):
 def fit_gather(model_name, binned=False):
     rows = []
 
-    path = (BASE_PATH / f"results/models/{model_name}/fit")
+    path = BASE_PATH / f"results/models/{model_name}/fit"
     if binned:
-        path = Path(str(path).replace("/fit","/fit_fake"))
+        path = Path(str(path).replace("/fit", "/fit_fake"))
 
     for filename in path.glob("*.yaml"):
         model_best_fit = read_best_fit_model(filename)
@@ -443,8 +500,8 @@ def fit_gather(model_name, binned=False):
 @cli.command("plot-results", help="Plot results for given model")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
 @click.option(
-              "--obs_ids", default="0", nargs=1, help="Which observation to choose.", type=str
-              )
+    "--obs_ids", default="0", nargs=1, help="Which observation to choose.", type=str
+)
 def plot_results_cmd(model, obs_ids):
     if model == "all":
         models = AVAILABLE_MODELS
@@ -455,7 +512,11 @@ def plot_results_cmd(model, obs_ids):
     for model in models:
         for obs_id in parse_obs_ids(obs_ids, model):
             filename_model = BASE_PATH / f"models/{model}.yaml"
-            plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=obs_id)
+            plot_results(
+                filename_model=filename_model,
+                filename_dataset=filename_dataset,
+                obs_id=obs_id,
+            )
 
 
 def save_figure(filename):
@@ -467,7 +528,6 @@ def save_figure(filename):
     plt.close()
 
 
-
 def plot_spectra(model, model_best_fit, obs_id):
     """Plot spectral models"""
     # plot spectral models
@@ -476,10 +536,10 @@ def plot_spectra(model, model_best_fit, obs_id):
     else:
         ax = model.spectral_model.plot(
             energy_range=(0.1, 300) * u.TeV, label="Sim. model"
-            )
+        )
         model_best_fit.spectral_model.plot(
             energy_range=(0.1, 300) * u.TeV, label="Best-fit model", ax=ax,
-            )
+        )
         model_best_fit.spectral_model.plot_error(energy_range=(0.1, 300) * u.TeV, ax=ax)
 
         ax.legend()
@@ -501,9 +561,17 @@ def plot_residuals(dataset, obs_id):
         else:
             region = spatial_model.to_region()
 
-        dataset.plot_residuals(method="diff/sqrt(model)", vmin=-0.5, vmax=0.5, region=region, figsize=(10, 4))
+        dataset.plot_residuals(
+            method="diff/sqrt(model)",
+            vmin=-0.5,
+            vmax=0.5,
+            region=region,
+            figsize=(10, 4),
+        )
         obs_id = int(obs_id)
-        filename = f"results/models/{model.name}/plots/residuals/residuals_{obs_id:04d}.png"
+        filename = (
+            f"results/models/{model.name}/plots/residuals/residuals_{obs_id:04d}.png"
+        )
         save_figure(filename)
 
 
@@ -511,15 +579,19 @@ def plot_residual_distribution(dataset, obs_id):
     # plot residual significance distribution
     model = dataset.models[1]
 
-    if model.tag == 'SkyDiffuseCube':
+    if model.tag == "SkyDiffuseCube":
         log.info(f"SkyDiffuseCube: no spectral model to plot")
     else:
         tophat_2D_kernel = Tophat2DKernel(5)
-        l_m = lima.compute_lima_image(dataset.counts.sum_over_axes(keepdims=False), dataset.npred().sum_over_axes(keepdims=False), tophat_2D_kernel)
+        l_m = lima.compute_lima_image(
+            dataset.counts.sum_over_axes(keepdims=False),
+            dataset.npred().sum_over_axes(keepdims=False),
+            tophat_2D_kernel,
+        )
         sig_resid = l_m["significance"].data[np.isfinite(l_m["significance"].data)]
 
-    #    resid = dataset.residuals()
-    #    sig_resid = resid.data[np.isfinite(resid.data)]
+        #    resid = dataset.residuals()
+        #    sig_resid = resid.data[np.isfinite(resid.data)]
 
         plt.hist(
             sig_resid, density=True, alpha=0.5, color="red", bins=100,
@@ -530,7 +602,13 @@ def plot_residual_distribution(dataset, obs_id):
         print("Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
         x = np.linspace(-8, 8, 50)
         p = norm.pdf(x, mu, std)
-        plt.plot(x, p, lw=2, color="black", label="Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
+        plt.plot(
+            x,
+            p,
+            lw=2,
+            color="black",
+            label="Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std),
+        )
         plt.legend()
         plt.xlabel("Significance")
         plt.yscale("log")
@@ -552,20 +630,20 @@ def read_best_fit_model(filename):
     pars = model_best_fit.parameters
     pars.covariance = np.loadtxt(str(path))
 
-    if model_best_fit[0].tag  == 'SkyDiffuseCube':
+    if model_best_fit[0].tag == "SkyDiffuseCube":
         spectral_model_best_fit = model_best_fit[0]
         covar = pars.get_subcovariance(spectral_model_best_fit.parameters)
         spectral_model_best_fit.parameters.covariance = covar
-            
-#        spatial_model_best_fit = model_best_fit[0].spatial_model
-#        covar = pars.get_subcovariance(spatial_model_best_fit.parameters)
-#        spatial_model_best_fit.parameters.covariance = covar
+
+    #        spatial_model_best_fit = model_best_fit[0].spatial_model
+    #        covar = pars.get_subcovariance(spatial_model_best_fit.parameters)
+    #        spatial_model_best_fit.parameters.covariance = covar
 
     else:
         spectral_model_best_fit = model_best_fit[0].spectral_model
         covar = pars.get_subcovariance(spectral_model_best_fit.parameters)
         spectral_model_best_fit.parameters.covariance = covar
-        
+
         spatial_model_best_fit = model_best_fit[0].spatial_model
         covar = pars.get_subcovariance(spatial_model_best_fit.parameters)
         spatial_model_best_fit.parameters.covariance = covar
@@ -599,11 +677,13 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
     plot_residual_distribution(dataset, obs_id)
 
 
-@cli.command("plot-pull-distributions", help="Plot pull distributions for the given model")
+@cli.command(
+    "plot-pull-distributions", help="Plot pull distributions for the given model"
+)
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all"]))
 @click.option(
-              "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
-              )
+    "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
+)
 def plot_pull_distribution_cmd(model, binned):
     if model == "all":
         models = AVAILABLE_MODELS

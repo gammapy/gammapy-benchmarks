@@ -1,10 +1,10 @@
 # simulate bright sources
+from pathlib import Path
+
 from astropy import units as u
-from scipy.stats import norm
 from astropy.table import Table
 from numpy.testing import assert_allclose
-from pathlib import Path
-import logging
+from scipy.stats import norm
 
 from gammapy.modeling.models import Models
 
@@ -26,10 +26,10 @@ def test_sims():
     names = [name for name in results.colnames if "err" not in name]
 
     dico = {
-        'lon_0': [-0.07436674674257586, 0.8972187989963998],
-        'lat_0': [0.09308440750573033, 0.9446169745134495],
-        'index': [0.0026888056711527543, 1.044217363117438],
-        'amplitude': [-0.1931904180829501, 1.0703295695736814],
+        "lon_0": [-0.07436674674257586, 0.8972187989963998],
+        "lat_0": [0.09308440750573033, 0.9446169745134495],
+        "index": [0.0026888056711527543, 1.044217363117438],
+        "amplitude": [-0.1931904180829501, 1.0703295695736814],
     }
 
     for name in names:

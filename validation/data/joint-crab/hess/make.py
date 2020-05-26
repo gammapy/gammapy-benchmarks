@@ -7,11 +7,13 @@ This script starts with that data release, and creates
 index files for this subset, and copies the relevant
 data files.
 """
+import shutil
 import subprocess
 from pathlib import Path
-import shutil
+
 import numpy as np
 from astropy.table import Table
+
 from gammapy.data import DataStore
 
 subprocess.call("gammapy download datasets --src hess-dl3-dr1 --out .", shell=True)

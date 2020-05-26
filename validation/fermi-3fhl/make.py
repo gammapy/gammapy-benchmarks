@@ -1,35 +1,33 @@
-import subprocess
-from pathlib import Path
-import sys
-from time import time
-import numpy as np
 import logging
 import multiprocessing as mp
-import yaml
+import subprocess
+import sys
+from pathlib import Path
+from time import time
+
 import click
+import matplotlib.pyplot as plt
+import numpy as np
+import yaml
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
-from gammapy.data import EventList
-from gammapy.irf import EnergyDependentTablePSF, EDispKernel, PSFKernel
-from gammapy.maps import Map, MapAxis, WcsNDMap, WcsGeom
-from gammapy.modeling import Fit
-from gammapy.datasets import Datasets, MapDataset
-from gammapy.datasets.map import MapEvaluator
-from gammapy.modeling.models import (
-    SkyDiffuseCube,
-    Models,
-    BackgroundModel,
-    LogParabolaSpectralModel,
-    PowerLawSpectralModel,
-    create_fermi_isotropic_diffuse_model,
-)
-from gammapy.estimators import FluxPoints, FluxPointsEstimator
-from gammapy.catalog import SourceCatalog3FHL
 from matplotlib import cm
 from matplotlib.colors import LogNorm
-import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
+
+from gammapy.catalog import SourceCatalog3FHL
+from gammapy.data import EventList
+from gammapy.datasets import Datasets, MapDataset
+from gammapy.datasets.map import MapEvaluator
+from gammapy.estimators import FluxPoints, FluxPointsEstimator
+from gammapy.irf import EDispKernel, EnergyDependentTablePSF, PSFKernel
+from gammapy.maps import Map, MapAxis, WcsGeom, WcsNDMap
+from gammapy.modeling import Fit
+from gammapy.modeling.models import (BackgroundModel, LogParabolaSpectralModel,
+                                     Models, PowerLawSpectralModel,
+                                     SkyDiffuseCube,
+                                     create_fermi_isotropic_diffuse_model)
 from gammapy.utils.scripts import make_path
 
 log = logging.getLogger(__name__)
@@ -160,16 +158,16 @@ class Validation_3FHL:
 
     def parallel_regions(self, processes):
         log.info("Executing parallel_regions()")
-        args = [
-            (
-                kr,
-                self.ROIs.GLON[kr - 1],
-                self.ROIs.GLAT[kr - 1],
-                self.ROIs.RADIUS[kr - 1],
-            )
-            for kr in self.ROIs_sel
-        ]
         with mp.Pool(processes=processes) as pool:
+            args = [
+                (
+                    kr,
+                    self.ROIs.GLON[kr - 1],
+                    self.ROIs.GLAT[kr - 1],
+                    self.ROIs.RADIUS[kr - 1],
+                )
+                for kr in self.ROIs_sel
+            ]
             pool.starmap(self.run_region, args)
 
     def run_region(self, kr, lon, lat, radius):
@@ -294,9 +292,7 @@ class Validation_3FHL:
         print("ROI_num", str(kr), "\n", results)
         fit_stat = datasets.stat_sum()
 
-        if results.message == "Optimization failed.":
-            pass
-        else:
+        if results.message != "Optimization failed.":
             datasets.write(path=Path(self.resdir), prefix=dataset.name, overwrite=True)
             np.savez(
                 self.resdir / f"3FHL_ROI_num{kr}_fit_infos.npz",

@@ -1,9 +1,11 @@
 import logging
-import yaml
-import click
-import warnings
 import time
+import warnings
 from pathlib import Path
+
+import click
+import yaml
+
 from gammapy.analysis import Analysis, AnalysisConfig
 
 log = logging.getLogger(__name__)
@@ -29,7 +31,7 @@ def cli(log_level, show_warnings):
 @click.option("--skip_flux_points", is_flag=True)
 @click.argument("targets", type=click.Choice(list(AVAILABLE_TARGETS) + ["all-targets"]))
 @click.argument("methods", type=click.Choice(list(AVAILABLE_METHODS) + ["all-methods"]))
-def run_analyses(debug,  skip_flux_points, targets, methods):
+def run_analyses(debug, skip_flux_points, targets, methods):
     start_time = time.time()
     targets = list(AVAILABLE_TARGETS) if targets == "all-targets" else [targets]
     methods = list(AVAILABLE_METHODS) if methods == "all-methods" else [methods]
@@ -48,6 +50,7 @@ def run_analyses(debug,  skip_flux_points, targets, methods):
     duration = end_time - start_time
     log.info(f"The time taken for the validation is: {duration} s ({duration/60} min)")
 
+
 def write_fit_summary(parameters, outfile):
     """Store fit results with uncertainties"""
     fit_results_dict = {}
@@ -59,6 +62,7 @@ def write_fit_summary(parameters, outfile):
         fit_results_dict.update({name + "_err": float(error)})
     with open(str(outfile), "w") as f:
         yaml.dump(fit_results_dict, f)
+
 
 def run_analysis(method, target_dict, debug, skip_flux_points):
     """If the method is "1d", runs joint spectral analysis for the selected target. If
@@ -96,7 +100,7 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
             analysis.models[0].spatial_model.phi.frozen = False
             analysis.models[0].spatial_model.r_0.value = 0.3
     log.info(f"Running fit ...")
-    analysis.run_fit(optimize_opts={"print_level" : 3})
+    analysis.run_fit(optimize_opts={"print_level": 3})
 
     # TODO: This is a workaround. Set covariance automatically
     log.info(f"Writing {path_res}")
@@ -123,7 +127,7 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
             "dnde_errp",
             "dnde_errn",
             "is_ul",
-            "dnde_ul"
+            "dnde_ul",
         ]
         log.info(f"Writing {path_res}")
         flux_points.table_formatted[keys].write(

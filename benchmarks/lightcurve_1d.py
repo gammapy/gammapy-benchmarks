@@ -1,24 +1,23 @@
-import numpy as np
 import os
 import time
-import yaml
 from pathlib import Path
+
 import astropy.units as u
-from regions import CircleSkyRegion
-from astropy.coordinates import SkyCoord, Angle
+import numpy as np
+import yaml
+from astropy.coordinates import Angle, SkyCoord
 from astropy.time import Time
+from regions import CircleSkyRegion
+
 from gammapy.data import Observation
-from gammapy.irf import load_cta_irfs
 from gammapy.datasets import SpectrumDataset
-from gammapy.modeling.models import (
-    PowerLawSpectralModel,
-    ExpDecayTemporalModel,
-    SkyModel,
-)
-from gammapy.maps import MapAxis
 from gammapy.estimators import LightCurveEstimator
+from gammapy.irf import load_cta_irfs
 from gammapy.makers import SpectrumDatasetMaker
+from gammapy.maps import MapAxis
 from gammapy.modeling import Fit
+from gammapy.modeling.models import (ExpDecayTemporalModel,
+                                     PowerLawSpectralModel, SkyModel)
 
 N_OBS = int(os.environ.get("GAMMAPY_BENCH_N_OBS", 10))
 

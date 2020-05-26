@@ -1,39 +1,48 @@
-# simulate bright sources
-from pathlib import Path
 import logging
-import warnings
-import click
 import multiprocessing
+import warnings
 from itertools import repeat
+from pathlib import Path
 
-import numpy as np
-from scipy.stats import norm
-import matplotlib.pyplot as plt
 import astropy.units as u
-from astropy.convolution import Tophat2DKernel
+import click
+import matplotlib.pyplot as plt
+import numpy as np
+# from astropy.convolution import Tophat2DKernel
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
-from gammapy.data import GTI, Observation, EventList
+from regions import CircleSkyRegion
+from scipy.stats import norm
+
+from gammapy.data import GTI, EventList, Observation
 from gammapy.datasets import MapDataset, MapDatasetEventSampler
 # from gammapy.estimators import LiMaMapEstimator as lima
 from gammapy.estimators import TSMapEstimator as ts
-from gammapy.maps import MapAxis, WcsGeom, Map
 from gammapy.irf import EnergyDispersion2D, load_cta_irfs
 from gammapy.makers import MapDatasetMaker
+from gammapy.maps import Map, MapAxis, WcsGeom
 from gammapy.modeling import Fit
 from gammapy.modeling.models import Models
 from gammapy.utils.table import table_from_row_data
-from regions import CircleSkyRegion
 
 log = logging.getLogger(__name__)
 
 # path config
 BASE_PATH = Path(__file__).parent
 
-AVAILABLE_MODELS = ["point-pwl", "point-ecpl", "point-log-parabola",
-                    "point-pwl2", "point-ecpl-3fgl", "point-ecpl-4fgl",
-                    "point-template", "diffuse-cube",
-                    "disk-pwl", "gauss-pwl", "disk-pwlsimple"]
+AVAILABLE_MODELS = [
+    "point-pwl",
+    "point-ecpl",
+    "point-log-parabola",
+    "point-pwl2",
+    "point-ecpl-3fgl",
+    "point-ecpl-4fgl",
+    "point-template",
+    "diffuse-cube",
+    # "disk-pwl",
+    "gauss-pwl",
+    # "disk-pwlsimple",
+]
 
 DPI = 120
 
@@ -47,7 +56,9 @@ GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
 
 # dataset config
 ENERGY_AXIS = MapAxis.from_energy_bounds("0.1 TeV", "100 TeV", nbin=10, per_decade=True)
-ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds("0.03 TeV", "300 TeV", nbin=20, per_decade=True, name="energy_true")
+ENERGY_AXIS_TRUE = MapAxis.from_energy_bounds(
+    "0.03 TeV", "300 TeV", nbin=20, per_decade=True, name="energy_true"
+)
 MIGRA_AXIS = MapAxis.from_bounds(0.5, 2, nbin=150, node_type="edges", name="migra")
 
 WCS_GEOM = WcsGeom.create(
@@ -61,7 +72,7 @@ def get_filename_dataset(livetime):
 
 
 def get_filename_events(filename_dataset, filename_model, obs_id):
-    obs_id=int(obs_id)
+    obs_id = int(obs_id)
     model_str = filename_model.name.replace(filename_model.suffix, "")
     filename_events = filename_dataset.name.replace("dataset", "events")
     filename_events = BASE_PATH / f"data/models/{model_str}/" / filename_events
@@ -70,14 +81,20 @@ def get_filename_events(filename_dataset, filename_model, obs_id):
 
 
 def get_filename_best_fit_model(filename_model, obs_id, livetime):
-    obs_id=int(obs_id)
+    obs_id = int(obs_id)
     model_str = filename_model.name.replace(filename_model.suffix, "")
-    
-    path = BASE_PATH / f"results/models/{model_str}/fit_{livetime.value:.0f}{livetime.unit}/covariance"
+
+    path = (
+        BASE_PATH
+        / f"results/models/{model_str}/fit_{livetime.value:.0f}{livetime.unit}/covariance"
+    )
     path.mkdir(exist_ok=True, parents=True)
-    path = BASE_PATH / f"results/models/{model_str}/plots_{livetime.value:.0f}{livetime.unit}"
+    path = (
+        BASE_PATH
+        / f"results/models/{model_str}/plots_{livetime.value:.0f}{livetime.unit}"
+    )
     path.mkdir(exist_ok=True, parents=True)
-    
+
     filename = f"results/models/{model_str}/fit_{livetime.value:.0f}{livetime.unit}/best-fit-model_{obs_id:04d}.yaml"
     return BASE_PATH / filename
 
@@ -97,7 +114,6 @@ def get_filename_covariance(filename_best_fit_model):
 @click.option("--show-warnings", is_flag=True, help="Show warnings?")
 def cli(log_level, show_warnings):
     logging.basicConfig(level=log_level)
-
     if not show_warnings:
         warnings.simplefilter("ignore")
 
@@ -105,45 +121,74 @@ def cli(log_level, show_warnings):
 @cli.command("all", help="Run all steps")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all-models"]))
 @click.option(
-              "--obs_ids", default=1, nargs=1, help="Select a single observation", type=int
-              )
+    "--obs_ids", default=1, nargs=1, help="Select a single observation", type=int
+)
 @click.option(
-              "--obs_all", default=False, nargs=1, help="Iterate over all observations", is_flag=True
-              )
+    "--obs_all",
+    default=False,
+    nargs=1,
+    help="Iterate over all observations",
+    is_flag=True,
+)
 @click.option(
-              "--simple", default=False, nargs=1, help="Simplify the dataset preparation", type=str
-              )
-@click.option(
-              "--core", default=4, nargs=1, help="Number of cores to be used", type=int
-              )
+    "--simple",
+    default=False,
+    nargs=1,
+    help="Simplify the dataset preparation",
+    type=str,
+)
+@click.option("--core", default=4, nargs=1, help="Number of cores to be used", type=int)
 def all_cmd(model, obs_ids, obs_all, simple, core):
-    models = AVAILABLE_MODELS if model == 'all-models' else [model]
-    print(models)
+    models = AVAILABLE_MODELS if model == "all-models" else [model]
+    log.info(models)
     binned = False
     filename_dataset = get_filename_dataset(LIVETIME)
-    filename_model = BASE_PATH / f"models/{model}.yaml"
 
+    log.info(f"Preparing datasets")
     if simple:
-        filename_dataset = Path(str(filename_dataset).replace("dataset","dataset_simple"))
+        filename_dataset = Path(
+            str(filename_dataset).replace("dataset", "dataset_simple")
+        )
         prepare_dataset_simple(filename_dataset)
-
     else:
         prepare_dataset(filename_dataset)
 
     for model in models:
-        simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=obs_ids)
+        log.info(f"Simulating events with model {model}")
+        filename_model = BASE_PATH / f"models/{model}.yaml"
+        simulate_events(
+            filename_model=filename_model,
+            filename_dataset=filename_dataset,
+            nobs=obs_ids,
+        )
         if obs_all:
             obs_ids = f"0:{obs_ids}"
             obs_ids = parse_obs_ids(obs_ids, model)
             with multiprocessing.Pool(processes=core) as pool:
-                args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids, repeat(binned), repeat(simple))
-                results = pool.starmap(fit_model, args)
+                args = zip(
+                    repeat(filename_model),
+                    repeat(filename_dataset),
+                    obs_ids,
+                    repeat(binned),
+                    repeat(simple),
+                )
+                pool.starmap(fit_model, args)
 
-            fit_gather(model,LIVETIME)
+            fit_gather(model, LIVETIME)
             plot_pull_distribution(model, LIVETIME)
         else:
-            fit_model(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=str(obs_ids-1), binned=binned, simple=simple)
-            plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=str(obs_ids-1))
+            fit_model(
+                filename_model=filename_model,
+                filename_dataset=filename_dataset,
+                obs_id=obs_ids - 1,
+                binned=binned,
+                simple=simple,
+            )
+            plot_results(
+                filename_model=filename_model,
+                filename_dataset=filename_dataset,
+                obs_id=obs_ids - 1,
+            )
 
 
 @cli.command("prepare-dataset", help="Prepare map dataset used for event simulation")
@@ -160,7 +205,9 @@ def prepare_dataset(filename_dataset):
         obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs
     )
 
-    empty = MapDataset.create(WCS_GEOM, energy_axis_true=ENERGY_AXIS_TRUE, migra_axis=MIGRA_AXIS)
+    empty = MapDataset.create(
+        WCS_GEOM, energy_axis_true=ENERGY_AXIS_TRUE, migra_axis=MIGRA_AXIS
+    )
     maker = MapDatasetMaker(selection=["exposure", "background", "psf", "edisp"])
     dataset = maker.run(empty, observation)
 
@@ -175,19 +222,24 @@ def prepare_dataset_simple(filename_dataset):
 
     irfs = load_cta_irfs(IRF_FILE)
 
-    edisp_gauss = EnergyDispersion2D.from_gauss(e_true=ENERGY_AXIS_TRUE.edges,
-                                            migra=MIGRA_AXIS.edges,
-                                            sigma=0.1, bias=0,
-                                            offset=[0, 2, 4, 6, 8] * u.deg)
+    edisp_gauss = EnergyDispersion2D.from_gauss(
+        e_true=ENERGY_AXIS_TRUE.edges,
+        migra=MIGRA_AXIS.edges,
+        sigma=0.1,
+        bias=0,
+        offset=[0, 2, 4, 6, 8] * u.deg,
+    )
 
     irfs["edisp"] = edisp_gauss
     # irfs["aeff"].data.data = np.ones_like(irfs["aeff"].data.data) * 1e6
 
     observation = Observation.create(
-                                     obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs
-                                     )
+        obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs
+    )
 
-    empty = MapDataset.create(WCS_GEOM, energy_axis_true=ENERGY_AXIS_TRUE, migra_axis=MIGRA_AXIS)
+    empty = MapDataset.create(
+        WCS_GEOM, energy_axis_true=ENERGY_AXIS_TRUE, migra_axis=MIGRA_AXIS
+    )
     # maker = MapDatasetMaker(selection=["exposure", "edisp"])
     # maker = MapDatasetMaker(selection=["exposure", "edisp", "background"])
     maker = MapDatasetMaker(selection=["exposure", "edisp", "psf", "background"])
@@ -200,16 +252,16 @@ def prepare_dataset_simple(filename_dataset):
 
 @cli.command("simulate-events", help="Simulate events for given model and livetime")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all-models"]))
-@click.option(
-              "--nobs", default=1, nargs=1, help="How many observations to simulate"
-              )
+@click.option("--nobs", default=1, nargs=1, help="How many observations to simulate")
 def simulate_events_cmd(model, nobs):
-    models = AVAILABLE_MODELS if model == 'all-models' else [model]
+    models = AVAILABLE_MODELS if model == "all-models" else [model]
     filename_dataset = get_filename_dataset(LIVETIME)
 
     for model in models:
         filename_model = BASE_PATH / f"models/{model}.yaml"
-        simulate_events(filename_model=filename_model, filename_dataset=filename_dataset, nobs=nobs)
+        simulate_events(
+            filename_model=filename_model, filename_dataset=filename_dataset, nobs=nobs
+        )
 
 
 def simulate_events(filename_model, filename_dataset, nobs):
@@ -234,7 +286,7 @@ def simulate_events(filename_model, filename_dataset, nobs):
     models = Models.read(filename_model)
     # dataset.models = models
     dataset.models.extend(models)
-    
+
     sampler = MapDatasetEventSampler(random_state=0)
 
     for obs_id in np.arange(nobs):
@@ -260,33 +312,37 @@ def parse_obs_ids(obs_ids_str, model):
         n_obs = len(list(BASE_PATH.glob(f"data/models/{model}/events_*.fits.gz")))
         obs_ids = np.arange(n_obs)
     else:
-         obs_ids = [int(obs_ids_str)]
+        obs_ids = [int(obs_ids_str)]
     return obs_ids
 
 
 @cli.command("fit-model", help="Fit given model")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all-models"]))
 @click.option(
-              "--obs_ids", default="all", nargs=1, help="Which observation to choose.", type=str
-              )
+    "--obs_ids", default="all", nargs=1, help="Which observation to choose.", type=str
+)
 @click.option(
-              "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
-              )
+    "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
+)
 @click.option(
-              "--simple", default=False, nargs=1, help="Select a single observation", type=str
-              )
-@click.option(
-              "--core", default=4, nargs=1, help="Number of cores to be used", type=int
-              )
+    "--simple", default=False, nargs=1, help="Select a single observation", type=str
+)
+@click.option("--core", default=4, nargs=1, help="Number of cores to be used", type=int)
 def fit_model_cmd(model, obs_ids, binned, simple, core):
-    models = AVAILABLE_MODELS if model == 'all-models' else [model]
+    models = AVAILABLE_MODELS if model == "all-models" else [model]
     filename_dataset = get_filename_dataset(LIVETIME)
 
     for model in models:
         obs_ids = parse_obs_ids(obs_ids, model)
         filename_model = BASE_PATH / f"models/{model}.yaml"
         with multiprocessing.Pool(processes=core) as pool:
-            args = zip(repeat(filename_model), repeat(filename_dataset), obs_ids, repeat(binned), repeat(simple))
+            args = zip(
+                repeat(filename_model),
+                repeat(filename_dataset),
+                obs_ids,
+                repeat(binned),
+                repeat(simple),
+            )
             pool.starmap(fit_model, args)
 
 
@@ -325,12 +381,12 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
     dataset.models.extend(models)
     if binned:
         dataset.fake()
-    
+
     if dataset.background_model:
         dataset.background_model.parameters["norm"].frozen = True
 
     fit = Fit([dataset])
-    
+
     result = fit.run(optimize_opts={"print_level": 1})
 
     log.info(f"Fit info: {result}")
@@ -338,7 +394,7 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
     # write best fit model
     path = get_filename_best_fit_model(filename_model, obs_id, LIVETIME)
     if binned:
-        path = Path(str(path).replace("/fit","/fit_fake"))
+        path = Path(str(path).replace("/fit", "/fit_fake"))
     log.info(f"Writing {path}")
     # write best-fit model and covariance
     dataset.models.write(str(path), overwrite=True)
@@ -357,10 +413,10 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
 @cli.command("fit-gather", help="Gather fit results from the given model")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all-models"]))
 @click.option(
-              "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
-              )
+    "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
+)
 def fit_gather_cmd(model, binned):
-    models = AVAILABLE_MODELS if model == 'all-models' else [model]
+    models = AVAILABLE_MODELS if model == "all-models" else [model]
     for model in models:
         fit_gather(model, LIVETIME, binned)
 
@@ -368,9 +424,12 @@ def fit_gather_cmd(model, binned):
 def fit_gather(model_name, livetime, binned=False):
     rows = []
 
-    path = (BASE_PATH / f"results/models/{model_name}/fit_{livetime.value:.0f}{livetime.unit}")
+    path = (
+        BASE_PATH
+        / f"results/models/{model_name}/fit_{livetime.value:.0f}{livetime.unit}"
+    )
     if binned:
-        path = Path(str(path).replace("/fit","/fit_fake"))
+        path = Path(str(path).replace("/fit", "/fit_fake"))
 
     for filename in path.glob("*.yaml"):
         # model_best_fit = read_best_fit_model(filename)
@@ -396,15 +455,19 @@ def fit_gather(model_name, livetime, binned=False):
 @cli.command("plot-results", help="Plot results for given model")
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all-models"]))
 @click.option(
-              "--obs_ids", default="0", nargs=1, help="Which observation to choose.", type=str
-              )
+    "--obs_ids", default="0", nargs=1, help="Which observation to choose.", type=str
+)
 def plot_results_cmd(model, obs_ids):
-    models = AVAILABLE_MODELS if model == 'all-models' else [model]
+    models = AVAILABLE_MODELS if model == "all-models" else [model]
     filename_dataset = get_filename_dataset(LIVETIME)
     for model in models:
         for obs_id in parse_obs_ids(obs_ids, model):
             filename_model = BASE_PATH / f"models/{model}.yaml"
-            plot_results(filename_model=filename_model, filename_dataset=filename_dataset, obs_id=obs_id)
+            plot_results(
+                filename_model=filename_model,
+                filename_dataset=filename_dataset,
+                obs_id=obs_id,
+            )
 
 
 def save_figure(filename):
@@ -424,10 +487,10 @@ def plot_spectra(model, model_best_fit, obs_id, livetime):
     else:
         ax = model.spectral_model.plot(
             energy_range=(0.1, 300) * u.TeV, label="Sim. model"
-            )
+        )
         model_best_fit.spectral_model.plot(
             energy_range=(0.1, 300) * u.TeV, label="Best-fit model", ax=ax,
-            )
+        )
         model_best_fit.spectral_model.plot_error(energy_range=(0.1, 300) * u.TeV, ax=ax)
 
         ax.legend()
@@ -449,7 +512,13 @@ def plot_residuals(dataset, obs_id, livetime, model_name):
         else:
             region = spatial_model.to_region()
 
-        dataset.plot_residuals(method="diff/sqrt(model)", vmin=-0.5, vmax=0.5, region=region, figsize=(10, 4))
+        dataset.plot_residuals(
+            method="diff/sqrt(model)",
+            vmin=-0.5,
+            vmax=0.5,
+            region=region,
+            figsize=(10, 4),
+        )
         obs_id = int(obs_id)
         filename = f"results/models/{model.name}/plots_{livetime.value:.0f}{livetime.unit}/residuals/residuals_{obs_id:04d}.png"
         save_figure(filename)
@@ -460,15 +529,19 @@ def plot_residual_distribution(dataset, obs_id, livetime):
 
     model = dataset.models[1]
 
-    if model.tag == 'SkyDiffuseCube':
+    if model.tag == "SkyDiffuseCube":
         log.info(f"SkyDiffuseCube: no spectral model to plot")
     else:
-        lima = ts(model=model, kernel_width='0.1 deg')
+        lima = ts(model=model, kernel_width="0.1 deg")
         l_m = lima.run(dataset, steps=["ts", "sqrt_ts", "flux", "niter"])
-        sig_resid = l_m['sqrt_ts'].data[np.isfinite(l_m["sqrt_ts"].data)]
-        
+        sig_resid = l_m["sqrt_ts"].data[np.isfinite(l_m["sqrt_ts"].data)]
+
         # tophat_2D_kernel = Tophat2DKernel(5)
-        # l_m = lima.compute_lima_image(dataset.counts.sum_over_axes(keepdims=False), dataset.npred().sum_over_axes(keepdims=False), tophat_2D_kernel)
+        # l_m = lima.compute_lima_image(
+        #     dataset.counts.sum_over_axes(keepdims=False),
+        #     dataset.npred().sum_over_axes(keepdims=False),
+        #     tophat_2D_kernel,
+        # )
         # sig_resid = l_m["significance"].data[np.isfinite(l_m["significance"].data)]
         #
         # resid = dataset.residuals()
@@ -480,10 +553,16 @@ def plot_residual_distribution(dataset, obs_id, livetime):
 
         mu, std = norm.fit(sig_resid)
         # replace with log.info()
-        print("Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
+        log.info("Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
         x = np.linspace(-8, 8, 50)
         p = norm.pdf(x, mu, std)
-        plt.plot(x, p, lw=2, color="black", label="Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
+        plt.plot(
+            x,
+            p,
+            lw=2,
+            color="black",
+            label="Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std),
+        )
         plt.legend()
         plt.xlabel("Significance")
         plt.yscale("log")
@@ -492,8 +571,10 @@ def plot_residual_distribution(dataset, obs_id, livetime):
         plt.xlim(xmin, xmax)
 
         obs_id = int(obs_id)
-        filename = f"results/models/{model.name}/plots_{livetime.value:.0f}{livetime.unit}/residuals-distribution/residuals-distribution_{obs_id:04d}.png"
-        save_figure(filename)
+        filename = f"residuals-distribution_{obs_id:04d}.png"
+        filepath = f"results/models/{model.name}/plots_{livetime.value:.0f}{livetime.unit}/residuals-distribution/{filename}"
+        save_figure(filepath)
+
 
 # OBSOLETE...
 # def read_best_fit_model(filename):
@@ -544,9 +625,11 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
 
     path = get_filename_best_fit_model(filename_model, obs_id, LIVETIME)
     # model_best_fit = read_best_fit_model(path)
-    model_best_fit =  Models.read(path)
+    model_best_fit = Models.read(path)
 
-    plot_spectra(model[model.names[0]], model_best_fit[model.names[0]], obs_id, LIVETIME)
+    plot_spectra(
+        model[model.names[0]], model_best_fit[model.names[0]], obs_id, LIVETIME
+    )
 
     dataset = read_dataset(filename_dataset, filename_model, obs_id)
     mod = Models(model_best_fit[model.names[0]])
@@ -555,13 +638,15 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
     plot_residual_distribution(dataset, obs_id, LIVETIME)
 
 
-@cli.command("plot-pull-distributions", help="Plot pull distributions for the given model")
+@cli.command(
+    "plot-pull-distributions", help="Plot pull distributions for the given model"
+)
 @click.argument("model", type=click.Choice(list(AVAILABLE_MODELS) + ["all-models"]))
 @click.option(
-              "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
-              )
+    "--binned", default=False, nargs=1, help="Which observation to choose.", type=str
+)
 def plot_pull_distribution_cmd(model, binned):
-    models = AVAILABLE_MODELS if model == 'all-models' else [model]
+    models = AVAILABLE_MODELS if model == "all-models" else [model]
     for model in models:
         plot_pull_distribution(model_name=model, livetime=LIVETIME, binned=binned)
 
@@ -593,7 +678,7 @@ def plot_pull_distribution(model_name, livetime, binned=False):
         pull = (values - par.value) / values_err
 
         # print("Number of fits beyond 5 sigmas: ",(np.where( (pull<-5) )))
-        plt.hist(pull, bins=21, normed=True, range=(-5,5))
+        plt.hist(pull, bins=21, normed=True, range=(-5, 5))
         plt.xlim(-5, 5)
         plt.xlabel("(value - value_true) / error")
         plt.ylabel("PDF")

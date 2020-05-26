@@ -1,16 +1,15 @@
-#!/usr/bin/env python
 """Run gammapy validations"""
-import subprocess
-import yaml
-import logging
-import warnings
 import getpass
-import platform
-import sys
 import importlib
-import tempfile
+import logging
+import platform
+import subprocess
+import sys
+import warnings
 from pathlib import Path
+
 import click
+import yaml
 
 log = logging.getLogger(__name__)
 
@@ -23,11 +22,27 @@ AVAILABLE_VALIDATIONS = {
     #
     #
     # "catalog": {"folder": "catalog", "command": "catalog_checks.py", "args": []},
-    # "event-sampling": {"folder": "event-sampling", "command": "make.py", "args": ["all"]},
+    "event-sampling": {
+        "folder": "event-sampling",
+        "command": "make.py",
+        "args": ["all", "all-models"],
+    },
     # "fermi-3fhl": {"folder": "fermi-3fhl", "command": "make.py", "args": []},
-    "hess-dl3-dr1": {"folder": "hess-dl3-dr1", "command": "make.py", "args": ["run-analyses", "all-targets", "all-methods"]},
-    "joint-crab_analyses": {"folder": "joint-crab", "command": "make.py", "args": ["run-analyses", "all"]},
-    "joint-crab_fit": {"folder": "joint-crab", "command": "make.py", "args": ["run-fit", "all"]},
+    "hess-dl3-dr1": {
+        "folder": "hess-dl3-dr1",
+        "command": "make.py",
+        "args": ["run-analyses", "all-targets", "all-methods"],
+    },
+    "joint-crab_analyses": {
+        "folder": "joint-crab",
+        "command": "make.py",
+        "args": ["run-analyses", "all"],
+    },
+    "joint-crab_fit": {
+        "folder": "joint-crab",
+        "command": "make.py",
+        "args": ["run-fit", "all"],
+    },
 }
 
 
@@ -101,7 +116,7 @@ def run_validations(validations):
 
 
 def run_single_validation(cfg, **kwargs):
-    command_path = (Path(cfg["folder"])/Path(cfg["command"])).absolute()
+    command_path = (Path(cfg["folder"]) / Path(cfg["command"])).absolute()
     cmd = [sys.executable, str(command_path)]
     for arg in cfg["args"]:
         cmd.append(arg)

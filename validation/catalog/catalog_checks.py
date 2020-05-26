@@ -1,7 +1,9 @@
 """Check all catalogs and sources."""
 import logging
+
 from gammapy.catalog import SOURCE_CATALOGS
-from gammapy.modeling.models import SpectralModel, SpatialModel, SkyModel, SkyModels
+from gammapy.modeling.models import (SkyModel, SkyModels, SpatialModel,
+                                     SpectralModel)
 
 log = logging.getLogger(__name__)
 

@@ -1,24 +1,22 @@
 import os
+import time
 from pathlib import Path
 
-import numpy as np
 import astropy.units as u
-import time
+import numpy as np
 import yaml
-from astropy.coordinates import SkyCoord, Angle
+from astropy.coordinates import Angle, SkyCoord
 from regions import CircleSkyRegion
+
+from gammapy.data import DataStore
+from gammapy.datasets import Datasets, SpectrumDataset, SpectrumDatasetOnOff
+from gammapy.estimators import FluxPointsEstimator
+from gammapy.makers import (ReflectedRegionsBackgroundMaker, SafeMaskMaker,
+                            SpectrumDatasetMaker)
 from gammapy.maps import Map, MapAxis
 from gammapy.modeling import Fit
-from gammapy.data import DataStore
-from gammapy.modeling.models import PowerLawSpectralModel, PointSpatialModel, SkyModel
-from gammapy.makers import (
-    SpectrumDatasetMaker,
-    ReflectedRegionsBackgroundMaker,
-    SafeMaskMaker,
-)
-from gammapy.datasets import SpectrumDatasetOnOff, Datasets, SpectrumDataset
-from gammapy.estimators import FluxPointsEstimator
-
+from gammapy.modeling.models import (PointSpatialModel, PowerLawSpectralModel,
+                                     SkyModel)
 
 N_OBS = int(os.environ.get("GAMMAPY_BENCH_N_OBS", 10))
 

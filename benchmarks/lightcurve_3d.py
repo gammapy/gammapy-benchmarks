@@ -1,24 +1,23 @@
 import os
-from pathlib import Path
-import numpy as np
-import astropy.units as u
 import time
+from pathlib import Path
+
+import astropy.units as u
+import numpy as np
 import yaml
-from astropy.coordinates import SkyCoord, Angle
+from astropy.coordinates import Angle, SkyCoord
 from astropy.time import Time
+
 from gammapy.data import Observation
-from gammapy.irf import load_cta_irfs
-from gammapy.modeling.models import (
-    PowerLawSpectralModel,
-    ExpDecayTemporalModel,
-    GaussianSpatialModel,
-    SkyModel,
-)
-from gammapy.maps import MapAxis, WcsGeom
+from gammapy.datasets import Datasets, MapDataset
 from gammapy.estimators import LightCurveEstimator
-from gammapy.datasets import MapDataset, Datasets
+from gammapy.irf import load_cta_irfs
 from gammapy.makers import MapDatasetMaker, SafeMaskMaker
+from gammapy.maps import MapAxis, WcsGeom
 from gammapy.modeling import Fit
+from gammapy.modeling.models import (ExpDecayTemporalModel,
+                                     GaussianSpatialModel,
+                                     PowerLawSpectralModel, SkyModel)
 
 N_OBS = int(os.environ.get("GAMMAPY_BENCH_N_OBS", 10))
 gti_t0 = Time("2020-03-01")
