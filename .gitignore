@@ -108,8 +108,10 @@ ENV/
 
 *.DS_Store
 
+validation/data
 validation/fermi-3fhl/data
 validation/fermi-3fhl/results
+validation/event-sampling/results/models
 validation/joint-crab/reduced_*
 validation/event-sampling/data/*.fits
 validation/event-sampling/data/*.fits.gz
