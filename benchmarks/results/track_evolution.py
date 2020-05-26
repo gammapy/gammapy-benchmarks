@@ -26,7 +26,7 @@ except FileNotFoundError:
 
 # update monthly results
 monthly_yaml_content.update(today_results)
-with open(monthly_yaml_file,"w") as stream:
+with open(monthly_yaml_file, "w") as stream:
     yaml.safe_dump(monthly_yaml_content, stream)
 
 # reorder
@@ -37,8 +37,8 @@ for k, w in results.items():
     total_time[k] = np.full(31, np.nan)
     for i in np.arange(31):
         try:
-            total_time[k][i] = monthly_yaml_content[i+1][k]["total_time"]
-            memory_peak[k][i] = monthly_yaml_content[i+1][k]["memory_peak"]
+            total_time[k][i] = monthly_yaml_content[i + 1][k]["total_time"]
+            memory_peak[k][i] = monthly_yaml_content[i + 1][k]["memory_peak"]
         except KeyError:
             pass
 

@@ -160,16 +160,16 @@ class Validation_3FHL:
 
     def parallel_regions(self, processes):
         log.info("Executing parallel_regions()")
-        args = [
-            (
-                kr,
-                self.ROIs.GLON[kr - 1],
-                self.ROIs.GLAT[kr - 1],
-                self.ROIs.RADIUS[kr - 1],
-            )
-            for kr in self.ROIs_sel
-        ]
         with mp.Pool(processes=processes) as pool:
+            args = [
+                (
+                    kr,
+                    self.ROIs.GLON[kr - 1],
+                    self.ROIs.GLAT[kr - 1],
+                    self.ROIs.RADIUS[kr - 1],
+                )
+                for kr in self.ROIs_sel
+            ]
             pool.starmap(self.run_region, args)
 
     def run_region(self, kr, lon, lat, radius):
@@ -294,9 +294,7 @@ class Validation_3FHL:
         print("ROI_num", str(kr), "\n", results)
         fit_stat = datasets.stat_sum()
 
-        if results.message == "Optimization failed.":
-            pass
-        else:
+        if results.message != "Optimization failed.":
             datasets.write(path=Path(self.resdir), prefix=dataset.name, overwrite=True)
             np.savez(
                 self.resdir / f"3FHL_ROI_num{kr}_fit_infos.npz",
