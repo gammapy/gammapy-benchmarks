@@ -95,6 +95,16 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
     if method == "3d":
         analysis.datasets[0].background_model.norm.frozen = False
         analysis.datasets[0].background_model.tilt.frozen = False
+        
+        # Impose min and max values to ensure position does not diverge
+        delta = 1.5
+        lon = analysis.models[0].spatial_model.lon_0.value
+        lat = analysis.models[0].spatial_model.lat_0.value
+        analysis.models[0].spatial_model.lat_0.min = lat - delta
+        analysis.models[0].spatial_model.lat_0.max = lat + delta
+        analysis.models[0].spatial_model.lon_0.min = lon - delta
+        analysis.models[0].spatial_model.lon_0.max = lon + delta
+
         if target_dict["spatial_model"] == "DiskSpatialModel":
             analysis.models[0].spatial_model.e.frozen = False
             analysis.models[0].spatial_model.phi.frozen = False
