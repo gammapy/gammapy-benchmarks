@@ -27,7 +27,7 @@ AVAILABLE_VALIDATIONS = {
         "command": "make.py",
         "args": ["all", "all-models"],
     },
-    # "fermi-3fhl": {"folder": "fermi-3fhl", "command": "make.py", "args": []},
+    "fermi-3fhl": {"folder": "fermi-3fhl", "command": "make.py", "args": []},
     "hess-dl3-dr1": {
         "folder": "hess-dl3-dr1",
         "command": "make.py",
