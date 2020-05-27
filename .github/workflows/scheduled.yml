@@ -2,6 +2,7 @@ name: workflows
 on:
   schedule:
     - cron:  '0 1 * * *'
+  repository_dispatch:
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -37,6 +38,7 @@ jobs:
           cd results
           python track_evolution.py
       - name: run validations
+        if: github.event.action == 'validate'
         run: |
           cd validation
           python make.py run-validation all
