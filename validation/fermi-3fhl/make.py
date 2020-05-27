@@ -31,6 +31,7 @@ from gammapy.modeling.models import (BackgroundModel, LogParabolaSpectralModel,
 from gammapy.utils.scripts import make_path
 
 log = logging.getLogger(__name__)
+BASE_PATH = Path(__file__).parent
 
 
 def iscompatible(x, y, dx, dy):
@@ -56,7 +57,7 @@ class Validation_3FHL:
 
     def __init__(self, selection="short", savefig=True):
         log.info("Executing __init__()")
-        self.resdir = Path("results")
+        self.resdir = BASE_PATH / "results"
         self.savefig = savefig
 
         # event list
@@ -182,7 +183,8 @@ class Validation_3FHL:
         exposure_hpx.unit = "cm2 s"
 
         # iem
-        iem_fermi_extra = Map.read("data/gll_iem_v06_extrapolated.fits")
+        iem_filepath = BASE_PATH / "data" / "gll_iem_v06_extrapolated.fits"
+        iem_fermi_extra = Map.read(iem_filepath)
         # norm=1.1, tilt=0.03 see paper appendix A
         model_iem = SkyDiffuseCube(
             iem_fermi_extra, norm=1.1, tilt=0.03, name="iem_extrapolated"
@@ -629,8 +631,8 @@ def extrapolate_iso_model(logEc_extra):
 
 def extrapolate_iem_model(logEc_extra):
     """Get IEM emission model with high-energy extrapolation."""
-    infile = "data/gll_iem_v06.fits"
-    outfile = "data/gll_iem_v06_extrapolated.fits"
+    infile = BASE_PATH / "data" / "gll_iem_v06.fits"
+    outfile = BASE_PATH / "data" / "gll_iem_v06_extrapolated.fits"
 
     if Path(outfile).exists():
         return
