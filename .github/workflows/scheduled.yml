@@ -1,5 +1,6 @@
 name: workflows
 on:
+  push:
   schedule:
     - cron:  '0 1 * * *'
   repository_dispatch:
@@ -38,7 +39,7 @@ jobs:
           cd results
           python track_evolution.py
       - name: run validations
-        if: github.event.action == 'validate'
+        if: github.event.action == 'validate' || github.event_name == 'push'
         run: |
           cd validation
           python make.py run-validation all
