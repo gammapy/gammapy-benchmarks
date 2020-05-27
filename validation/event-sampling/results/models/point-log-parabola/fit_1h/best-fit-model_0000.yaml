@@ -1,12 +1,12 @@
 components:
--   name: 084Zh0u7-bkg
+-   name: m37t2cqm-bkg
     type: BackgroundModel
     parameters:
     - {name: norm, value: 1.0, unit: '', min: 0.0, max: .nan, frozen: true, error: 0.0}
     - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
     - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
         error: 0.0}
-    datasets_names: [084Zh0u7]
+    datasets_names: [m37t2cqm]
 -   name: point-log-parabola
     type: SkyModel
     spectral:
