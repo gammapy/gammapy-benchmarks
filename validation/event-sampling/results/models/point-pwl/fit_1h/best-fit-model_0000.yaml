@@ -1,12 +1,12 @@
 components:
--   name: e8LbNsy8-bkg
+-   name: ZZ9ubYWi-bkg
     type: BackgroundModel
     parameters:
     - {name: norm, value: 1.0, unit: '', min: 0.0, max: .nan, frozen: true, error: 0.0}
     - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
     - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
         error: 0.0}
-    datasets_names: [e8LbNsy8]
+    datasets_names: [ZZ9ubYWi]
 -   name: point-pwl
     type: SkyModel
     spectral:

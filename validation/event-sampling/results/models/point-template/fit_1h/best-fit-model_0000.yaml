@@ -1,12 +1,12 @@
 components:
--   name: zxnBqOKo-bkg
+-   name: mMbkRnP3-bkg
     type: BackgroundModel
     parameters:
     - {name: norm, value: 1.0, unit: '', min: 0.0, max: .nan, frozen: true, error: 0.0}
     - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
     - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
         error: 0.0}
-    datasets_names: [zxnBqOKo]
+    datasets_names: [mMbkRnP3]
 -   name: point-template
     type: SkyModel
     spectral:
