@@ -39,9 +39,8 @@ AVAILABLE_MODELS = [
     "point-ecpl-4fgl",
     "point-template",
     "diffuse-cube",
-    # "disk-pwl",
+    "disk-pwl",
     "gauss-pwl",
-    # "disk-pwlsimple",
 ]
 
 DPI = 120
@@ -393,6 +392,7 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
 
     # write best fit model
     path = get_filename_best_fit_model(filename_model, obs_id, LIVETIME)
+    path = path.absolute()
     if binned:
         path = Path(str(path).replace("/fit", "/fit_fake"))
     log.info(f"Writing {path}")

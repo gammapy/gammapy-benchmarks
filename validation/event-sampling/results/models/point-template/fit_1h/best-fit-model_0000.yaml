@@ -1,19 +1,19 @@
 components:
--   name: Q0IPtpPW-bkg
+-   name: gK5jWMHQ-bkg
     type: BackgroundModel
     parameters:
     - {name: norm, value: 1.0, unit: '', min: 0.0, max: .nan, frozen: true, error: 0.0}
     - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
     - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
         error: 0.0}
-    datasets_names: [Q0IPtpPW]
+    datasets_names: [gK5jWMHQ]
 -   name: point-template
     type: SkyModel
     spectral:
         type: TemplateSpectralModel
         parameters:
-        - {name: norm, value: 0.9607862255096045, unit: '', min: .nan, max: .nan,
-            frozen: false, error: 0.08505958779642575}
+        - {name: norm, value: 0.9608531643373919, unit: '', min: .nan, max: .nan,
+            frozen: false, error: 0.0850648080182836}
         - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
         - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
             error: 0.0}
@@ -43,8 +43,8 @@ components:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: 0.0016651242677351668, unit: deg, min: .nan, max: .nan,
-            frozen: false, error: 0.0030635018766641993}
-        - {name: lat_0, value: 0.001757355736089039, unit: deg, min: -90.0, max: 90.0,
-            frozen: false, error: 0.003031014774769741}
+        - {name: lon_0, value: 0.0016638517028239289, unit: deg, min: .nan, max: .nan,
+            frozen: false, error: 0.0030635134823544935}
+        - {name: lat_0, value: 0.0017497707211191482, unit: deg, min: -90.0, max: 90.0,
+            frozen: false, error: 0.0030312710009298646}
 covariance: best-fit-model_0000_covariance.dat

@@ -1,29 +1,29 @@
 components:
--   name: 2evSSIT2-bkg
+-   name: KyRO7qom-bkg
     type: BackgroundModel
     parameters:
     - {name: norm, value: 1.0, unit: '', min: 0.0, max: .nan, frozen: true, error: 0.0}
     - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
     - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
         error: 0.0}
-    datasets_names: [2evSSIT2]
+    datasets_names: [KyRO7qom]
 -   name: point-pwl
     type: SkyModel
     spectral:
         type: PowerLawSpectralModel
         parameters:
-        - {name: index, value: 1.9371394766566756, unit: '', min: .nan, max: .nan,
-            frozen: false, error: 0.06360861631360035}
-        - {name: amplitude, value: 9.446661537417942e-13, unit: cm-2 s-1 TeV-1, min: .nan,
-            max: .nan, frozen: false, error: 9.495471019449474e-14}
+        - {name: index, value: 1.9371396104401883, unit: '', min: .nan, max: .nan,
+            frozen: false, error: 0.06361042814531495}
+        - {name: amplitude, value: 9.446665630440995e-13, unit: cm-2 s-1 TeV-1, min: .nan,
+            max: .nan, frozen: false, error: 9.495928455508491e-14}
         - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
             error: 0.0}
     spatial:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: -0.00016131924391471852, unit: deg, min: .nan, max: .nan,
-            frozen: false, error: 0.003558234885257775}
-        - {name: lat_0, value: 0.0033476955396851767, unit: deg, min: .nan, max: .nan,
-            frozen: false, error: 0.0035083874464881975}
+        - {name: lon_0, value: -0.00016134594628571756, unit: deg, min: .nan, max: .nan,
+            frozen: false, error: 0.0035583626437786283}
+        - {name: lat_0, value: 0.003347677824804991, unit: deg, min: .nan, max: .nan,
+            frozen: false, error: 0.0035084950906510977}
 covariance: best-fit-model_0000_covariance.dat

@@ -1,12 +1,12 @@
 components:
--   name: dgF-yLBV-bkg
+-   name: Dse-rL0B-bkg
     type: BackgroundModel
     parameters:
     - {name: norm, value: 1.0, unit: '', min: 0.0, max: .nan, frozen: true, error: 0.0}
     - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
     - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
         error: 0.0}
-    datasets_names: [dgF-yLBV]
+    datasets_names: [Dse-rL0B]
 -   name: disk-pwl
     type: SkyModel
     spectral:
