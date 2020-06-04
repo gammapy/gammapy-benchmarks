@@ -117,8 +117,8 @@ def param_sim_model(model):
         values = model_ref.parameters[name].value
         values_err = model_ref.parameters[name].error
 
-        assert_allclose(values, dico[name][0], rtol=5e-1)
-        assert_allclose(values_err, dico[name][1], rtol=5e-1)
+        assert_allclose(values, dico[name][0], rtol=1e-1)
+        assert_allclose(values_err, dico[name][1], rtol=1e-1)
 
 
 def test_model_results():
