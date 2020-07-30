@@ -1,6 +1,15 @@
 name: manual
 on:
   workflow_dispatch:
+    inputs:
+      urlrepo:
+        description: 'Git file url to install Gammapy'
+        required: true
+        default: 'https://github.com/gammapy/gammapy.git'
+      branch:
+        description: 'Branch name to install Gammapy'
+        required: true
+        default: 'master'
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -22,7 +31,7 @@ jobs:
           auto-update-conda: true
       - name: install gammapy
         run: |
-          pip install git+https://github.com/gammapy/gammapy.git#egg=gammapy
+          pip install git+${{ github.event.inputs.urlrepo }}@${{ github.event.inputs.branch }}
           pip install psrecord
           conda info
           conda list
