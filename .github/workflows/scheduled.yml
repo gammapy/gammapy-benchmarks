@@ -1,9 +1,7 @@
-name: workflows
+name: benchmarks
 on:
-  # push:
   schedule:
     - cron:  '0 1 * * *'
-  repository_dispatch:
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -38,12 +36,6 @@ jobs:
           python make.py run-benchmark all
           cd results
           python track_evolution.py
-      - name: run validations
-        if: github.event.action == 'validate' # || github.event_name == 'push'
-        run: |
-          cd validation
-          python make.py run-validation all
-          pytest -v
       - name: commit changes
         uses: stefanzweifel/git-auto-commit-action@v4.1.6
         if: success()
