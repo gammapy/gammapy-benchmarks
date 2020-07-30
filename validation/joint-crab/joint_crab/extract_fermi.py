@@ -6,7 +6,7 @@ import numpy as np
 
 from gammapy.data import GTI, EventList
 from gammapy.datasets import MapDataset, SpectrumDatasetOnOff
-from gammapy.irf import EDispKernel, EnergyDependentTablePSF
+from gammapy.irf import EDispKernelMap, EnergyDependentTablePSF
 from gammapy.maps import HpxNDMap, Map, MapCoord, WcsGeom
 from gammapy.utils.time import time_ref_from_dict
 
@@ -66,8 +66,8 @@ class FermiDatasetMaker:
 
         # Not the real Fermi-LAT EDISP: Use 5% energy resolution as approximation
         energy = geom.axes[0]
-        edisp = EDispKernel.from_gauss(
-            e_true=energy.edges, e_reco=energy.edges, sigma=0.05, bias=0
+        edisp = EDispKernelMap.from_gauss(
+            energy_axis=energy, energy_axis_true=energy, sigma=0.05, bias=0
         )
         dataset.edisp = edisp
 
