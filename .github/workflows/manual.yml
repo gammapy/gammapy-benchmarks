@@ -2,6 +2,10 @@ name: validations
 on:
   workflow_dispatch:
     inputs:
+      title:
+        description: 'Title for pull request'
+        required: true
+        default: 'Update results from validations'
       urlrepo:
         description: 'Git file url to install Gammapy'
         required: true
@@ -49,4 +53,4 @@ jobs:
         with:
           committer: GitHub <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
-          title: 'Commit results from validations'
+          title: ${{ github.event.inputs.title }}

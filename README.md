@@ -11,5 +11,4 @@ channel. The badge below displays the status of last check.
 - [validation](validation) - Gammapy correctness checks (model fitting, spectra, lightcurves, ...)
 - [benchmarks](benchmarks) - Gammapy Performance checks (time, CPU, RAM)
 
-![](https://github.com/gammapy/gammapy-benchmarks/workflows/benchmarks/badge.svg)
-!(https://github.com/gammapy/gammapy-benchmarks/workflows/benchmarks%20and%20validations/badge.svg)
+![](https://github.com/gammapy/gammapy-benchmarks/workflows/benchmarks%20and%20validations/badge.svg)
