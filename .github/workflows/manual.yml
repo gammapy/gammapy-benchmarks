@@ -1,4 +1,4 @@
-name: manual
+name: validations
 on:
   workflow_dispatch:
     inputs:
@@ -38,21 +38,14 @@ jobs:
           gammapy info
       - name: download datasets
         run: gammapy download datasets
-      - name: run benchmarks
-        run: |
-          cd benchmarks
-          python make.py run-benchmark all
-          cd results
-          python track_evolution.py
       - name: run validations
         run: |
           cd validation
           python make.py run-validation all
           pytest -v
       - name: Create Pull Request
-        id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
           committer: GitHub <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
-          title: 'Commit results from benchmarks and validations'
+          title: 'Commit results from validations'
