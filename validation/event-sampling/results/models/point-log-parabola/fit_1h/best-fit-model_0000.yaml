@@ -1,31 +1,79 @@
 components:
--   name: E39O1a8g-bkg
+-   name: uYVSt0K7-bkg
     type: BackgroundModel
     parameters:
-    - {name: norm, value: 1.0, unit: '', min: 0.0, max: .nan, frozen: true, error: 0.0}
-    - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
-        error: 0.0}
-    datasets_names: [E39O1a8g]
+    -   name: norm
+        value: 1.0
+        unit: ''
+        min: 0.0
+        max: .nan
+        frozen: true
+        error: 0.0
+    -   name: tilt
+        value: 0.0
+        unit: ''
+        min: .nan
+        max: .nan
+        frozen: true
+        error: 0.0
+    -   name: reference
+        value: 1.0
+        unit: TeV
+        min: .nan
+        max: .nan
+        frozen: true
+        error: 0.0
+    datasets_names:
+    - uYVSt0K7
 -   name: point-log-parabola
     type: SkyModel
     spectral:
         type: LogParabolaSpectralModel
         parameters:
-        - {name: amplitude, value: 1.0995786896017883e-12, unit: cm-2 s-1 TeV-1, min: .nan,
-            max: .nan, frozen: false, error: 1.375746931652359e-13}
-        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
-            error: 0.0}
-        - {name: alpha, value: 1.8503567846850004, unit: '', min: .nan, max: .nan,
-            frozen: false, error: 0.11227219424431928}
-        - {name: beta, value: 0.2136267277722347, unit: '', min: .nan, max: .nan,
-            frozen: false, error: 0.06643245808931664}
+        -   name: amplitude
+            value: 1.0996364030405234e-12
+            unit: cm-2 s-1 TeV-1
+            min: .nan
+            max: .nan
+            frozen: false
+            error: 1.3758548329869678e-13
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            min: .nan
+            max: .nan
+            frozen: true
+            error: 0.0
+        -   name: alpha
+            value: 1.8503598278626825
+            unit: ''
+            min: .nan
+            max: .nan
+            frozen: false
+            error: 0.11228233136426562
+        -   name: beta
+            value: 0.21361272131872622
+            unit: ''
+            min: .nan
+            max: .nan
+            frozen: false
+            error: 0.06643748329414073
     spatial:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: -0.005270016025567908, unit: deg, min: .nan, max: .nan,
-            frozen: false, error: 0.0037816511278345264}
-        - {name: lat_0, value: 0.000645980766132007, unit: deg, min: .nan, max: .nan,
-            frozen: false, error: 0.004013094037026454}
+        -   name: lon_0
+            value: -0.0052701167947436945
+            unit: deg
+            min: .nan
+            max: .nan
+            frozen: false
+            error: 0.0037817533251215205
+        -   name: lat_0
+            value: 0.0005932478905110156
+            unit: deg
+            min: .nan
+            max: .nan
+            frozen: false
+            error: 0.004012626265368768
 covariance: best-fit-model_0000_covariance.dat

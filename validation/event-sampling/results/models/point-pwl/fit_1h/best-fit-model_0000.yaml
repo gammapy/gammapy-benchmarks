@@ -1,29 +1,72 @@
 components:
--   name: 8tRcgOmT-bkg
+-   name: J0sGRwpV-bkg
     type: BackgroundModel
     parameters:
-    - {name: norm, value: 1.0, unit: '', min: 0.0, max: .nan, frozen: true, error: 0.0}
-    - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
-        error: 0.0}
-    datasets_names: [8tRcgOmT]
+    -   name: norm
+        value: 1.0
+        unit: ''
+        min: 0.0
+        max: .nan
+        frozen: true
+        error: 0.0
+    -   name: tilt
+        value: 0.0
+        unit: ''
+        min: .nan
+        max: .nan
+        frozen: true
+        error: 0.0
+    -   name: reference
+        value: 1.0
+        unit: TeV
+        min: .nan
+        max: .nan
+        frozen: true
+        error: 0.0
+    datasets_names:
+    - J0sGRwpV
 -   name: point-pwl
     type: SkyModel
     spectral:
         type: PowerLawSpectralModel
         parameters:
-        - {name: index, value: 1.9371396104401883, unit: '', min: .nan, max: .nan,
-            frozen: false, error: 0.06361042814531495}
-        - {name: amplitude, value: 9.446665630440995e-13, unit: cm-2 s-1 TeV-1, min: .nan,
-            max: .nan, frozen: false, error: 9.495928455508491e-14}
-        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
-            error: 0.0}
+        -   name: index
+            value: 1.9371974255792368
+            unit: ''
+            min: .nan
+            max: .nan
+            frozen: false
+            error: 0.06361202691660212
+        -   name: amplitude
+            value: 9.448034467067217e-13
+            unit: cm-2 s-1 TeV-1
+            min: .nan
+            max: .nan
+            frozen: false
+            error: 9.497043533085191e-14
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            min: .nan
+            max: .nan
+            frozen: true
+            error: 0.0
     spatial:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: -0.00016134594628571756, unit: deg, min: .nan, max: .nan,
-            frozen: false, error: 0.0035583626437786283}
-        - {name: lat_0, value: 0.003347677824804991, unit: deg, min: .nan, max: .nan,
-            frozen: false, error: 0.0035084950906510977}
+        -   name: lon_0
+            value: -0.00016024109975019268
+            unit: deg
+            min: .nan
+            max: .nan
+            frozen: false
+            error: 0.0035580194002361922
+        -   name: lat_0
+            value: 0.0033154844563620927
+            unit: deg
+            min: .nan
+            max: .nan
+            frozen: false
+            error: 0.003509493000632033
 covariance: best-fit-model_0000_covariance.dat
