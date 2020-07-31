@@ -47,7 +47,6 @@ jobs:
         run: |
           cd validation
           python make.py run-validation all
-          pytest -v
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:

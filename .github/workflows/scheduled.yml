@@ -47,7 +47,6 @@ jobs:
         run: |
           cd validation
           python make.py run-validation all
-          pytest -v
       - name: slack notification
         uses: rtCamp/action-slack-notify@v2.0.0
         if: failure()
