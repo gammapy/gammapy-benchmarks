@@ -1,4 +1,4 @@
-name: benchmarks and validations
+name: benchmarks and validation
 on:
   schedule:
     - cron:  '0 1 * * *'
@@ -43,7 +43,7 @@ jobs:
         with:
           commit_author: GitHub Actions <actions@github.com>
           commit_message: commit results from benchmarks
-      - name: run validations
+      - name: run validation
         run: |
           cd validation
           python make.py run-validation all

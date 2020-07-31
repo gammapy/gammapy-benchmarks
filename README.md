@@ -1,4 +1,4 @@
-# Gammapy benchmarks and validations
+# Gammapy benchmarks and validation
 
 This is the set of validation and benchmarks for Gammapy that we
 continuously maintain and improve as we develop Gammapy.
@@ -10,4 +10,4 @@ channel. The badge below displays the status of last check.
 - [benchmarks](benchmarks) - Gammapy Performance checks (time, CPU, RAM)
 - [validation](validation) - Gammapy correctness checks (model fitting, spectra, lightcurves, ...)
 
-![](https://github.com/gammapy/gammapy-benchmarks/workflows/benchmarks%20and%20validations/badge.svg)
+![](https://github.com/gammapy/gammapy-benchmarks/workflows/benchmarks%20and%20validation/badge.svg)
