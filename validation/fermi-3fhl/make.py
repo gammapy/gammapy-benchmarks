@@ -311,7 +311,7 @@ class Validation_3FHL:
                     and self.FHL3[model.name].data["Signif_Avg"] >= self.sig_cut
                 ):
                     flux_points = FluxPointsEstimator(
-                        e_edges=self.El_flux, source=model.name, sigma_ul=2.0,
+                        e_edges=self.El_flux, source=model.name, n_sigma_ul=2,
                     ).run(datasets=datasets)
                     filename = self.resdir / f"{model.name}_flux_points.fits"
                     flux_points.write(filename, overwrite=True)
