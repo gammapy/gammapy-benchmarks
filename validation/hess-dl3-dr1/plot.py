@@ -24,7 +24,7 @@ def main():
             with open(str(path_ref / f"reference-{ndim}d.yaml")) as file:
                 reference_spectrum_file = yaml.safe_load(file)
                 reference_spectrum = Model.create(
-                    "PowerLawSpectralModel",
+                    "PowerLawSpectralModel", model_type="spectral",
                     index=reference_spectrum_file["index"],
                     amplitude=f"{reference_spectrum_file['amplitude']} TeV-1 cm-2 s-1",
                     reference=f"{reference_spectrum_file['reference']} TeV",
@@ -36,7 +36,7 @@ def main():
             with open(str(path_res / f"result-{ndim}d.yaml")) as file:
                 result_spectrum_file = yaml.safe_load(file)
                 result_spectrum = Model.create(
-                    "PowerLawSpectralModel",
+                    "PowerLawSpectralModel", model_type="spectral",
                     index=result_spectrum_file["index"],
                     amplitude=f"{result_spectrum_file['amplitude']} TeV-1 cm-2 s-1",
                     reference=f"{result_spectrum_file['reference']} TeV",
