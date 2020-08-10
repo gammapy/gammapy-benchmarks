@@ -533,7 +533,7 @@ def plot_residual_distribution(dataset, obs_id, livetime):
         log.info(f"SkyDiffuseCube: no spectral model to plot")
     else:
         lima = ts(model=model, kernel_width="0.1 deg")
-        l_m = lima.run(dataset, steps=["ts", "sqrt_ts", "flux", "niter"])
+        l_m = lima.run(dataset)
         sig_resid = l_m["sqrt_ts"].data[np.isfinite(l_m["sqrt_ts"].data)]
 
         # tophat_2D_kernel = Tophat2DKernel(5)
