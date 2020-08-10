@@ -13,10 +13,10 @@
 # schema: astropy-2.0
 e_ref e_min e_max dnde dnde_errp dnde_errn is_ul dnde_ul
 0.115 0.100 0.133 nan nan nan False nan
-0.154 0.133 0.178 nan nan nan False nan
-0.205 0.178 0.237 nan nan nan False nan
-0.274 0.237 0.316 nan nan nan False nan
-0.365 0.316 0.422 nan nan nan False nan
+0.115 0.100 0.133 nan nan nan False nan
+0.115 0.100 0.133 nan nan nan False nan
+0.115 0.100 0.133 nan nan nan False nan
+0.115 0.100 0.133 nan nan nan False nan
 0.487 0.422 0.562 2.949e-11 5.433e-12 5.367e-12 False 4.043e-11
 0.649 0.562 0.750 1.562e-11 2.502e-12 2.460e-12 False 2.067e-11
 0.866 0.750 1.000 8.784e-12 1.271e-12 1.243e-12 False 1.136e-11

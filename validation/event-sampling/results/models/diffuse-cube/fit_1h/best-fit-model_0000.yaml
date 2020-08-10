@@ -1,19 +1,53 @@
 components:
--   name: khMPXX7a-bkg
+-   name: NgR6-n9w-bkg
     type: BackgroundModel
     parameters:
-    - {name: norm, value: 1.0, unit: '', min: 0.0, max: .nan, frozen: true, error: 0.0}
-    - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
-        error: 0.0}
-    datasets_names: [khMPXX7a]
+    -   name: norm
+        value: 1.0
+        unit: ''
+        min: 0.0
+        max: .nan
+        frozen: true
+        error: 0.0
+    -   name: tilt
+        value: 0.0
+        unit: ''
+        min: .nan
+        max: .nan
+        frozen: true
+        error: 0.0
+    -   name: reference
+        value: 1.0
+        unit: TeV
+        min: .nan
+        max: .nan
+        frozen: true
+        error: 0.0
+    datasets_names:
+    - NgR6-n9w
 -   name: diffuse-cube
     type: SkyDiffuseCube
     filename: $GAMMAPY_DATA/fermi_3fhl/gll_iem_v06_cutout.fits
     parameters:
-    - {name: norm, value: 1.0155626141535683, unit: '', min: .nan, max: .nan, frozen: false,
-        error: 0.028705621059615206}
-    - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
-        error: 0.0}
+    -   name: norm
+        value: 1.0155416894367035
+        unit: ''
+        min: .nan
+        max: .nan
+        frozen: false
+        error: 0.028708136667132875
+    -   name: tilt
+        value: 0.0
+        unit: ''
+        min: .nan
+        max: .nan
+        frozen: true
+        error: 0.0
+    -   name: reference
+        value: 1.0
+        unit: TeV
+        min: .nan
+        max: .nan
+        frozen: true
+        error: 0.0
 covariance: best-fit-model_0000_covariance.dat
