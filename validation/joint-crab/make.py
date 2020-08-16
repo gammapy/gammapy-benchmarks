@@ -23,7 +23,8 @@ from joint_crab.extract_fermi import extract_spectrum_fermi
 
 log = logging.getLogger(__name__)
 
-AVAILABLE_DATA = ["hess", "magic", "veritas", "fact", "fermi", "joint"]
+# AVAILABLE_DATA = ["hess", "magic", "veritas", "fact", "fermi", "joint"]
+AVAILABLE_DATA = ["hess", "magic", "veritas", "fact", "joint"]
 
 DATASETS = [
     {
