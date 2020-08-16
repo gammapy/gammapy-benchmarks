@@ -1,11 +1,11 @@
 env:
   machine: x86_64
-  system: Darwin
-  user: adonath
+  system: Linux
+  user: runner
 software:
   astropy: 4.0.1.post1
-  gammapy: '0.17'
-  numpy: 1.18.5
-  python_executable: /Users/adonath/software/anaconda3/envs/gammapy-dev/bin/python
+  gammapy: 0.18.dev535+g968455bdf
+  numpy: 1.19.1
+  python_executable: /usr/share/miniconda/envs/gammapy-dev/bin/python
   python_version: 3.7.0
-  scipy: 1.5.0
+  scipy: 1.5.2

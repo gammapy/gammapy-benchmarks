@@ -1,8 +1,8 @@
 ========= ========= ============== ========== ========= ====== =========
      name     value           unit        min       max frozen     error
 ========= ========= ============== ========== ========= ====== =========
-amplitude 3.582e-11 cm-2 s-1 TeV-1        nan       nan  False 2.823e-12
+amplitude 3.582e-11 cm-2 s-1 TeV-1        nan       nan  False 3.489e-12
 reference 1.000e+00            TeV        nan       nan   True 0.000e+00
-    alpha 2.577e+00                       nan       nan  False 2.173e-01
-     beta 1.806e-01                -5.000e-01 1.000e+00  False 1.383e-01
+    alpha 2.577e+00                       nan       nan  False 1.398e-01
+     beta 1.806e-01                -5.000e-01 1.000e+00  False 8.926e-02
 ========= ========= ============== ========== ========= ====== =========
