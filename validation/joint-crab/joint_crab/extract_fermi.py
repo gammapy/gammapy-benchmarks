@@ -48,7 +48,11 @@ class FermiDatasetMaker:
 
     def run(self, geom):
         """Create and fill the map dataset"""
-        dataset = MapDataset.create(geom, binsz_irf=1.0)
+        energy = geom.axes[0]
+        energy_true = energy.copy(name="energy_true")
+        geom_true = geom.to_image().to_cube([energy_true])
+
+        dataset = MapDataset.create(geom, energy_axis_true=energy_true, binsz_irf=1.0)
         dataset.counts.fill_events(self.events)
 
         dataset.gti = self._make_gti()
@@ -56,18 +60,15 @@ class FermiDatasetMaker:
         self._fill_psfmap(self.psf, dataset)
 
         # recompute exposure on geom
-        coords = geom.get_coord()
-        # this is to change the axis name. Can we avoid this?
-        coords = MapCoord.create(
-            dict(skycoord=coords.skycoord, energy_true=coords["energy"])
-        )
-        values = self.exposure.interp_by_coord(coords)
-        dataset.exposure = Map.from_geom(geom, data=values, unit=self.exposure.unit)
+        coords = geom_true.get_coord()
+        data = self.exposure.interp_by_coord(coords)
+
+        dataset.exposure = Map.from_geom(geom_true, data=data, unit=self.exposure.unit)
 
         # Not the real Fermi-LAT EDISP: Use 5% energy resolution as approximation
-        energy = geom.axes[0]
+
         edisp = EDispKernelMap.from_gauss(
-            energy_axis=energy, energy_axis_true=energy, sigma=0.05, bias=0
+            energy_axis=energy, energy_axis_true=energy_true, sigma=0.05, bias=0
         )
         dataset.edisp = edisp
 
