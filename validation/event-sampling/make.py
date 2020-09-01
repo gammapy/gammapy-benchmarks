@@ -8,7 +8,6 @@ import astropy.units as u
 import click
 import matplotlib.pyplot as plt
 import numpy as np
-# from astropy.convolution import Tophat2DKernel
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
 from regions import CircleSkyRegion
@@ -16,8 +15,7 @@ from scipy.stats import norm
 
 from gammapy.data import GTI, EventList, Observation
 from gammapy.datasets import MapDataset, MapDatasetEventSampler
-# from gammapy.estimators import LiMaMapEstimator as lima
-from gammapy.estimators import TSMapEstimator as ts
+from gammapy.estimators import ExcessMapEstimator
 from gammapy.irf import EnergyDispersion2D, load_cta_irfs
 from gammapy.makers import MapDatasetMaker
 from gammapy.maps import Map, MapAxis, WcsGeom
@@ -526,54 +524,43 @@ def plot_residuals(dataset, obs_id, livetime, model_name):
 
 def plot_residual_distribution(dataset, obs_id, livetime):
     """Plot residual significance distribution"""
-
     model = dataset.models[1]
 
-    if model.tag == "SkyDiffuseCube":
-        log.info(f"SkyDiffuseCube: no spectral model to plot")
-    else:
-        lima = ts(model=model, kernel_width="0.1 deg")
-        l_m = lima.run(dataset)
-        sig_resid = l_m["sqrt_ts"].data[np.isfinite(l_m["sqrt_ts"].data)]
+    estimator = ExcessMapEstimator(
+        correlation_radius="0.1 deg"
+    )
 
-        # tophat_2D_kernel = Tophat2DKernel(5)
-        # l_m = lima.compute_lima_image(
-        #     dataset.counts.sum_over_axes(keepdims=False),
-        #     dataset.npred().sum_over_axes(keepdims=False),
-        #     tophat_2D_kernel,
-        # )
-        # sig_resid = l_m["significance"].data[np.isfinite(l_m["significance"].data)]
-        #
-        # resid = dataset.residuals()
-        # sig_resid = resid.data[np.isfinite(resid.data)]
+    maps = estimator.run(dataset)
+    valid = np.isfinite(maps["sqrt_ts"].data)
+    sig_resid = maps["sqrt_ts"].data[valid]
 
-        plt.hist(
-            sig_resid, density=True, alpha=0.5, color="red", bins=100,
-        )
+    plt.hist(
+        sig_resid, density=True, alpha=0.5, color="red", bins=100,
+    )
 
-        mu, std = norm.fit(sig_resid)
-        # replace with log.info()
-        log.info("Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
-        x = np.linspace(-8, 8, 50)
-        p = norm.pdf(x, mu, std)
-        plt.plot(
-            x,
-            p,
-            lw=2,
-            color="black",
-            label="Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std),
-        )
-        plt.legend()
-        plt.xlabel("Significance")
-        plt.yscale("log")
-        plt.ylim(1e-5, 1)
-        xmin, xmax = np.min(sig_resid), np.max(sig_resid)
-        plt.xlim(xmin, xmax)
+    mu, std = norm.fit(sig_resid)
+    # replace with log.info()
+    log.info("Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std))
+    x = np.linspace(-8, 8, 50)
+    p = norm.pdf(x, mu, std)
+    plt.plot(
+        x,
+        p,
+        lw=2,
+        color="black",
+        label="Fit results: mu = {:.2f}, std = {:.2f}".format(mu, std),
+    )
+    plt.legend()
+    plt.xlabel("Significance")
+    plt.yscale("log")
+    plt.ylim(1e-5, 1)
+    xmin, xmax = np.min(sig_resid), np.max(sig_resid)
+    plt.xlim(xmin, xmax)
 
-        obs_id = int(obs_id)
-        filename = f"residuals-distribution_{obs_id:04d}.png"
-        filepath = f"results/models/{model.name}/plots_{livetime.value:.0f}{livetime.unit}/residuals-distribution/{filename}"
-        save_figure(filepath)
+    obs_id = int(obs_id)
+    filename = f"residuals-distribution_{obs_id:04d}.png"
+    filepath = f"results/models/{model.name}/plots_{livetime.value:.0f}{livetime.unit}/residuals-distribution/{filename}"
+    save_figure(filepath)
 
 
 # OBSOLETE...
