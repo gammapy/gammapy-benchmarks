@@ -98,7 +98,7 @@ def get_lc(datasets):
     for dataset in datasets:
         dataset.models[1] = model_fit
     lc_maker = LightCurveEstimator(
-        energy_range=[1.0, 10.0] * u.TeV, source="model_fit", reoptimize=False
+        e_edges=[1.0, 10.0] * u.TeV, source="model_fit", reoptimize=False
     )
     lc = lc_maker.run(datasets)
     print(lc.table["flux"])
