@@ -24,10 +24,16 @@ from gammapy.estimators import FluxPoints, FluxPointsEstimator
 from gammapy.irf import EDispKernel, EnergyDependentTablePSF, PSFKernel
 from gammapy.maps import Map, MapAxis, WcsGeom, WcsNDMap
 from gammapy.modeling import Fit
-from gammapy.modeling.models import (BackgroundModel, LogParabolaSpectralModel,
-                                     Models, PowerLawSpectralModel,
-                                     SkyDiffuseCube,
-                                     create_fermi_isotropic_diffuse_model)
+from gammapy.modeling.models import (
+    BackgroundModel,
+    LogParabolaSpectralModel,
+    Models,
+    SkyModel,
+    PowerLawSpectralModel,
+    TemplateSpatialModel,
+    PowerLawNormSpectralModel,
+    create_fermi_isotropic_diffuse_model,
+)
 from gammapy.utils.scripts import make_path
 
 log = logging.getLogger(__name__)
@@ -83,9 +89,9 @@ class Validation_3FHL:
         # iso norm=0.92 see paper appendix A
         self.model_iso = create_fermi_isotropic_diffuse_model(
             filename="data/iso_P8R2_SOURCE_V6_v06_extrapolated.txt",
-            norm=0.92,
             interp_kwargs={"fill_value": None},
         )
+        self.model_iso.spectral_model.model2.norm.value = 0.92
         # regions selection
         file3fhl = "$GAMMAPY_DATA/catalogs/fermi/gll_psch_v13.fit.gz"
         self.FHL3 = SourceCatalog3FHL(file3fhl)
@@ -176,6 +182,8 @@ class Validation_3FHL:
         #    because we can't pickle <functools._lru_cache_wrapper object
         #    send this back to init when fixed
 
+        log.info(f"ROI {kr}: loading data")
+
         # exposure
         exposure_hpx = Map.read(
             "$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_exposure_cube_hpx.fits.gz"
@@ -186,8 +194,10 @@ class Validation_3FHL:
         iem_filepath = BASE_PATH / "data" / "gll_iem_v06_extrapolated.fits"
         iem_fermi_extra = Map.read(iem_filepath)
         # norm=1.1, tilt=0.03 see paper appendix A
-        model_iem = SkyDiffuseCube(
-            iem_fermi_extra, norm=1.1, tilt=0.03, name="iem_extrapolated"
+        model_iem = SkyModel(
+            PowerLawNormSpectralModel(norm=1.1, tilt=0.03),
+            TemplateSpatialModel(iem_fermi_extra, normalize=False),
+            name="iem_extrapolated",
         )
 
         # ROI
@@ -240,6 +250,8 @@ class Validation_3FHL:
         )
         mask_fermi = WcsNDMap(counts.geom, mask)
 
+        log.info(f"ROI {kr}: pre-computing diffuse")
+
         # IEM
         eval_iem = MapEvaluator(
             model=model_iem, exposure=exposure, psf=psf_kernel, edisp=edisp
@@ -287,8 +299,9 @@ class Validation_3FHL:
             name=dataset_name,
         )
         cat_stat = dataset.stat_sum()
-
         datasets = Datasets([dataset])
+
+        log.info(f"ROI {kr}: running fit")
         fit = Fit(datasets)
         results = fit.run(**self.optimize_opts)
         print("ROI_num", str(kr), "\n", results)
@@ -305,6 +318,7 @@ class Validation_3FHL:
             exec_time = time() - roi_time
             print("ROI", kr, " time (s): ", exec_time)
 
+            log.info(f"ROI {kr}: running flux points")
             for model in FHL3_roi:
                 if (
                     self.FHL3[model.name].data["ROI_num"] == kr
