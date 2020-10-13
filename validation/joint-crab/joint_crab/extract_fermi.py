@@ -38,8 +38,8 @@ class FermiDatasetMaker:
 
     def _fill_psfmap(self, psf, dataset):
         # Fill each bin of the PSFMap with the psf table.
-        energy = dataset.psf.psf_map.geom.get_axis_by_name("energy_true")
-        theta = dataset.psf.psf_map.geom.get_axis_by_name("theta")
+        energy = dataset.psf.psf_map.geom.axes["energy_true"]
+        theta = dataset.psf.psf_map.geom.axes["rad"]
 
         values = psf.evaluate(energy=energy.center, rad=theta.center, method="linear")
 
@@ -98,9 +98,8 @@ def extract_spectrum_fermi(on_region, off_region, energy, containment_correction
         counts=spec_dataset.counts,
         counts_off=off_dataset.counts,
         gti=spec_dataset.gti,
-        aeff=spec_dataset.aeff,
+        exposure=spec_dataset.exposure,
         edisp=spec_dataset.edisp,
-        livetime=spec_dataset.livetime,
         acceptance=1,
         acceptance_off=(off_solid_angle / on_solid_angle).to_value(""),
     )

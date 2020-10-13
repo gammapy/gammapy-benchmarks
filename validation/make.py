@@ -33,12 +33,12 @@ AVAILABLE_VALIDATIONS = {
         "command": "make.py",
         "args": ["run-analyses", "all-targets", "all-methods"],
     },
-    "joint-crab_analyses": {
+    "joint-crab-analyses": {
         "folder": "joint-crab",
         "command": "make.py",
         "args": ["run-analyses", "all"],
     },
-    "joint-crab_fit": {
+    "joint-crab-fit": {
         "folder": "joint-crab",
         "command": "make.py",
         "args": ["run-fit", "all"],
