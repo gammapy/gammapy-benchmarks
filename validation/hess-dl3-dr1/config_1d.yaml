@@ -30,7 +30,7 @@ datasets:
         lat: {dec}
         radius: {on_size}
     safe_mask:
-        methods: ['bkg-peak', 'edisp-bias']
+        methods: ['edisp-bias']
     containment_correction: {containment_correction}
 
 fit:

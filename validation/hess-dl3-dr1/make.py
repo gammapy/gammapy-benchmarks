@@ -93,8 +93,8 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
     txt = txt.format_map(target_dict)
     analysis.set_models(txt)
     if method == "3d":
-        analysis.datasets[0].background_model.norm.frozen = False
-        analysis.datasets[0].background_model.tilt.frozen = False
+        analysis.datasets[0].background_model.spectral_model.norm.frozen = False
+        analysis.datasets[0].background_model.spectral_model.tilt.frozen = False
         
         # Impose min and max values to ensure position does not diverge
         delta = 1.5
@@ -124,7 +124,7 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
         if method == "3d":
             dataset = analysis.datasets[0]
             for parameter in dataset.models.parameters:
-                if parameter is not dataset.background_model.norm:
+                if parameter is not dataset.background_model.spectral_model.norm:
                     parameter.frozen = True
         analysis.get_flux_points()
         flux_points = analysis.flux_points.data
