@@ -531,8 +531,8 @@ def plot_residual_distribution(dataset, obs_id, livetime):
     )
 
     maps = estimator.run(dataset)
-    valid = np.isfinite(maps["sqrt_ts"].data)
-    sig_resid = maps["sqrt_ts"].data[valid]
+    valid = np.isfinite(maps["ts"].data)
+    sig_resid = np.sqrt(maps["ts"].data[valid])
 
     plt.hist(
         sig_resid, density=True, alpha=0.5, color="red", bins=100,
