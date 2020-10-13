@@ -53,6 +53,7 @@ class FermiDatasetMaker:
         geom_true = geom.to_image().to_cube([energy_true])
 
         dataset = MapDataset.create(geom, energy_axis_true=energy_true, binsz_irf=1.0)
+        dataset.mask_safe.data += True
         dataset.counts.fill_events(self.events)
 
         dataset.gti = self._make_gti()
@@ -102,4 +103,5 @@ def extract_spectrum_fermi(on_region, off_region, energy, containment_correction
         edisp=spec_dataset.edisp,
         acceptance=1,
         acceptance_off=(off_solid_angle / on_solid_angle).to_value(""),
+        name="fermi-3fhl"
     )

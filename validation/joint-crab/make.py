@@ -188,6 +188,8 @@ def define_model():
 
     crab_spectrum.beta.min = -0.5
     crab_spectrum.beta.max = 1
+    crab_spectrum.alpha.min = -1
+    crab_spectrum.alpha.max = 5
 
     crab_model = SkyModel(spatial_model=None, spectral_model=crab_spectrum, name="crab")
 
@@ -265,7 +267,7 @@ def data_fitting(instrument, npoints):
 
     # Perform fit
     fit = Fit(datasets)
-    result = fit.run(optimize_opts={"tol": 0.1, "strategy": 1})
+    result = fit.run(optimize_opts={"tol": 0.1, "strategy": 0})
     log.info(result.parameters.to_table())
 
     path = f"results/fit_{instrument}.rst"
