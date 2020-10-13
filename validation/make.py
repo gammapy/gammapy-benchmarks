@@ -98,7 +98,8 @@ def run_validations(validations):
     info = get_provenance()
 
     if validations == "all":
-        validations = list(AVAILABLE_VALIDATIONS)
+        # TODO: enable event sampling again
+        validations = list(AVAILABLE_VALIDATIONS)[1:]
     else:
         validations = [validations]
 
