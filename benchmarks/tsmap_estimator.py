@@ -3,26 +3,16 @@ import astropy.units as u
 import numpy as np
 import yaml
 from pathlib import Path
-
 from gammapy.maps import Map
-from gammapy.estimators import (
-    ASmoothMapEstimator,
-    TSMapEstimator,
-)
-from gammapy.irf import EDispKernelMap
+from gammapy.estimators import TSMapEstimator, ASmoothMapEstimator
 from gammapy.modeling.models import (
     BackgroundModel,
-    SkyModel,
     PowerLawSpectralModel,
     PointSpatialModel,
-)
-from gammapy.irf import PSFMap, EnergyDependentTablePSF
-from gammapy.datasets import Datasets, MapDataset
-from gammapy.modeling.models import (
-    ExpCutoffPowerLawSpectralModel,
-    PointSpatialModel,
     SkyModel,
 )
+from gammapy.irf import PSFMap, EnergyDependentTablePSF, EDispKernelMap
+from gammapy.datasets import MapDataset
 
 
 def data_prep():
@@ -37,7 +27,6 @@ def data_prep():
     )
     # unit is not properly stored on the file. We add it manually
     exposure.unit = "cm2s"
-    mask_safe = counts.copy(data=np.ones_like(counts.data).astype("bool"))
 
     psf = EnergyDependentTablePSF.read(
         "$GAMMAPY_DATA/fermi-3fhl-gc/fermi-3fhl-gc-psf-cube.fits.gz"
@@ -61,11 +50,17 @@ def data_prep():
     return dataset
 
 
+def run_asmooth(dataset):
+    scales = u.Quantity(np.arange(0.05, 1, 0.05), unit="deg")
+    smooth = ASmoothMapEstimator(threshold=3, scales=scales)
+    images = smooth.run(dataset)
+    return images
+
+
 def fit_estimator(dataset):
     spatial_model = PointSpatialModel()
     spectral_model = PowerLawSpectralModel(index=2)
     model = SkyModel(spatial_model=spatial_model, spectral_model=spectral_model)
-    # estimator = TSMapEstimator(model)
     estimator = TSMapEstimator(
         model, kernel_width="1 deg", e_edges=[10, 30, 300] * u.GeV
     )
@@ -83,9 +78,13 @@ def run_benchmark():
 
     t = time.time()
 
+    run_asmooth(data)
+    info["run_asmooth"] = time.time() - t
+
+    t = time.time()
+
     fit_estimator(data)
     info["TSmap_estimator"] = time.time() - t
-
 
     Path("bench.yaml").write_text(yaml.dump(info, sort_keys=False, indent=4))
 
