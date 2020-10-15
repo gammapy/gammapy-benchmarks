@@ -6,7 +6,9 @@ from pathlib import Path
 import click
 import yaml
 
+import numpy as np
 from gammapy.analysis import Analysis, AnalysisConfig
+from gammapy.modeling.models import Models
 
 log = logging.getLogger(__name__)
 
@@ -75,6 +77,11 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
     txt = Path(f"config_{method}.yaml").read_text()
     txt = txt.format_map(target_dict)
     config = AnalysisConfig.from_yaml(txt)
+
+    # fixme
+    config.datasets.safe_mask.methods = ["edisp-bias", "offset-max"]
+    config.datasets.safe_mask.parameters = {"offset_max": "2.5 deg"}
+
     if debug:
         config.observations.obs_ids = [target_dict["debug_run"]]
         config.flux_points.energy.nbins = 1
@@ -85,13 +92,24 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
     log.info("Running observations selection")
     analysis.get_observations()
 
+    # there are background rates of zero present which we fix here:
+
+    for obs in analysis.observations:
+        bkg = obs.bkg
+
+        for data in bkg.data.data:
+            is_zero = (data == 0)
+            data[is_zero] = np.min(data)
+
+        obs.bkg = bkg
+
     log.info(f"Running data reduction")
     analysis.get_datasets()
 
     log.info(f"Setting the model")
-    txt = Path("model_config.yaml").read_text()
-    txt = txt.format_map(target_dict)
-    analysis.set_models(txt)
+    models = Models.read(f"{tag}/model.yaml")
+    analysis.set_models(models)
+
     if method == "3d":
         analysis.datasets[0].background_model.spectral_model.norm.frozen = False
         analysis.datasets[0].background_model.spectral_model.tilt.frozen = False
@@ -110,9 +128,9 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
             analysis.models[0].spatial_model.phi.frozen = False
             analysis.models[0].spatial_model.r_0.value = 0.3
     log.info(f"Running fit ...")
+
     analysis.run_fit(optimize_opts={"print_level": 3})
 
-    # TODO: This is a workaround. Set covariance automatically
     log.info(f"Writing {path_res}")
     write_fit_summary(
         analysis.models[0].parameters, str(path_res / f"result-{method}.yaml")
