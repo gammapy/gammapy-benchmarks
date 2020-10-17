@@ -29,6 +29,7 @@ AVAILABLE_BENCHMARKS = {
     "spectrum_1d": "spectrum_1d.py",
     "spectrum_1d_joint": "spectrum_1d_joint.py",
     "tsmap_estimator": "tsmap_estimator.py",
+    "ring_background_estimator": "ring_background_estimator.py"
 }
 
 MONITOR_OPTIONS = {"duration": None, "interval": 0.5, "include_children": True}
