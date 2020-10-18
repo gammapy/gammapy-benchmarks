@@ -53,7 +53,7 @@ def data_prep():
     empty = SpectrumDatasetOnOff.create(region=on_region, e_reco=e_reco, e_true=e_true,)
 
     dataset_maker = SpectrumDatasetMaker(
-        containment_correction=True, selection=["counts", "aeff", "edisp"]
+        containment_correction=True, selection=["counts", "exposure", "edisp"]
     )
     bkg_maker = ReflectedRegionsBackgroundMaker(exclusion_mask=exclusion_mask)
     safe_mask_masker = SafeMaskMaker(methods=["aeff-max"], aeff_percent=10)

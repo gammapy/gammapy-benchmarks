@@ -70,7 +70,7 @@ def simulate():
             region=on_region,
             name=f"dataset_{i}",
         )
-        maker = SpectrumDatasetMaker(selection=["aeff", "background", "edisp"])
+        maker = SpectrumDatasetMaker(selection=["exposure", "background", "edisp"])
         dataset = maker.run(empty, obs)
         dataset.models = model_simu
         dataset.fake()

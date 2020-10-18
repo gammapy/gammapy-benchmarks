@@ -56,7 +56,7 @@ def data_prep():
     )
 
     dataset_maker = SpectrumDatasetMaker(
-        containment_correction=False, selection=["counts", "aeff", "edisp"]
+        containment_correction=False, selection=["counts", "exposure", "edisp"]
     )
 
     bkg_maker = ReflectedRegionsBackgroundMaker(exclusion_mask=exclusion_mask)
