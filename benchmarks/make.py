@@ -28,6 +28,7 @@ AVAILABLE_BENCHMARKS = {
     "lightcurve_3d": "lightcurve_3d.py",
     "spectrum_1d": "spectrum_1d.py",
     "spectrum_1d_joint": "spectrum_1d_joint.py",
+    "tsmap_estimator": "tsmap_estimator.py",
 }
 
 MONITOR_OPTIONS = {"duration": None, "interval": 0.5, "include_children": True}
