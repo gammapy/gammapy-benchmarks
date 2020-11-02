@@ -1,15 +1,15 @@
-import astropy.units as u
-from astropy.coordinates import SkyCoord
-import yaml
 from regions import CircleSkyRegion
 import time
-from pathlib import Path
 from gammapy.analysis import Analysis, AnalysisConfig
 from gammapy.makers import RingBackgroundMaker
-from gammapy.estimators import ExcessMapEstimator
+from gammapy.estimators import ExcessMapEstimator, ExcessProfileEstimator
 from gammapy.maps import Map
 from gammapy.datasets import MapDatasetOnOff
-
+import yaml
+from astropy import units as u
+from astropy.coordinates import SkyCoord
+from gammapy.utils.regions import make_orthogonal_rectangle_sky_regions
+from pathlib import Path
 
 def data_prep():
     # source_pos = SkyCoord.from_name("MSH 15-52")
@@ -102,6 +102,16 @@ def compute_correlations(stacked_on_off):
     excess_map = lima_maps["excess"]
     return significance_map, excess_map
 
+def compute_profile(stacked_on_off):
+    wcs = stacked_on_off.counts.geom.wcs
+    start_line = SkyCoord(227.3, -58.08, unit="deg", frame="icrs")
+    end_line = SkyCoord(229.3, -60.08, unit="deg", frame="icrs")
+    boxes = make_orthogonal_rectangle_sky_regions(
+        start_line, end_line, wcs, 0.1 * u.deg, 20
+    )
+    prof_maker = ExcessProfileEstimator(boxes, e_edges=[0.5, 1, 5] * u.TeV)
+    imp_prof = prof_maker.run(stacked_on_off)
+    return imp_prof
 
 def run_benchmark():
     info = {}
@@ -117,6 +127,10 @@ def run_benchmark():
     t = time.time()
     compute_correlations(stacked_on_off)
     info["compute_correlations"] = time.time() - t
+
+    t = time.time()
+    compute_correlations(stacked_on_off)
+    info["compute_ExcessProfileEstimator"] = time.time() - t
 
     Path("bench.yaml").write_text(yaml.dump(info, sort_keys=False, indent=4))
 
