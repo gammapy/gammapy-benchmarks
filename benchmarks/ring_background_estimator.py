@@ -94,11 +94,11 @@ def create_stacked_dataset(analysis):
 
 
 def compute_correlations(stacked_on_off):
-    # Using a convolution radius of 0.04 degrees
-    estimator = ExcessMapEstimator(0.04 * u.deg, selection_optional=[])
+    # Using a convolution radius of 0.1 degrees
+    estimator = ExcessMapEstimator(0.1 * u.deg)
     lima_maps = estimator.run(stacked_on_off)
 
-    significance_map = lima_maps["significance"]
+    significance_map = lima_maps["sqrt_ts"]
     excess_map = lima_maps["excess"]
     return significance_map, excess_map
 
@@ -109,7 +109,7 @@ def compute_profile(stacked_on_off):
     boxes = make_orthogonal_rectangle_sky_regions(
         start_line, end_line, wcs, 0.1 * u.deg, 20
     )
-    prof_maker = ExcessProfileEstimator(boxes, e_edges=[0.5, 1, 5] * u.TeV)
+    prof_maker = ExcessProfileEstimator(boxes, energy_edges=[0.5, 1, 5] * u.TeV)
     imp_prof = prof_maker.run(stacked_on_off)
     return imp_prof
 
