@@ -87,13 +87,16 @@ def data_prep():
 
 
 def write(stacked, filename):
-    stacked.write(path=os.getcwd(), prefix=filename)
+    path = Path.cwd()
+    stacked.write( path / f"{filename}_datasets.yaml", filename_models= path / f"{filename}_models.yaml", overwrite=True)
 
 
 def read(filename):
+    path = Path.cwd()
     return Datasets.read(
-        os.getcwd(), f"{filename}_datasets.yaml", f"{filename}_models.yaml"
+        path / f"{filename}_datasets.yaml", filename_models= path / f"{filename}_models.yaml"
     )
+
 
 
 def data_fit(stacked):
@@ -105,7 +108,7 @@ def data_fit(stacked):
 
 def flux_point(stacked):
     e_edges = MapAxis.from_bounds(0.7, 30, nbin=11, interp="log", unit="TeV").edges
-    fpe = FluxPointsEstimator(e_edges=e_edges)
+    fpe = FluxPointsEstimator(energy_edges=e_edges)
     fpe.run(datasets=stacked)
 
 

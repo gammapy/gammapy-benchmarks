@@ -94,11 +94,11 @@ def create_stacked_dataset(analysis):
 
 
 def compute_correlations(stacked_on_off):
-    # Using a convolution radius of 0.04 degrees
-    estimator = ExcessMapEstimator(0.04 * u.deg, selection_optional=[])
+    # Using a convolution radius of 0.1 degrees
+    estimator = ExcessMapEstimator(0.1 * u.deg)
     lima_maps = estimator.run(stacked_on_off)
 
-    significance_map = lima_maps["significance"]
+    significance_map = lima_maps["sqrt_ts"]
     excess_map = lima_maps["excess"]
     return significance_map, excess_map
 

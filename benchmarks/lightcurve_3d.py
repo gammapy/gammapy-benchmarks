@@ -17,7 +17,8 @@ from gammapy.maps import MapAxis, WcsGeom
 from gammapy.modeling import Fit
 from gammapy.modeling.models import (ExpDecayTemporalModel,
                                      GaussianSpatialModel,
-                                     PowerLawSpectralModel, SkyModel)
+                                     PowerLawSpectralModel, SkyModel,
+                                     FoVBackgroundModel)
 
 N_OBS = int(os.environ.get("GAMMAPY_BENCH_N_OBS", 10))
 gti_t0 = Time("2020-03-01")
@@ -74,7 +75,7 @@ def simulate():
         maker_safe_mask = SafeMaskMaker(methods=["offset-max"], offset_max=4.0 * u.deg)
         dataset = maker.run(empty, obs)
         dataset = maker_safe_mask.run(dataset, obs)
-        dataset.models.append(model_simu)
+        dataset.models = [model_simu, FoVBackgroundModel(dataset_name=dataset.name)]
         dataset.fake()
         datasets.append(dataset)
         tstart = tstart + 2.0 * u.hr
@@ -96,9 +97,9 @@ def get_lc(datasets):
         spatial_model=spatial_model1, spectral_model=spectral_model1, name="model_fit",
     )
     for dataset in datasets:
-        dataset.models[1] = model_fit
+        dataset.models = [model_fit, FoVBackgroundModel(dataset_name=dataset.name)]
     lc_maker = LightCurveEstimator(
-        e_edges=[1.0, 10.0] * u.TeV, source="model_fit", reoptimize=False
+        energy_edges=[1.0, 10.0] * u.TeV, source="model_fit", reoptimize=False
     )
     lc = lc_maker.run(datasets)
     print(lc.table["flux"])
@@ -123,9 +124,9 @@ def fit_lc(datasets):
     )
 
     for dataset in datasets:
-        dataset.models.remove(dataset.models[1])
-        dataset.models.append(model_fit)
-        dataset.models[0].parameters["norm"].frozen = True
+        dataset.models = [model_fit, FoVBackgroundModel(dataset_name=dataset.name)]
+        dataset.background_model.parameters["norm"].frozen = True
+
     fit = Fit(datasets)
     result = fit.run()
     print(result.success)
