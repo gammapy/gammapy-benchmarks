@@ -20,7 +20,6 @@ def data_prep():
     background = Map.read(
         "$GAMMAPY_DATA/fermi-3fhl-gc/fermi-3fhl-gc-background-cube.fits.gz"
     )
-    background = BackgroundModel(background, datasets_names=["fermi-3fhl-gc"])
 
     exposure = Map.read(
         "$GAMMAPY_DATA/fermi-3fhl-gc/fermi-3fhl-gc-exposure-cube.fits.gz"
@@ -41,7 +40,7 @@ def data_prep():
 
     dataset = MapDataset(
         counts=counts,
-        models=[background],
+        background=background,
         exposure=exposure,
         psf=psfmap,
         name="fermi-3fhl-gc",
@@ -52,7 +51,7 @@ def data_prep():
 
 def run_asmooth(dataset):
     scales = u.Quantity(np.arange(0.05, 1, 0.05), unit="deg")
-    smooth = ASmoothMapEstimator(threshold=3, scales=scales)
+    smooth = ASmoothMapEstimator(threshold=3, scales=scales, energy_edges=[10, 300] * u.GeV)
     images = smooth.run(dataset)
     return images
 
@@ -62,7 +61,7 @@ def fit_estimator(dataset):
     spectral_model = PowerLawSpectralModel(index=2)
     model = SkyModel(spatial_model=spatial_model, spectral_model=spectral_model)
     estimator = TSMapEstimator(
-        model, kernel_width="1 deg", e_edges=[10, 30, 300] * u.GeV
+        model, kernel_width="1 deg", energy_edges=[10, 30, 300] * u.GeV
     )
     images = estimator.run(dataset)
     return images
