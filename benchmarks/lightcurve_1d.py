@@ -17,7 +17,7 @@ from gammapy.makers import SpectrumDatasetMaker
 from gammapy.maps import MapAxis
 from gammapy.modeling import Fit
 from gammapy.modeling.models import (ExpDecayTemporalModel,
-                                     PowerLawSpectralModel, SkyModel)
+                                     PowerLawSpectralModel, SkyModel, FoVBackgroundModel)
 
 N_OBS = int(os.environ.get("GAMMAPY_BENCH_N_OBS", 10))
 
@@ -72,7 +72,7 @@ def simulate():
         )
         maker = SpectrumDatasetMaker(selection=["exposure", "background", "edisp"])
         dataset = maker.run(empty, obs)
-        dataset.models = model_simu
+        dataset.models = [model_simu, FoVBackgroundModel(dataset_name=dataset.name)]
         dataset.fake()
         datasets.append(dataset)
         tstart = tstart + 2.0 * u.hr
@@ -86,9 +86,9 @@ def get_lc(datasets):
     )
     model_fit = SkyModel(spectral_model=spectral_model, name="model-fit",)
     for dataset in datasets:
-        dataset.models = model_fit
+        dataset.models = [model_fit, FoVBackgroundModel(dataset_name=dataset.name)]
     lc_maker_1d = LightCurveEstimator(
-        e_edges=[1.0, 10.0] * u.TeV, source="model-fit", reoptimize=False
+        energy_edges=[1.0, 10.0] * u.TeV, source="model-fit", reoptimize=False
     )
     lc_1d = lc_maker_1d.run(datasets)
 
@@ -104,7 +104,7 @@ def fit_lc(datasets):
         name="model-test",
     )
     for dataset in datasets:
-        dataset.models = model
+        dataset.models = [model, FoVBackgroundModel(dataset_name=dataset.name)]
     fit = Fit(datasets)
     result = fit.run()
     print(result)
