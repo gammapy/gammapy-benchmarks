@@ -13,7 +13,7 @@ from gammapy.makers import MapDatasetMaker, SafeMaskMaker
 from gammapy.maps import MapAxis, WcsGeom
 from gammapy.modeling import Fit
 from gammapy.modeling.models import (ExpCutoffPowerLawSpectralModel,
-                                     PointSpatialModel, SkyModel)
+                                     PointSpatialModel, SkyModel, FoVBackgroundModel)
 
 N_OBS = int(os.environ.get("GAMMAPY_BENCH_N_OBS", 10))
 
@@ -61,18 +61,20 @@ def data_prep():
         )
         dataset = maker.run(cutout, obs)
         dataset = safe_mask_maker.run(dataset, obs)
-        dataset.models.append(model)
+        dataset.models = [model, FoVBackgroundModel(dataset_name=dataset.name)]
         datasets.append(dataset)
     return datasets
 
 
 def write(datasets, filename):
-    datasets.write(path=os.getcwd(), prefix=filename, overwrite=True)
+    path = Path.cwd()
+    datasets.write( path / f"{filename}_datasets.yaml", filename_models= path / f"{filename}_models.yaml", overwrite=True)
 
 
 def read(filename):
+    path = Path.cwd()
     return Datasets.read(
-        os.getcwd(), f"{filename}_datasets.yaml", f"{filename}_models.yaml"
+        path / f"{filename}_datasets.yaml", filename_models= path / f"{filename}_models.yaml"
     )
 
 
@@ -83,7 +85,7 @@ def data_fit(datasets):
 
 def flux_point(datasets):
     e_edges = [0.3, 1, 3, 10] * u.TeV
-    fpe = FluxPointsEstimator(e_edges=e_edges, source="gc-source")
+    fpe = FluxPointsEstimator(energy_edges=e_edges, source="gc-source")
     fpe.run(datasets=datasets)
 
 
