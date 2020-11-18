@@ -237,7 +237,7 @@ class Validation_3FHL:
         # Energy Dispersion
         e_true = exposure.geom.axes[0].edges
         e_reco = counts.geom.axes[0].edges
-        edisp = EDispKernel.from_diagonal_response(e_true=e_true, e_reco=e_reco)
+        edisp = EDispKernel.from_diagonal_response(energy_true=e_true, energy=e_reco)
 
         # fit mask
         if coords["lon"].min() < 90 * u.deg and coords["lon"].max() > 270 * u.deg:
@@ -308,7 +308,7 @@ class Validation_3FHL:
         fit_stat = datasets.stat_sum()
 
         if results.message != "Optimization failed.":
-            datasets.write(path=Path(self.resdir), prefix=dataset.name, overwrite=True)
+            datasets.write(Path(self.resdir) / dataset.name, overwrite=True)
             np.savez(
                 self.resdir / f"3FHL_ROI_num{kr}_fit_infos.npz",
                 message=results.message,
@@ -325,7 +325,7 @@ class Validation_3FHL:
                     and self.FHL3[model.name].data["Signif_Avg"] >= self.sig_cut
                 ):
                     flux_points = FluxPointsEstimator(
-                        e_edges=self.El_flux, source=model.name, n_sigma_ul=2,
+                        energy_edges=self.El_flux, source=model.name, n_sigma_ul=2,
                     ).run(datasets=datasets)
                     filename = self.resdir / f"{model.name}_flux_points.fits"
                     flux_points.write(filename, overwrite=True)
