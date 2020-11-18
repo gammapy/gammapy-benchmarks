@@ -25,7 +25,7 @@ from gammapy.irf import EDispKernel, EnergyDependentTablePSF, PSFKernel
 from gammapy.maps import Map, MapAxis, WcsGeom, WcsNDMap
 from gammapy.modeling import Fit
 from gammapy.modeling.models import (
-    BackgroundModel,
+    FoVBackgroundModel,
     LogParabolaSpectralModel,
     Models,
     SkyModel,
@@ -265,9 +265,19 @@ class Validation_3FHL:
         # merge iem and iso, only one local normalization is fitted
         dataset_name = "3FHL_ROI_num" + str(kr)
         background_total = bkg_iem + bkg_iso
-        background_model = BackgroundModel(
-            background_total, name="bkg_iem+iso", datasets_names=[dataset_name]
+
+        # Dataset
+        dataset = MapDataset(
+            counts=counts,
+            exposure=exposure,
+            background=background_total,
+            psf=psf_kernel,
+            edisp=edisp,
+            mask_fit=mask_fermi,
+            name=dataset_name,
         )
+
+        background_model = FoVBackgroundModel(dataset_name=dataset_name)
         background_model.parameters["norm"].min = 0.0
 
         # Sources model
@@ -286,18 +296,10 @@ class Validation_3FHL:
                     model.spectral_model.parameters["alpha"].max = 10.0
 
                 FHL3_roi.append(model)
-        model_total = Models([background_model] + FHL3_roi)
+        model_total = Models(FHL3_roi)
+        model_total.append(background_model)
+        dataset.models = model_total
 
-        # Dataset
-        dataset = MapDataset(
-            models=model_total,
-            counts=counts,
-            exposure=exposure,
-            psf=psf_kernel,
-            edisp=edisp,
-            mask_fit=mask_fermi,
-            name=dataset_name,
-        )
         cat_stat = dataset.stat_sum()
         datasets = Datasets([dataset])
 
@@ -351,7 +353,7 @@ class Validation_3FHL:
 
             for model in dataset.models:
                 if (
-                    isinstance(model, BackgroundModel) is False
+                    isinstance(model, FoVBackgroundModel) is False
                     and self.FHL3[model.name].data["ROI_num"] == kr
                     and self.FHL3[model.name].data["Signif_Avg"] >= self.sig_cut
                 ):

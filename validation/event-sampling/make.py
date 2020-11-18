@@ -20,7 +20,7 @@ from gammapy.irf import EnergyDispersion2D, load_cta_irfs
 from gammapy.makers import MapDatasetMaker
 from gammapy.maps import Map, MapAxis, WcsGeom
 from gammapy.modeling import Fit
-from gammapy.modeling.models import Models
+from gammapy.modeling.models import Models, FoVBackgroundModel
 from gammapy.utils.table import table_from_row_data
 
 log = logging.getLogger(__name__)
@@ -281,8 +281,9 @@ def simulate_events(filename_model, filename_dataset, nobs):
 
     log.info(f"Reading {filename_model}")
     models = Models.read(filename_model)
-    # dataset.models = models
-    dataset.models.extend(models)
+    models.append(FoVBackgroundModel(dataset_name=dataset.name))
+    dataset.models = models
+#    dataset.models.extend(models)
 
     sampler = MapDatasetEventSampler(random_state=0)
 
@@ -373,9 +374,10 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
 
     log.info(f"Reading {filename_model}")
     models = Models.read(filename_model)
+    models.append(FoVBackgroundModel(dataset_name=dataset.name))
 
-    # dataset.models = models
-    dataset.models.extend(models)
+    dataset.models = models
+
     if binned:
         dataset.fake()
 
@@ -511,11 +513,9 @@ def plot_residuals(dataset, obs_id, livetime, model_name):
             region = spatial_model.to_region()
 
         dataset.plot_residuals(
-            method="diff/sqrt(model)",
-            vmin=-0.5,
-            vmax=0.5,
-            region=region,
-            figsize=(10, 4),
+            kwargs_spatial={"method":"diff/sqrt(model)", "vmin":-0.5, "vmax":0.5},
+            kwargs_spectral={"region":region},
+#            figsize=(10, 4),
         )
         obs_id = int(obs_id)
         filename = f"results/models/{model.name}/plots_{livetime.value:.0f}{livetime.unit}/residuals/residuals_{obs_id:04d}.png"
@@ -524,7 +524,8 @@ def plot_residuals(dataset, obs_id, livetime, model_name):
 
 def plot_residual_distribution(dataset, obs_id, livetime):
     """Plot residual significance distribution"""
-    model = dataset.models[1]
+    # It is models[0] since no FoVBackgroundModel was set
+    model = dataset.models[0]
 
     estimator = ExcessMapEstimator(
         correlation_radius="0.1 deg"
@@ -620,7 +621,8 @@ def plot_results(filename_model, obs_id, filename_dataset=None):
 
     dataset = read_dataset(filename_dataset, filename_model, obs_id)
     mod = Models(model_best_fit[model.names[0]])
-    dataset.models.extend(mod)
+    # We don't create background model here. It is probably not be needed since no bkg fitting is performed.
+    dataset.models = mod
     plot_residuals(dataset, obs_id, LIVETIME, model.names[0])
     plot_residual_distribution(dataset, obs_id, LIVETIME)
 
