@@ -28,7 +28,7 @@ jobs:
       - name: get env file
         run: curl -O https://raw.githubusercontent.com/gammapy/gammapy/master/environment-dev.yml
       - name: create and activate env
-        uses: goanpeca/setup-miniconda@v1
+        uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: gammapy-dev
           environment-file: environment-dev.yml
