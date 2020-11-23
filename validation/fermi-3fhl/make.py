@@ -80,8 +80,8 @@ class Validation_3FHL:
         self.psf_margin = np.ceil(psf_r99max.value[0] * 10) / 10.0
 
         # energies
-        self.El_flux = [10.0, 20.0, 50.0, 150.0, 500.0, 2000.0]
-        El_fit = 10 ** np.arange(1, 3.31, 0.1)
+        self.El_flux = [10.0, 20.0, 50.0, 150.0, 500.0, 2000.0]*u.GeV
+        El_fit = 10 ** np.arange(1, 3.31, 0.1)*u.GeV
         self.energy_axis = MapAxis.from_edges(
             El_fit, name="energy", unit="GeV", interp="log"
         )
