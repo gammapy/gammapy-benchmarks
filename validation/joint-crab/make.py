@@ -148,10 +148,10 @@ def data_reduction(instrument):
     analysis.get_datasets()
     if instrument == "fact":
         counts = analysis.datasets[0].counts
-        data = counts.geom.energy_mask(emin=0.4 * u.TeV)
+        data = counts.geom.energy_mask(energy_min=0.4 * u.TeV)
         analysis.datasets[0].mask_safe = counts.copy(data=data)
 
-    analysis.datasets.write(f"reduced_{instrument}", overwrite=True)
+    analysis.datasets.write(f"reduced_{instrument}/{instrument}_datasets.yaml", overwrite=True)
 
 
 def data_reduction_fermi():
@@ -175,7 +175,7 @@ def data_reduction_fermi():
     )
     datasets = Datasets([dataset])
 
-    datasets.write(f"reduced_fermi", overwrite=True)
+    datasets.write(f"reduced_fermi/fermi_datasets.yaml", overwrite=True)
 
 
 def define_model():
@@ -206,8 +206,8 @@ def make_contours(fit, result, npoints):
         sigma=np.sqrt(2.3),
     )
     contours["contour_alpha_beta"] = {
-        "alpha": contour["x"].tolist(),
-        "beta": (contour["y"] * np.log(10)).tolist(),
+        "alpha": contour["alpha"].tolist(),
+        "beta": (contour["beta"] * np.log(10)).tolist(),
     }
 
     contour = fit.minos_contour(
@@ -217,8 +217,8 @@ def make_contours(fit, result, npoints):
         sigma=np.sqrt(2.3),
     )
     contours["contour_amplitude_beta"] = {
-        "amplitude": contour["x"].tolist(),
-        "beta": (contour["y"] * np.log(10)).tolist(),
+        "amplitude": contour["amplitude"].tolist(),
+        "beta": (contour["beta"] * np.log(10)).tolist(),
     }
 
     contour = fit.minos_contour(
@@ -228,8 +228,8 @@ def make_contours(fit, result, npoints):
         sigma=np.sqrt(2.3),
     )
     contours["contour_amplitude_alpha"] = {
-        "amplitude": contour["x"].tolist(),
-        "alpha": contour["y"].tolist(),
+        "amplitude": contour["amplitude"].tolist(),
+        "alpha": contour["alpha"].tolist(),
     }
 
     return contours
@@ -237,7 +237,7 @@ def make_contours(fit, result, npoints):
 
 def read_datasets_and_set_model(instrument, model):
     # Read from disk
-    datasets = Datasets.read(f"reduced_{instrument}", f"_datasets.yaml", "_models.yaml")
+    datasets = Datasets.read(f"reduced_{instrument}/{instrument}_datasets.yaml")
 
     e_min = u.Quantity(instrument_opts[instrument]["emin"])
     e_max = u.Quantity(instrument_opts[instrument]["emax"])
@@ -299,9 +299,10 @@ def plot_contour_line(ax, x, y, **kwargs):
     t = np.linspace(-1, 2, len(x), endpoint=False)
     tp = np.linspace(0, 1, 50)
 
+    # Changed k from 5 to 4 after issue in MnContours for Fermi data
     t_knots = np.linspace(t[1], t[-2], 10)
-    xs = LSQUnivariateSpline(t, x, t_knots, k=5)(tp)
-    ys = LSQUnivariateSpline(t, y, t_knots, k=5)(tp)
+    xs = LSQUnivariateSpline(t, x, t_knots, k=4)(tp)
+    ys = LSQUnivariateSpline(t, y, t_knots, k=4)(tp)
 
     ax.plot(xs, ys, **kwargs)
 
