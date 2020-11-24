@@ -482,7 +482,7 @@ def save_figure(filename):
 def plot_spectra(model, model_best_fit, obs_id, livetime):
     """Plot spectral models"""
 
-    if model.tag == "SkyDiffuseCube":
+    if model.name == "diffuse-cube":
         log.info(f"SkyDiffuseCube: no spectral model to plot")
     else:
         ax = model.spectral_model.plot(

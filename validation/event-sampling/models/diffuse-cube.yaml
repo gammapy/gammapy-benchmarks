@@ -1,8 +1,16 @@
 components:
 -   name: diffuse-cube
-    type: SkyDiffuseCube
-    filename: $GAMMAPY_DATA/fermi_3fhl/gll_iem_v06_cutout.fits
-    parameters:
-    - {name: norm, value: 1.0, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    type: SkyModel
+    spectral:
+        type: PowerLawNormSpectralModel
+        parameters:
+        - {name: norm, value: 1.0, unit: '', min: .nan, max: .nan, frozen: false}
+        - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true}
+        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+    spatial:
+        type: TemplateSpatialModel
+        frame: galactic
+        parameters: []
+        filename: /Users/terrier/Code/gammapy-dev/gammapy-datasets/fermi-3fhl-gc/gll_iem_v06_gc.fits.gz
+        normalize: False
+        unit: 1 / (cm2 MeV s sr)
