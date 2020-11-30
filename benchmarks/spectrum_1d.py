@@ -13,7 +13,7 @@ from gammapy.datasets import Datasets, SpectrumDataset, SpectrumDatasetOnOff
 from gammapy.estimators import FluxPointsEstimator
 from gammapy.makers import (ReflectedRegionsBackgroundMaker, SafeMaskMaker,
                             SpectrumDatasetMaker)
-from gammapy.maps import Map, MapAxis
+from gammapy.maps import Map, MapAxis, RegionGeom
 from gammapy.modeling import Fit
 from gammapy.modeling.models import (PointSpatialModel, PowerLawSpectralModel,
                                      SkyModel)
@@ -51,9 +51,9 @@ def data_prep():
         0.05, 100, nbin=200, interp="log", unit="TeV", name="energy_true"
     )
 
-    stacked = SpectrumDatasetOnOff.create(
-        region=on_region, e_reco=e_reco, e_true=e_true, name="stacked"
-    )
+    geom = RegionGeom(on_region, axes=[e_reco])
+
+    stacked = SpectrumDatasetOnOff.create(geom=geom, energy_axis_true=e_true, name="stacked")
 
     dataset_maker = SpectrumDatasetMaker(
         containment_correction=False, selection=["counts", "exposure", "edisp"]
