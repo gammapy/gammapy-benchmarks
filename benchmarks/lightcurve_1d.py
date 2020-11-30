@@ -14,7 +14,7 @@ from gammapy.datasets import SpectrumDataset
 from gammapy.estimators import LightCurveEstimator
 from gammapy.irf import load_cta_irfs
 from gammapy.makers import SpectrumDatasetMaker
-from gammapy.maps import MapAxis
+from gammapy.maps import MapAxis, RegionGeom
 from gammapy.modeling import Fit
 from gammapy.modeling.models import (ExpDecayTemporalModel,
                                      PowerLawSpectralModel, SkyModel, FoVBackgroundModel)
@@ -42,6 +42,8 @@ def simulate():
     on_region_radius = Angle("0.11 deg")
     on_region = CircleSkyRegion(center=center, radius=on_region_radius)
 
+    geom = RegionGeom(on_region, axes=[energy_axis])
+
     pointing = SkyCoord(0.5, 0.5, unit="deg", frame="galactic")
 
     spectral_model = PowerLawSpectralModel(
@@ -65,9 +67,8 @@ def simulate():
             reference_time=gti_t0,
         )
         empty = SpectrumDataset.create(
-            e_reco=energy_axis,
-            e_true=energy_axis_true,
-            region=on_region,
+            geom=geom,
+            energy_axis_true=energy_axis_true,
             name=f"dataset_{i}",
         )
         maker = SpectrumDatasetMaker(selection=["exposure", "background", "edisp"])
@@ -86,7 +87,7 @@ def get_lc(datasets):
     )
     model_fit = SkyModel(spectral_model=spectral_model, name="model-fit",)
     for dataset in datasets:
-        dataset.models = [model_fit, FoVBackgroundModel(dataset_name=dataset.name)]
+        dataset.models = [model_fit]
     lc_maker_1d = LightCurveEstimator(
         energy_edges=[1.0, 10.0] * u.TeV, source="model-fit", reoptimize=False
     )
@@ -104,7 +105,7 @@ def fit_lc(datasets):
         name="model-test",
     )
     for dataset in datasets:
-        dataset.models = [model, FoVBackgroundModel(dataset_name=dataset.name)]
+        dataset.models = [model]
     fit = Fit(datasets)
     result = fit.run()
     print(result)
