@@ -80,7 +80,7 @@ def select_data(target_position):
         radius=2 * u.deg,
     )
     obs_ids = data_store.obs_table.select_observations(selection)["OBS_ID"]
-    observations = data_store.get_observations(obs_ids[:2])
+    observations = data_store.get_observations(obs_ids)
     return observations
 
 
