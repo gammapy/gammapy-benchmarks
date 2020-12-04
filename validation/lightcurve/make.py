@@ -113,9 +113,9 @@ def perform_analysis(type, observations, target_position, time_intervals):
 
     log.info("Export results.")
 
-    path = f"results/lightcurve_{type}.rst"
+    path = f"results/lightcurve_{type}.fits"
     log.info(f"Writing {path}")
-    lc.table.write(path, format="ascii.rst", overwrite=True)
+    lc.table.write(path, overwrite=True)
 
 
 def create_datasets_1d(observations, target_position):
@@ -216,12 +216,21 @@ def define_model_3d(target_position):
     return sky_model
 
 def make_summary(types):
-    ax = plt.figure()
+    log.info("Making summary plots.")
+    ax=None
     for type in types:
-        path = f"results/lightcurve_{type}.rst"
-        lc = LightCurve.read(path, format="ascii.rst")
-        lc.plot(ax=ax)
-    plt.savefig(path)
+        path = f"results/lightcurve_{type}.fits"
+        lc = LightCurve.read(path)
+        lc.plot(ax=ax, label=type)
+    plt.legend()
+    
+    if len(types)>1:
+        path = f"results/lightcurve_comparison.png"
+        plt.savefig(path)
+    else:
+        path = f"results/lightcurve_{types[0]}.png"
+        plt.savefig(path)
+
     plt.close()
 
 
