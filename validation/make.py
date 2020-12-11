@@ -46,7 +46,7 @@ AVAILABLE_VALIDATIONS = {
     "lightcurve": {
         "folder": "lightcurve",
         "command": "make.py",
-        "args": ["run-analyses", "1d", "3d", "all"],
+        "args": ["run-analyses", "all"],
     },
 }
 

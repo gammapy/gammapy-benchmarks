@@ -2,7 +2,6 @@
 """Run Gammapy validation: CTA 1DC"""
 import logging
 import warnings
-from pathlib import Path
 import click
 from gammapy.data import DataStore
 from gammapy.datasets import SpectrumDataset, MapDataset
@@ -113,13 +112,9 @@ def perform_analysis(type, observations, target_position, time_intervals):
     lc = lc_maker.run(datasets)
 
     log.info("Export results.")
-
-    #path = f"results/lightcurve_{type}.fits"
-
     filename = make_path("results")
     filename.mkdir(exist_ok=True)
     path = filename / f"lightcurve_{type}.fits"
-
     log.info(f"Writing {path}")
     lc.table.write(path, overwrite=True)
 
@@ -227,23 +222,20 @@ def make_summary(types):
     for type in types:
         filename = make_path("results")
         path = filename / f"lightcurve_{type}.fits"
-        filename.mkdir(exist_ok=True)
-        #path = f"results/lightcurve_{type}.fits"
+        #filename.mkdir(exist_ok=True)
         lc = LightCurve.read(path)
         lc.plot(ax=ax, label=type)
     plt.legend()
 
     if len(types)>1:
         filename = make_path("results")
-        filename.mkdir(exist_ok=True)
+        #filename.mkdir(exist_ok=True)
         path = filename / f"lightcurve_comparison.png"
-        #path = f"results/lightcurve_comparison.png"
         plt.savefig(path)
     else:
         filename = make_path("results")
-        filename.mkdir(exist_ok=True)
+        #filename.mkdir(exist_ok=True)
         path = filename / f"lightcurve_{types[0]}.png"
-        #path = f"results/lightcurve_{types[0]}.png"
         plt.savefig(path)
 
     plt.close()
