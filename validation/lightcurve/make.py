@@ -24,7 +24,7 @@ from regions import CircleSkyRegion
 from astropy.coordinates import Angle
 from gammapy.utils.scripts import make_path
 
-
+ 
 
 log = logging.getLogger(__name__)
 
@@ -222,19 +222,16 @@ def make_summary(types):
     for type in types:
         filename = make_path("results")
         path = filename / f"lightcurve_{type}.fits"
-        #filename.mkdir(exist_ok=True)
         lc = LightCurve.read(path)
         lc.plot(ax=ax, label=type)
     plt.legend()
 
     if len(types)>1:
         filename = make_path("results")
-        #filename.mkdir(exist_ok=True)
         path = filename / f"lightcurve_comparison.png"
         plt.savefig(path)
     else:
         filename = make_path("results")
-        #filename.mkdir(exist_ok=True)
         path = filename / f"lightcurve_{types[0]}.png"
         plt.savefig(path)
 
