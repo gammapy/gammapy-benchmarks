@@ -148,8 +148,8 @@ def data_reduction(instrument):
     analysis.get_datasets()
     if instrument == "fact":
         counts = analysis.datasets[0].counts
-        data = counts.geom.energy_mask(energy_min=0.4 * u.TeV)
-        analysis.datasets[0].mask_safe = counts.copy(data=data)
+        mask = counts.geom.energy_mask(energy_min=0.4 * u.TeV)
+        analysis.datasets[0].mask_safe = mask
 
     analysis.datasets.write(f"reduced_{instrument}/{instrument}_datasets.yaml", overwrite=True)
 
