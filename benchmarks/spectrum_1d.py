@@ -13,7 +13,7 @@ from gammapy.datasets import Datasets, SpectrumDataset, SpectrumDatasetOnOff
 from gammapy.estimators import FluxPointsEstimator
 from gammapy.makers import (ReflectedRegionsBackgroundMaker, SafeMaskMaker,
                             SpectrumDatasetMaker)
-from gammapy.maps import Map, MapAxis, RegionGeom
+from gammapy.maps import WcsGeom, MapAxis, RegionGeom
 from gammapy.modeling import Fit
 from gammapy.modeling.models import (PointSpatialModel, PowerLawSpectralModel,
                                      SkyModel)
@@ -37,12 +37,11 @@ def data_prep():
     )
 
     skydir = target_position.galactic
-    exclusion_mask = Map.create(
+    mask_geom = WcsGeom.create(
         npix=(150, 150), binsz=0.05, skydir=skydir, proj="TAN", frame="galactic"
     )
 
-    mask = exclusion_mask.geom.region_mask([exclusion_region], inside=False)
-    exclusion_mask.data = mask
+    exclusion_mask = mask_geom.region_mask([exclusion_region], inside=False)
 
     e_reco = MapAxis.from_bounds(
         0.1, 40, nbin=40, interp="log", unit="TeV", name="energy"

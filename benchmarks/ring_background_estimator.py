@@ -73,8 +73,8 @@ def create_stacked_dataset(analysis):
 
     # Make the exclusion mask
     regions = CircleSkyRegion(center=source_pos, radius=0.3 * u.deg)
-    exclusion_mask = Map.from_geom(geom_image)
-    exclusion_mask.data = geom_image.region_mask([regions], inside=False)
+
+    exclusion_mask = geom_image.region_mask([regions], inside=False)
 
     ring_maker = RingBackgroundMaker(
         r_in="0.5 deg", width="0.3 deg", exclusion_mask=exclusion_mask
