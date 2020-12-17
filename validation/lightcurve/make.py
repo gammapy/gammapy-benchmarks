@@ -160,7 +160,7 @@ def create_datasets_3d(observations, target_position):
     )
 
     exclusion_region = CircleSkyRegion(target_position, 0.3*u.deg)
-    exclusion_mask = Map.from_geom(geom, data=geom.region_mask([exclusion_region], inside=False))
+    exclusion_mask = geom.region_mask([exclusion_region], inside=False)
 
     offset_max = 2.0 * u.deg
     #data reduction makers
