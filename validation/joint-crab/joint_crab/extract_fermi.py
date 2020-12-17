@@ -89,11 +89,11 @@ def extract_spectrum_fermi(on_region, off_region, energy, containment_correction
         on_region, containment_correction=containment_correction, name="fermi"
     )
     on_mask = ds.counts.geom.region_mask([on_region])
-    on_solid_angle = np.sum(ds.counts.geom.solid_angle() * on_mask)
+    on_solid_angle = np.sum(ds.counts.geom.solid_angle() * on_mask.data)
 
     off_dataset = ds.to_spectrum_dataset(off_region, containment_correction=False)
     off_mask = ds.counts.geom.region_mask([off_region])
-    off_solid_angle = np.sum(ds.counts.geom.solid_angle() * off_mask)
+    off_solid_angle = np.sum(ds.counts.geom.solid_angle() * off_mask.data)
 
     return SpectrumDatasetOnOff(
         counts=spec_dataset.counts,

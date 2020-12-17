@@ -21,7 +21,7 @@ from gammapy.data import EventList
 from gammapy.datasets import Datasets, MapDataset
 from gammapy.datasets.map import MapEvaluator
 from gammapy.estimators import FluxPoints, FluxPointsEstimator
-from gammapy.irf import EDispKernel, EnergyDependentTablePSF, PSFKernel
+from gammapy.irf import EDispKernel, EnergyDependentTablePSF, PSFKernel, PSFMap, EDispKernelMap
 from gammapy.maps import Map, MapAxis, WcsGeom, WcsNDMap
 from gammapy.modeling import Fit
 from gammapy.modeling.models import (
@@ -233,11 +233,10 @@ class Validation_3FHL:
         psf_kernel = PSFKernel.from_table_psf(
             self.psf, geom, max_radius=self.psf_margin * u.deg
         )
+        psf_map = PSFMap.from_energy_dependent_table_psf(self.psf)
 
         # Energy Dispersion
-        e_true = exposure.geom.axes[0].edges
-        e_reco = counts.geom.axes[0].edges
-        edisp = EDispKernel.from_diagonal_response(energy_true=e_true, energy=e_reco)
+        edisp = EDispKernelMap.from_diagonal_response(energy_axis_true=axis, energy_axis=self.energy_axis)
 
         # fit mask
         if coords["lon"].min() < 90 * u.deg and coords["lon"].max() > 270 * u.deg:
@@ -254,12 +253,12 @@ class Validation_3FHL:
 
         # IEM
         eval_iem = MapEvaluator(
-            model=model_iem, exposure=exposure, psf=psf_kernel, edisp=edisp
+            model=model_iem, exposure=exposure, psf=psf_kernel, edisp=edisp.get_edisp_kernel()
         )
         bkg_iem = eval_iem.compute_npred()
 
         # ISO
-        eval_iso = MapEvaluator(model=self.model_iso, exposure=exposure, edisp=edisp)
+        eval_iso = MapEvaluator(model=self.model_iso, exposure=exposure, edisp=edisp.get_edisp_kernel())
         bkg_iso = eval_iso.compute_npred()
 
         # merge iem and iso, only one local normalization is fitted
@@ -271,7 +270,7 @@ class Validation_3FHL:
             counts=counts,
             exposure=exposure,
             background=background_total,
-            psf=psf_kernel,
+            psf=psf_map,
             edisp=edisp,
             mask_fit=mask_fermi,
             name=dataset_name,
