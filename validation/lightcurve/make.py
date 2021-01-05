@@ -224,7 +224,7 @@ def make_summary(types):
         path = filename / f"lightcurve_{type}.fits"
         lc = LightCurve.read(path)
         lc.plot(ax=ax, label=type)
-        lc_ChandraNight = LightCurve.read("Flux_LC_ChandraNight_700GeV.fits")
+        lc_ChandraNight = LightCurve.read("reference/Flux_LC_ChandraNight_700GeV.fits")
         lc_ChandraNight.plot(ax=ax, label='ref', alpha=0.5)
     plt.legend()
 
