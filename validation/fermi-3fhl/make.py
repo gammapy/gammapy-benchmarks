@@ -68,11 +68,11 @@ class Validation_3FHL:
 
         # event list
         self.events = EventList.read(
-            "/Users/qremy/Work/GitHub/gammapy-data/fermi_3fhl/fermi_3fhl_events_selected.fits.gz"
+            "$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_events_selected.fits.gz"
         )
         # psf
         self.psf = EnergyDependentTablePSF.read(
-            "/Users/qremy/Work/GitHub/gammapy-data/fermi_3fhl/fermi_3fhl_psf_gc.fits.gz"
+            "$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_psf_gc.fits.gz"
         )
 
         # energies
@@ -93,7 +93,7 @@ class Validation_3FHL:
         )
         self.model_iso.spectral_model.model2.norm.value = 0.92
         # regions selection
-        file3fhl = "/Users/qremy/Work/GitHub/gammapy-data/catalogs/fermi/gll_psch_v13.fit.gz"
+        file3fhl = "$GAMMAPY_DATA/catalogs/fermi/gll_psch_v13.fit.gz"
         self.FHL3 = SourceCatalog3FHL(file3fhl)
         hdulist = fits.open(make_path(file3fhl))
         self.ROIs = hdulist["ROIs"].data
@@ -186,7 +186,7 @@ class Validation_3FHL:
 
         # exposure
         exposure_hpx = Map.read(
-            "/Users/qremy/Work/GitHub/gammapy-data/fermi_3fhl/fermi_3fhl_exposure_cube_hpx.fits.gz"
+            "$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_exposure_cube_hpx.fits.gz"
         )
         exposure_hpx.unit = "cm2 s"
 
