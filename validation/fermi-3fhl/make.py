@@ -68,16 +68,12 @@ class Validation_3FHL:
 
         # event list
         self.events = EventList.read(
-            "$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_events_selected.fits.gz"
+            "/Users/qremy/Work/GitHub/gammapy-data/fermi_3fhl/fermi_3fhl_events_selected.fits.gz"
         )
         # psf
         self.psf = EnergyDependentTablePSF.read(
-            "$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_psf_gc.fits.gz"
+            "/Users/qremy/Work/GitHub/gammapy-data/fermi_3fhl/fermi_3fhl_psf_gc.fits.gz"
         )
-
-        # mask margin
-        psf_r99max = self.psf.containment_radius(10 * u.GeV, fraction=0.99)
-        self.psf_margin = np.ceil(psf_r99max.value[0] * 10) / 10.0
 
         # energies
         self.El_flux = [10.0, 20.0, 50.0, 150.0, 500.0, 2000.0]*u.GeV
@@ -86,6 +82,10 @@ class Validation_3FHL:
             El_fit, name="energy", unit="GeV", interp="log"
         )
 
+        # mask margin
+        psf_r99max = np.max(self.psf.containment_radius(El_fit, fraction=0.99))
+        self.psf_margin = np.ceil(psf_r99max.value * 10) / 10.0
+
         # iso norm=0.92 see paper appendix A
         self.model_iso = create_fermi_isotropic_diffuse_model(
             filename="data/iso_P8R2_SOURCE_V6_v06_extrapolated.txt",
@@ -93,7 +93,7 @@ class Validation_3FHL:
         )
         self.model_iso.spectral_model.model2.norm.value = 0.92
         # regions selection
-        file3fhl = "$GAMMAPY_DATA/catalogs/fermi/gll_psch_v13.fit.gz"
+        file3fhl = "/Users/qremy/Work/GitHub/gammapy-data/catalogs/fermi/gll_psch_v13.fit.gz"
         self.FHL3 = SourceCatalog3FHL(file3fhl)
         hdulist = fits.open(make_path(file3fhl))
         self.ROIs = hdulist["ROIs"].data
@@ -186,7 +186,7 @@ class Validation_3FHL:
 
         # exposure
         exposure_hpx = Map.read(
-            "$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_exposure_cube_hpx.fits.gz"
+            "/Users/qremy/Work/GitHub/gammapy-data/fermi_3fhl/fermi_3fhl_exposure_cube_hpx.fits.gz"
         )
         exposure_hpx.unit = "cm2 s"
 
@@ -233,7 +233,7 @@ class Validation_3FHL:
         psf_kernel = PSFKernel.from_table_psf(
             self.psf, geom, max_radius=self.psf_margin * u.deg
         )
-        psf_map = PSFMap.from_energy_dependent_table_psf(self.psf)
+        #psf_map = PSFMap.from_energy_dependent_table_psf(self.psf) #slower
 
         # Energy Dispersion
         edisp = EDispKernelMap.from_diagonal_response(energy_axis_true=axis, energy_axis=self.energy_axis)
@@ -270,7 +270,7 @@ class Validation_3FHL:
             counts=counts,
             exposure=exposure,
             background=background_total,
-            psf=psf_map,
+            psf=psf_kernel,
             edisp=edisp,
             mask_fit=mask_fermi,
             name=dataset_name,
@@ -295,8 +295,7 @@ class Validation_3FHL:
                     model.spectral_model.parameters["alpha"].max = 10.0
 
                 FHL3_roi.append(model)
-        model_total = Models(FHL3_roi)
-        model_total.append(background_model)
+        model_total = Models(FHL3_roi+[background_model])
         dataset.models = model_total
 
         cat_stat = dataset.stat_sum()
@@ -309,7 +308,9 @@ class Validation_3FHL:
         fit_stat = datasets.stat_sum()
 
         if results.message != "Optimization failed.":
-            datasets.write(Path(self.resdir) / dataset.name, overwrite=True)
+            filedata = Path(self.resdir) / f"3FHL_ROI_num{kr}_datasets.yaml"
+            filemodel = Path(self.resdir) / f"3FHL_ROI_num{kr}_models.yaml"
+            datasets.write(filedata, filemodel, overwrite=True)
             np.savez(
                 self.resdir / f"3FHL_ROI_num{kr}_fit_infos.npz",
                 message=results.message,
@@ -325,8 +326,9 @@ class Validation_3FHL:
                     self.FHL3[model.name].data["ROI_num"] == kr
                     and self.FHL3[model.name].data["Signif_Avg"] >= self.sig_cut
                 ):
+                    print(model.name)
                     flux_points = FluxPointsEstimator(
-                        energy_edges=self.El_flux, source=model.name, n_sigma_ul=2,
+                        energy_edges=self.El_flux, source=model.name, n_sigma_ul=2
                     ).run(datasets=datasets)
                     filename = self.resdir / f"{model.name}_flux_points.fits"
                     flux_points.write(filename, overwrite=True)
@@ -336,10 +338,10 @@ class Validation_3FHL:
 
     def read_regions(self):
         for kr in self.ROIs_sel:
-            filedata = f"3FHL_ROI_num{kr}_datasets.yaml"
-            filemodel = f"3FHL_ROI_num{kr}_models.yaml"
+            filedata = self.resdir / f"3FHL_ROI_num{kr}_datasets.yaml"
+            filemodel = self.resdir / f"3FHL_ROI_num{kr}_models.yaml"
             try:
-                dataset = list(Datasets.read(self.resdir, filedata, filemodel))[0]
+                dataset = list(Datasets.read(filedata, filemodel, lazy=False))[0]
             except (FileNotFoundError, IOError):
                 continue
 
@@ -374,15 +376,10 @@ class Validation_3FHL:
 
     def plot_maps(self, dataset):
         plt.figure(figsize=(6, 6), dpi=150)
-        ax, cb = dataset.plot_residuals(
+        dataset.plot_residuals_spatial(
             method="diff/sqrt(model)",
             smooth_kernel="gauss",
             smooth_radius=0.1 * u.deg,
-            region=None,
-            figsize=(6, 6),
-            cmap="jet",
-            vmin=-3,
-            vmax=3,
         )
         plt.title("Residuals: (Nobs-Npred)/sqrt(Npred)")
         plt.savefig(self.resdir / f"resi_{dataset.name}.png", dpi=150)
@@ -505,6 +502,7 @@ class Validation_3FHL:
         ]
 
         for msg in msgs:
+            print(message)
             print(msg, 100 * sum(message == msg) / len(message), "  ")
 
         plt.figure(figsize=(6, 6), dpi=120)
@@ -687,14 +685,15 @@ def cli(selection, processes, fit):
     # TODO: move this code to the extrapolation functions
     # Use MapAxis and Gammapy for energy axis functionality
     # Don't call `np.log` or `10 **` for this!
+    
     El_extra = 10 ** np.arange(3.8, 6.51, 0.1)  # MeV
     logEc_extra = (np.log10(El_extra)[1:] + np.log10(El_extra)[:-1]) / 2.0
     extrapolate_iso_model(logEc_extra)
     extrapolate_iem_model(logEc_extra)
-
+    
     validation = Validation_3FHL(selection=selection, savefig=True)
     validation.run_all(run_fit=fit, get_diags=True, processes=processes)
-
+    
 
 if __name__ == "__main__":
     cli()
