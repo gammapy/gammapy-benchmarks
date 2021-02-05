@@ -2,133 +2,105 @@
  Vela region 
 
 
- ![](results /resi_3FHL_ROI_num135.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results /resi_3FHL_ROI_num135.png)
 
- ![](results /npred_3FHL_ROI_num135.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results /npred_3FHL_ROI_num135.png)
 
- ![](results /counts_3FHL_ROI_num135.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results /counts_3FHL_ROI_num135.png)
 
- ![](results /spec_3FHL_J0833.1-4511e_ROI_num135.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results /spec_3FHL_J0833.1-4511e_ROI_num135.png)
 
- ![](results /spec_3FHL_J0835.3-4510_ROI_num135.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results /spec_3FHL_J0835.3-4510_ROI_num135.png)
 
- ![](results /spec_3FHL_J0851.9-4620e_ROI_num135.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results /spec_3FHL_J0851.9-4620e_ROI_num135.png)
 
  All following values are given in percent 
 
 
-- ['Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'] -
+- ['Optimization terminated successfully.'] -
 
-['Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.']
+['Optimization terminated successfully.']
 Optimization terminated successfully. 100.0   
-['Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.']
+['Optimization terminated successfully.']
 Optimization failed. 0.0   
-['Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.'
- 'Optimization terminated successfully.']
+['Optimization terminated successfully.']
 Optimization failed. Estimated distance to minimum too large. 0.0   
 
- ![](results/Cash_stat_corr.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results/Cash_stat_corr.png)
 
 flux_points   
 Rel. err. <10%: 0.0   
 Rel. err. <30%: 0.0   
-Rel. err. mean: -318208572.5616611   
+Rel. err. mean: -2499674538.1894064   
 
- ![](results/flux_points_errel.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results/flux_points_errel.png)
 
 PL_index   
-dx/x <10% :  80.0   
+dx/x <10% :  100.0   
 dx/x <30% :  100.0   
 
- ![](results/PL_index_corr.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results/PL_index_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -0.1513573039483748   
+Rel. err. mean: -0.3509324472382963   
 compatibility: 100.0   
 
- ![](results/PL_index_errel.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results/PL_index_errel.png)
 
- ![](results/PL_index_error_errel.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results/PL_index_error_errel.png)
 
 PL_amplitude   
-dx/x <10% :  50.0   
+dx/x <10% :  100.0   
 dx/x <30% :  100.0   
 
- ![](results/PL_amplitude_corr.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results/PL_amplitude_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -0.7180175952804141   
+Rel. err. mean: 1.8775543911001187   
 compatibility: 100.0   
 
- ![](results/PL_amplitude_errel.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results/PL_amplitude_errel.png)
 
- ![](results/PL_amplitude_error_errel.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results/PL_amplitude_error_errel.png)
 
 LP_alpha   
 dx/x <10% :  100.0   
 dx/x <30% :  100.0   
 
- ![](results/LP_alpha_corr.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results/LP_alpha_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -0.22469965590752905   
+Rel. err. mean: -1.4885736158733456   
 compatibility: 100.0   
 
- ![](results/LP_alpha_errel.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results/LP_alpha_errel.png)
 
- ![](results/LP_alpha_error_errel.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results/LP_alpha_error_errel.png)
 
 LP_beta   
-dx/x <10% :  25.0   
-dx/x <30% :  50.0   
+dx/x <10% :  100.0   
+dx/x <30% :  100.0   
 
- ![](results/LP_beta_corr.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results/LP_beta_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -3.424146767818581   
+Rel. err. mean: -6.672712365215398   
 compatibility: 100.0   
 
- ![](results/LP_beta_errel.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results/LP_beta_errel.png)
 
- ![](results/LP_beta_error_errel.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results/LP_beta_error_errel.png)
 
 LP_amplitude   
 dx/x <10% :  100.0   
 dx/x <30% :  100.0   
 
- ![](results/LP_amplitude_corr.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results/LP_amplitude_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -1.3569738110180953   
+Rel. err. mean: -1.3608444781768216   
 compatibility: 100.0   
 
- ![](results/LP_amplitude_errel.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results/LP_amplitude_errel.png)
 
- ![](results/LP_amplitude_error_errel.png)
+ ![](/Users/qremy/Work/GitHub/gammapy-benchmarks/validation/fermi-3fhl/results/LP_amplitude_error_errel.png)

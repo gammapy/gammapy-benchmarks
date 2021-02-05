@@ -21,7 +21,7 @@ from gammapy.data import EventList
 from gammapy.datasets import Datasets, MapDataset
 from gammapy.datasets.map import MapEvaluator
 from gammapy.estimators import FluxPoints, FluxPointsEstimator
-from gammapy.irf import EDispKernel, EnergyDependentTablePSF, PSFKernel, PSFMap, EDispKernelMap
+from gammapy.irf import PSFMap, EDispKernelMap
 from gammapy.maps import Map, MapAxis, WcsGeom, WcsNDMap
 from gammapy.modeling import Fit
 from gammapy.modeling.models import (
@@ -38,7 +38,6 @@ from gammapy.utils.scripts import make_path
 
 log = logging.getLogger(__name__)
 BASE_PATH = Path(__file__).parent
-
 
 def iscompatible(x, y, dx, dy):
     x, y, dx, dy = np.array(x), np.array(y), np.array(dx), np.array(dy)
@@ -70,10 +69,6 @@ class Validation_3FHL:
         self.events = EventList.read(
             "$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_events_selected.fits.gz"
         )
-        # psf
-        self.psf = EnergyDependentTablePSF.read(
-            "$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_psf_gc.fits.gz"
-        )
 
         # energies
         self.El_flux = [10.0, 20.0, 50.0, 150.0, 500.0, 2000.0]*u.GeV
@@ -82,8 +77,9 @@ class Validation_3FHL:
             El_fit, name="energy", unit="GeV", interp="log"
         )
 
-        # mask margin
-        psf_r99max = np.max(self.psf.containment_radius(El_fit, fraction=0.99))
+        # psf margin for mask
+        psf = PSFMap.read("$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_psf_gc.fits.gz", format="gtpsf")
+        psf_r99max = np.max(psf.containment_radius(fraction=0.99,  energy_true=El_fit))
         self.psf_margin = np.ceil(psf_r99max.value * 10) / 10.0
 
         # iso norm=0.92 see paper appendix A
@@ -190,6 +186,9 @@ class Validation_3FHL:
         )
         exposure_hpx.unit = "cm2 s"
 
+        #psf
+        psf_map = PSFMap.read("$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_psf_gc.fits.gz", format="gtpsf")
+
         # iem
         iem_filepath = BASE_PATH / "data" / "gll_iem_v06_extrapolated.fits"
         iem_fermi_extra = Map.read(iem_filepath)
@@ -229,12 +228,7 @@ class Validation_3FHL:
         data = exposure_hpx.interp_by_coord(coords)
         exposure = WcsNDMap(geom, data, unit=exposure_hpx.unit, dtype=float)
 
-        # read PSF
-        psf_kernel = PSFKernel.from_table_psf(
-            self.psf, geom, max_radius=self.psf_margin * u.deg
-        )
-        #psf_map = PSFMap.from_energy_dependent_table_psf(self.psf) #slower
-
+        
         # Energy Dispersion
         edisp = EDispKernelMap.from_diagonal_response(energy_axis_true=axis, energy_axis=self.energy_axis)
 
@@ -248,12 +242,13 @@ class Validation_3FHL:
             & (coords["lat"] <= coords["lat"].max() - self.psf_margin * u.deg)
         )
         mask_fermi = WcsNDMap(counts.geom, mask)
+        mask_safe_fermi = WcsNDMap(counts.geom, np.ones(mask.shape, dtype=bool))
 
         log.info(f"ROI {kr}: pre-computing diffuse")
 
         # IEM
         eval_iem = MapEvaluator(
-            model=model_iem, exposure=exposure, psf=psf_kernel, edisp=edisp.get_edisp_kernel()
+            model=model_iem, exposure=exposure, psf=psf_map.get_psf_kernel(geom), edisp=edisp.get_edisp_kernel()
         )
         bkg_iem = eval_iem.compute_npred()
 
@@ -270,9 +265,10 @@ class Validation_3FHL:
             counts=counts,
             exposure=exposure,
             background=background_total,
-            psf=psf_kernel,
+            psf=psf_map,
             edisp=edisp,
             mask_fit=mask_fermi,
+            mask_safe=mask_safe_fermi,
             name=dataset_name,
         )
 
