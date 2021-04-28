@@ -4,8 +4,8 @@ env:
   user: runner
 software:
   astropy: 4.2.1
-  gammapy: 0.18.3.dev1204+g482201e01
+  gammapy: 0.18.3.dev1219+ga1f4155fb
   numpy: 1.20.2
   python_executable: /usr/share/miniconda/envs/gammapy-dev/bin/python
   python_version: 3.7.0
-  scipy: 1.5.3
+  scipy: 1.6.3
