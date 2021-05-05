@@ -119,7 +119,7 @@ class Validation_3FHL:
             raise ValueError(f"Invalid selection: {selection!r}")
 
         # fit options
-        self.optimize_opts = {
+        self.fit_opts = {
             "backend": "minuit",
             "optimize_opts": {"tol": 10.0, "strategy": 2},
         }
@@ -303,8 +303,8 @@ class Validation_3FHL:
         datasets = Datasets([dataset])
 
         log.info(f"ROI {kr}: running fit")
-        fit = Fit(datasets)
-        results = fit.run(**self.optimize_opts)
+        fit = Fit(datasets, **self.fit_opts)
+        results = fit.run()
         print("ROI_num", str(kr), "\n", results)
         fit_stat = datasets.stat_sum()
 

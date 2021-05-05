@@ -266,8 +266,8 @@ def data_fitting(instrument, npoints):
         datasets = Datasets(ds_list)
 
     # Perform fit
-    fit = Fit(datasets)
-    result = fit.run(optimize_opts={"tol": 0.1, "strategy": 0})
+    fit = Fit(datasets, optimize_opts={"tol": 0.1, "strategy": 0})
+    result = fit.run()
     log.info(result.parameters.to_table())
 
     path = f"results/fit_{instrument}.rst"

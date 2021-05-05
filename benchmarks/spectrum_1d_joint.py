@@ -98,8 +98,8 @@ def read(filename):
     )
 
 def data_fit(datasets):
-    fit = Fit(datasets)
-    result = fit.run(optimize_opts={"print_level": 1})
+    fit = Fit(datasets, optimize_opts={"print_level": 1})
+    result = fit.run()
 
 
 def flux_point(datasets):
