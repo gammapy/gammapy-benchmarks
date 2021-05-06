@@ -39,6 +39,7 @@ from gammapy.utils.scripts import make_path
 log = logging.getLogger(__name__)
 BASE_PATH = Path(__file__).parent
 
+
 def iscompatible(x, y, dx, dy):
     x, y, dx, dy = np.array(x), np.array(y), np.array(dx), np.array(dy)
     return abs(y - x) < dx + dy
@@ -71,15 +72,17 @@ class Validation_3FHL:
         )
 
         # energies
-        self.El_flux = [10.0, 20.0, 50.0, 150.0, 500.0, 2000.0]*u.GeV
-        El_fit = 10 ** np.arange(1, 3.31, 0.1)*u.GeV
+        self.El_flux = [10.0, 20.0, 50.0, 150.0, 500.0, 2000.0] * u.GeV
+        El_fit = 10 ** np.arange(1, 3.31, 0.1) * u.GeV
         self.energy_axis = MapAxis.from_edges(
             El_fit, name="energy", unit="GeV", interp="log"
         )
 
         # psf margin for mask
-        psf = PSFMap.read("$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_psf_gc.fits.gz", format="gtpsf")
-        psf_r99max = np.max(psf.containment_radius(fraction=0.99,  energy_true=El_fit))
+        psf = PSFMap.read(
+            "$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_psf_gc.fits.gz", format="gtpsf"
+        )
+        psf_r99max = np.max(psf.containment_radius(fraction=0.99, energy_true=El_fit))
         self.psf_margin = np.ceil(psf_r99max.value * 10) / 10.0
 
         # iso norm=0.92 see paper appendix A
@@ -186,8 +189,14 @@ class Validation_3FHL:
         )
         exposure_hpx.unit = "cm2 s"
 
-        #psf
-        psf_map = PSFMap.read("$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_psf_gc.fits.gz", format="gtpsf")
+        # psf
+        psf_map = PSFMap.read(
+            "$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_psf_gc.fits.gz", format="gtpsf"
+        )
+        # reduce size of the PSF
+        axis = psf_map.psf_map.geom.axes["rad"].center.to_value(u.deg)
+        indmax = np.argmin(np.abs(self.psf_margin - axis))
+        psf_map = psf_map.slice_by_idx(slices={"rad": slice(0, indmax)})
 
         # iem
         iem_filepath = BASE_PATH / "data" / "gll_iem_v06_extrapolated.fits"
@@ -228,9 +237,10 @@ class Validation_3FHL:
         data = exposure_hpx.interp_by_coord(coords)
         exposure = WcsNDMap(geom, data, unit=exposure_hpx.unit, dtype=float)
 
-        
         # Energy Dispersion
-        edisp = EDispKernelMap.from_diagonal_response(energy_axis_true=axis, energy_axis=self.energy_axis)
+        edisp = EDispKernelMap.from_diagonal_response(
+            energy_axis_true=axis, energy_axis=self.energy_axis
+        )
 
         # fit mask
         if coords["lon"].min() < 90 * u.deg and coords["lon"].max() > 270 * u.deg:
@@ -248,12 +258,17 @@ class Validation_3FHL:
 
         # IEM
         eval_iem = MapEvaluator(
-            model=model_iem, exposure=exposure, psf=psf_map.get_psf_kernel(geom), edisp=edisp.get_edisp_kernel()
+            model=model_iem,
+            exposure=exposure,
+            psf=psf_map.get_psf_kernel(geom),
+            edisp=edisp.get_edisp_kernel(),
         )
         bkg_iem = eval_iem.compute_npred()
 
         # ISO
-        eval_iso = MapEvaluator(model=self.model_iso, exposure=exposure, edisp=edisp.get_edisp_kernel())
+        eval_iso = MapEvaluator(
+            model=self.model_iso, exposure=exposure, edisp=edisp.get_edisp_kernel()
+        )
         bkg_iso = eval_iso.compute_npred()
 
         # merge iem and iso, only one local normalization is fitted
@@ -291,7 +306,7 @@ class Validation_3FHL:
                     model.spectral_model.parameters["alpha"].max = 10.0
 
                 FHL3_roi.append(model)
-        model_total = Models(FHL3_roi+[background_model])
+        model_total = Models(FHL3_roi + [background_model])
         dataset.models = model_total
 
         cat_stat = dataset.stat_sum()
@@ -324,7 +339,10 @@ class Validation_3FHL:
                 ):
                     print(model.name)
                     flux_points = FluxPointsEstimator(
-                        energy_edges=self.El_flux, source=model.name, n_sigma_ul=2
+                        energy_edges=self.El_flux,
+                        source=model.name,
+                        n_sigma_ul=2,
+                        selection_optional=["ul"],
                     ).run(datasets=datasets)
                     filename = self.resdir / f"{model.name}_flux_points.fits"
                     flux_points.write(filename, overwrite=True)
@@ -362,8 +380,9 @@ class Validation_3FHL:
                         self.resdir / f"{model.name}_flux_points.fits"
                     )
                     res_fp.table["is_ul"] = res_fp.table["ts"] < 1.0
-                    cat_fp = self.FHL3[model.name].flux_points.to_sed_type("dnde")
-
+                    cat_fp = self.FHL3[model.name].flux_points.to_sed_type(
+                        "dnde", model=cat_spec
+                    )
                     self.update_spec_diags(
                         dataset, model, cat_spec, res_spec, cat_fp, res_fp
                     )
@@ -373,9 +392,7 @@ class Validation_3FHL:
     def plot_maps(self, dataset):
         plt.figure(figsize=(6, 6), dpi=150)
         dataset.plot_residuals_spatial(
-            method="diff/sqrt(model)",
-            smooth_kernel="gauss",
-            smooth_radius=0.1 * u.deg,
+            method="diff/sqrt(model)", smooth_kernel="gauss", smooth_radius=0.1 * u.deg,
         )
         plt.title("Residuals: (Nobs-Npred)/sqrt(Npred)")
         plt.savefig(self.resdir / f"resi_{dataset.name}.png", dpi=150)
@@ -681,15 +698,15 @@ def cli(selection, processes, fit):
     # TODO: move this code to the extrapolation functions
     # Use MapAxis and Gammapy for energy axis functionality
     # Don't call `np.log` or `10 **` for this!
-    
+
     El_extra = 10 ** np.arange(3.8, 6.51, 0.1)  # MeV
     logEc_extra = (np.log10(El_extra)[1:] + np.log10(El_extra)[:-1]) / 2.0
     extrapolate_iso_model(logEc_extra)
     extrapolate_iem_model(logEc_extra)
-    
+
     validation = Validation_3FHL(selection=selection, savefig=True)
     validation.run_all(run_fit=fit, get_diags=True, processes=processes)
-    
+
 
 if __name__ == "__main__":
     cli()
