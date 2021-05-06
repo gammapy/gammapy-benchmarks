@@ -426,7 +426,9 @@ class Validation_3FHL:
             label="Gammapy fit",
             color="b",
         )
-        res_spec.plot_error(ax=ax, energy_range=energy_range, energy_power=2, color="c")
+        res_spec.plot_error(
+            ax=ax, energy_range=energy_range, energy_power=2, facecolor="c"
+        )
 
         cat_fp.plot(ax=ax, energy_power=2, color="k")
         res_fp.plot(ax=ax, energy_power=2, color="b")
