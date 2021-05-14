@@ -6,7 +6,6 @@ from pathlib import Path
 from gammapy.maps import Map
 from gammapy.estimators import TSMapEstimator, ASmoothMapEstimator
 from gammapy.modeling.models import (
-    BackgroundModel,
     PowerLawSpectralModel,
     PointSpatialModel,
     SkyModel,
