@@ -30,7 +30,7 @@ def data_prep():
         "frame": "icrs",
     }
     # The WCS geometry - centered on MSH 15-52
-    config.datasets.geom.wcs.fov = {"width": "3 deg", "height": "3 deg"}
+    config.datasets.geom.wcs.width = {"width": "3 deg", "height": "3 deg"}
 
     # The FoV radius to use for cutouts
     config.datasets.geom.wcs.binsize = "0.02 deg"
