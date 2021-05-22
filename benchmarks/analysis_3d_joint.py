@@ -36,10 +36,14 @@ def data_prep():
         axes=[energy_axis],
     )
 
+    energy_axis_true = MapAxis.from_bounds(
+        0.05, 20, nbin=30, unit="TeV", name="energy", interp="log"
+    )
+
     offset_max = 4 * u.deg
     maker = MapDatasetMaker()
     safe_mask_maker = SafeMaskMaker(methods=["offset-max"], offset_max=offset_max)
-    stacked = MapDataset.create(geom=geom)
+    stacked = MapDataset.create(geom=geom, energy_axis_true=energy_axis_true)
 
     spatial_model = PointSpatialModel(
         lon_0="-0.05 deg", lat_0="-0.05 deg", frame="galactic"
