@@ -37,7 +37,7 @@ def data_prep():
     )
 
     energy_axis_true = MapAxis.from_bounds(
-        0.05, 20, nbin=30, unit="TeV", name="energy", interp="log"
+        0.05, 20, nbin=30, unit="TeV", name="energy_true", interp="log"
     )
 
     offset_max = 4 * u.deg
