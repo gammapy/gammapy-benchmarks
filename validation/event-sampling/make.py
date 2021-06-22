@@ -384,9 +384,9 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
     if dataset.background_model:
         dataset.background_model.parameters["norm"].frozen = True
 
-    fit = Fit([dataset], optimize_opts={"print_level": 1})
+    fit = Fit(optimize_opts={"print_level": 1})
 
-    result = fit.run()
+    result = fit.run(dataset=[dataset])
 
     log.info(f"Fit info: {result}")
 
