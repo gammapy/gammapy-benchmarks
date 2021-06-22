@@ -100,8 +100,8 @@ def read(filename):
 
 def data_fit(stacked):
     # Data fitting
-    fit = Fit(stacked, optimize_opts={"print_level": 1})
-    result = fit.run()
+    fit = Fit(optimize_opts={"print_level": 1})
+    result = fit.run(datasets=stacked)
     print(result.success)
 
 

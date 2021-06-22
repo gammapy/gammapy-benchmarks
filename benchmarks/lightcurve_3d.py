@@ -127,8 +127,8 @@ def fit_lc(datasets):
         dataset.models = [model_fit, FoVBackgroundModel(dataset_name=dataset.name)]
         dataset.background_model.parameters["norm"].frozen = True
 
-    fit = Fit(datasets)
-    result = fit.run()
+    fit = Fit()
+    result = fit.run(datasets=datasets)
     print(result.success)
     print(result.parameters.to_table())
 

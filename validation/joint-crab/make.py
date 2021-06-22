@@ -196,12 +196,17 @@ def define_model():
     return crab_model
 
 
-def make_contours(fit, result, npoints):
+def make_contours(datasets, result, npoints):
     log.info(f"Running contours with {npoints} points...")
+
+    fit = Fit()
+    fit.optimize(datasets=datasets)
+
     contours = dict()
     contour = fit.minos_contour(
-        result.parameters["alpha"],
-        result.parameters["beta"],
+        datasets=datasets,
+        x=result.parameters["alpha"],
+        y=result.parameters["beta"],
         numpoints=npoints,
         sigma=np.sqrt(2.3),
     )
@@ -211,8 +216,9 @@ def make_contours(fit, result, npoints):
     }
 
     contour = fit.minos_contour(
-        result.parameters["amplitude"],
-        result.parameters["beta"],
+        datasets=datasets,
+        x=result.parameters["amplitude"],
+        y=result.parameters["beta"],
         numpoints=npoints,
         sigma=np.sqrt(2.3),
     )
@@ -222,8 +228,9 @@ def make_contours(fit, result, npoints):
     }
 
     contour = fit.minos_contour(
-        result.parameters["amplitude"],
-        result.parameters["alpha"],
+        datasets=datasets,
+        x=result.parameters["amplitude"],
+        y=result.parameters["alpha"],
         numpoints=npoints,
         sigma=np.sqrt(2.3),
     )
@@ -266,15 +273,15 @@ def data_fitting(instrument, npoints):
         datasets = Datasets(ds_list)
 
     # Perform fit
-    fit = Fit(datasets, optimize_opts={"tol": 0.1, "strategy": 0})
-    result = fit.run()
+    fit = Fit(optimize_opts={"tol": 0.1, "strategy": 0})
+    result = fit.run(datasets=datasets)
     log.info(result.parameters.to_table())
 
     path = f"results/fit_{instrument}.rst"
     log.info(f"Writing {path}")
     result.parameters.to_table().write(path, format="ascii.rst", overwrite=True)
 
-    contours = make_contours(fit, result, npoints)
+    contours = make_contours(datasets, result, npoints)
     with open(f"results/contours_{instrument}.yaml", "w") as file:
         yaml.dump(contours, file)
 

@@ -313,8 +313,8 @@ class Validation_3FHL:
         datasets = Datasets([dataset])
 
         log.info(f"ROI {kr}: running fit")
-        fit = Fit(datasets, **self.fit_opts)
-        results = fit.run()
+        fit = Fit(**self.fit_opts)
+        results = fit.run(datasets=datasets)
         print("ROI_num", str(kr), "\n", results)
         fit_stat = datasets.stat_sum()
 
