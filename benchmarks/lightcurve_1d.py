@@ -109,7 +109,7 @@ def fit_lc(datasets):
     fit = Fit()
     result = fit.run(datasets=datasets)
     print(result)
-    print(result.parameters.to_table())
+    print(result["optimize_result"].parameters.to_table())
 
 
 def run_benchmark():
