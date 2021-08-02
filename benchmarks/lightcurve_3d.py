@@ -102,7 +102,7 @@ def get_lc(datasets):
         energy_edges=[1.0, 10.0] * u.TeV, source="model_fit", reoptimize=False
     )
     lc = lc_maker.run(datasets)
-    print(lc.table["flux"])
+    print(lc.to_table(format="lightcurve", sed_type="flux")["flux"])
 
 
 def fit_lc(datasets):
