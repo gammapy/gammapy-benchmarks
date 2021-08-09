@@ -55,12 +55,16 @@ def run_analyses():
     fit = Fit()
     result = fit.run([dataset])
     log.info(result)
+    log.info(result["optimize_result"].parameters.to_table())
 
     log.info("Fitting extended gaussian source.")
     gauss_model = define_model_gaussian(target_position)
     dataset.models = [bkg_model, gauss_model]
     result = fit.run([dataset])
     log.info(result)
+    log.info(result["optimize_result"].parameters.to_table())
+    conf_result = fit.confidence([dataset], "sigma", 3)
+    log.info(conf_result)
 
 def select_data():
     data_store = DataStore.from_dir("$GAMMAPY_DATA/hess-dl3-dr1/")
