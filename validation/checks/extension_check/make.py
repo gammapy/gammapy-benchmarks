@@ -63,8 +63,16 @@ def run_analyses():
     result = fit.run([dataset])
     log.info(result)
     log.info(result["optimize_result"].parameters.to_table())
+    log.info("Fitting extended gaussian source.")
+    log.info("Extract size UL and stat profile.")
     conf_result = fit.confidence([dataset], "sigma", 3)
     log.info(conf_result)
+
+    gauss_model.spatial_model.sigma.scan_values = np.logspace(-3.5,-1.5,10)
+    profile = fit.stat_profile([dataset], "sigma", reoptimize=True)
+    plot_profile(profile)
+
+
 
 def select_data():
     data_store = DataStore.from_dir("$GAMMAPY_DATA/hess-dl3-dr1/")
@@ -145,6 +153,12 @@ def define_model_gaussian(test_position):
            spatial_model=spatial_model, spectral_model=spectral_model, name="gauss"
     )
     return sky_model
+
+def plot_profile(profile):
+    plt.semilogx(profile["sigma_scan"], profile["stat_scan"])
+    plt.xlabel("Source gaussian sigma, deg")
+    plt.ylabel("Total Stat")
+    plt.savefig("stat_profile.png")
 
 if __name__ == "__main__":
    logging.basicConfig(level=logging.INFO)
