@@ -6,8 +6,8 @@ import click
 from gammapy.data import DataStore
 from gammapy.datasets import SpectrumDataset, MapDataset
 from gammapy.modeling.models import PowerLawSpectralModel, SkyModel, PointSpatialModel
-from gammapy.maps import MapAxis, RegionGeom, WcsGeom, Map
-from gammapy.estimators import LightCurveEstimator, LightCurve
+from gammapy.maps import MapAxis, RegionGeom, WcsGeom
+from gammapy.estimators import LightCurveEstimator, FluxPoints
 from gammapy.makers import (
    SpectrumDatasetMaker,
    ReflectedRegionsBackgroundMaker,
@@ -116,7 +116,7 @@ def perform_analysis(type, observations, target_position, time_intervals):
     filename.mkdir(exist_ok=True)
     path = filename / f"lightcurve_{type}.fits"
     log.info(f"Writing {path}")
-    lc.table.write(path, overwrite=True)
+    lc.write(path, format="lightcurve", overwrite=True)
 
 
 def create_datasets_1d(observations, target_position):
@@ -222,9 +222,9 @@ def make_summary(types):
     for type in types:
         filename = make_path("results")
         path = filename / f"lightcurve_{type}.fits"
-        lc = LightCurve.read(path)
+        lc = FluxPoints.read(path, format="lightcurve")
         lc.plot(ax=ax, label=type)
-        lc_ChandraNight = LightCurve.read("reference/Flux_LC_ChandraNight_700GeV.fits")
+        lc_ChandraNight = FluxPoints.read("reference/Flux_LC_ChandraNight_700GeV.fits", format="lightcurve")
         lc_ChandraNight.plot(ax=ax, label='ref', alpha=0.5)
     plt.legend()
 
