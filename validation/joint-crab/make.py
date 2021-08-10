@@ -203,7 +203,7 @@ def make_contours(datasets, result, npoints):
     fit.optimize(datasets=datasets)
 
     contours = dict()
-    contour = fit.minos_contour(
+    contour = fit.stat_contour(
         datasets=datasets,
         x=result.parameters["alpha"],
         y=result.parameters["beta"],
@@ -215,7 +215,7 @@ def make_contours(datasets, result, npoints):
         "beta": (contour["beta"] * np.log(10)).tolist(),
     }
 
-    contour = fit.minos_contour(
+    contour = fit.stat_contour(
         datasets=datasets,
         x=result.parameters["amplitude"],
         y=result.parameters["beta"],
@@ -227,7 +227,7 @@ def make_contours(datasets, result, npoints):
         "beta": (contour["beta"] * np.log(10)).tolist(),
     }
 
-    contour = fit.minos_contour(
+    contour = fit.stat_contour(
         datasets=datasets,
         x=result.parameters["amplitude"],
         y=result.parameters["alpha"],
@@ -274,7 +274,7 @@ def data_fitting(instrument, npoints):
 
     # Perform fit
     fit = Fit(optimize_opts={"tol": 0.1, "strategy": 0})
-    result = fit.run(datasets=datasets)
+    result = fit.run(datasets=datasets)["optimize_result"]
     log.info(result.parameters.to_table())
 
     path = f"results/fit_{instrument}.rst"

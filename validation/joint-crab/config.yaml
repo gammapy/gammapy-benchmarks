@@ -7,6 +7,7 @@ observations:
     obs_file: null
     obs_cone: {frame: null, lon: null, lat: null, radius: null}
     obs_time: {start: null, stop: null}
+    required_irf: ['aeff', 'edisp']
 datasets:
     type: 1d
     stack: false

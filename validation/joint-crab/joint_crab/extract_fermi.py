@@ -6,7 +6,7 @@ import numpy as np
 
 from gammapy.data import GTI, EventList
 from gammapy.datasets import MapDataset, SpectrumDatasetOnOff
-from gammapy.irf import EDispKernelMap, EnergyDependentTablePSF
+from gammapy.irf import EDispKernelMap, PSFMap
 from gammapy.maps import HpxNDMap, Map, MapCoord, WcsGeom
 from gammapy.utils.time import time_ref_from_dict
 
@@ -21,13 +21,12 @@ class FermiDatasetMaker:
         evt_file="../data/joint-crab/fermi/events.fits.gz",
         exp_file="../data/joint-crab/fermi/exposure_cube.fits.gz",
         psf_file="../data/joint-crab/fermi/psf.fits.gz",
-        max_psf_radius="0.5 deg",
     ):
         # Read data
         self.events = EventList.read(evt_file)
         self.exposure = HpxNDMap.read(exp_file)
         self.exposure.unit = u.Unit("cm2s")  # no unit stored on map...
-        self.psf = EnergyDependentTablePSF.read(psf_file)
+        self.psf = PSFMap.read(psf_file, format="gtpsf")
 
     def _make_gti(self):
         # Tentative extraction of the GTI
@@ -35,16 +34,6 @@ class FermiDatasetMaker:
         tstop = self.events.table.meta["TSTOP"] * u.s
         time_ref = time_ref_from_dict(self.events.table.meta)
         return GTI.create(tstart, tstop, time_ref)
-
-    def _fill_psfmap(self, psf, dataset):
-        # Fill each bin of the PSFMap with the psf table.
-        energy = dataset.psf.psf_map.geom.axes["energy_true"]
-        theta = dataset.psf.psf_map.geom.axes["rad"]
-
-        values = psf.evaluate(energy=energy.center, rad=theta.center, method="linear")
-
-        dataset.psf.psf_map.quantity *= 0
-        dataset.psf.psf_map.quantity += values[:, :, np.newaxis, np.newaxis]
 
     def run(self, geom):
         """Create and fill the map dataset"""
@@ -57,8 +46,7 @@ class FermiDatasetMaker:
         dataset.counts.fill_events(self.events)
 
         dataset.gti = self._make_gti()
-
-        self._fill_psfmap(self.psf, dataset)
+        dataset.psf = self.psf
 
         # recompute exposure on geom
         coords = geom_true.get_coord()
@@ -95,13 +83,21 @@ def extract_spectrum_fermi(on_region, off_region, energy, containment_correction
     off_mask = ds.counts.geom.region_mask([off_region])
     off_solid_angle = np.sum(ds.counts.geom.solid_angle() * off_mask.data)
 
+    # To be stored as OGIP, we need to define a livetime in the exposure meta
+    spec_dataset.exposure.meta['livetime'] = np.max(spec_dataset.exposure.quantity)/(1e4*u.cm**2)
+
+    acceptance = Map.from_geom(spec_dataset.counts.geom, unit='')
+    acceptance += 1
+    acceptance_off = Map.from_geom(spec_dataset.counts.geom, unit='')
+    acceptance_off += (off_solid_angle / on_solid_angle).to_value("")
+
     return SpectrumDatasetOnOff(
         counts=spec_dataset.counts,
         counts_off=off_dataset.counts,
         gti=spec_dataset.gti,
         exposure=spec_dataset.exposure,
         edisp=spec_dataset.edisp,
-        acceptance=1,
-        acceptance_off=(off_solid_angle / on_solid_angle).to_value(""),
+        acceptance=acceptance,
+        acceptance_off=acceptance_off,
         name="fermi-3fhl"
     )
