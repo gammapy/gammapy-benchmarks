@@ -20,6 +20,7 @@ import astropy.units as u
 import numpy as np
 from astropy.coordinates import SkyCoord
 from astropy.time import Time
+from astropy.table import Table
 from regions import CircleSkyRegion
 from astropy.coordinates import Angle
 from gammapy.utils.scripts import make_path
@@ -199,6 +200,7 @@ def define_model_1d():
     )
     return sky_model
 
+
 def define_model_3d(target_position):
     spatial_model = PointSpatialModel(
         lon_0=target_position.ra,
@@ -216,19 +218,48 @@ def define_model_3d(target_position):
     )
     return sky_model
 
+
+def read_ref_lightcurve():
+    filename = "reference/Flux_LC_ChandraNight_700GeV.fits"
+    table = Table.read(filename)
+
+    table["e_min"] = [[700]] * u.GeV
+    table["e_max"] = [[1e5]] * u.TeV
+    table["time_min"].unit = u.day
+    table["time_max"].unit = u.day
+
+    # fix overlapping time intervals
+    m = np.where((table["time_min"][1:] - table["time_max"][:-1]) >= 0 * u.s)
+
+    return FluxPoints.from_table(
+        table=table[m],
+        format="lightcurve",
+        sed_type="flux",
+    )
+
+
 def make_summary(types):
     log.info("Making summary plots.")
-    ax=None
+
+    ax = plt.subplot()
+
     for type in types:
         filename = make_path("results")
         path = filename / f"lightcurve_{type}.fits"
-        lc = FluxPoints.read(path, format="lightcurve")
-        lc.plot(ax=ax, label=type)
-        lc_ChandraNight = FluxPoints.read("reference/Flux_LC_ChandraNight_700GeV.fits", format="lightcurve")
-        lc_ChandraNight.plot(ax=ax, label='ref', alpha=0.5)
+        # TODO: fix reference model I/O
+        model = define_model_1d()
+
+        lc = FluxPoints.read(path, format="lightcurve", reference_model=model)
+        lc.plot(ax=ax, label=type, sed_type="flux", markersize=0)
+
+    lc_ref = read_ref_lightcurve()
+    lc_ref.plot(ax=ax, label='ref', alpha=0.2, sed_type="flux", markersize=0)
+
+    ax.set_yscale("linear")
     plt.legend()
 
-    if len(types)>1:
+
+    if len(types) > 1:
         filename = make_path("results")
         path = filename / f"lightcurve_comparison.png"
         plt.savefig(path)
