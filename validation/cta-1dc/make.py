@@ -37,21 +37,36 @@ def run_analyses(targets):
         analysis_3d(target)
 
 
-def analysis_3d_data_reduction(target):
+def setup_analysis(target):
     log.info(f"analysis_3d_data_reduction: {target}")
 
     opts = yaml.safe_load(open("targets.yaml"))[target]
     txt = Path("config_template.yaml").read_text()
+    print(opts)
     txt = txt.format_map(opts)
 
     config = AnalysisConfig.from_yaml(txt)
     config.flux_points.source = target
     config.datasets.safe_mask.parameters = {"offset_max": 5 * u.deg}
 
-    analysis = Analysis(config)
+    return Analysis(config)
+
+
+def analysis_3d_data_reduction(analysis, target):
     analysis.get_observations()
     log.info("Running data reduction")
     analysis.get_datasets()
+
+    path = Path(f"{target}/datasets/datasets.yaml")
+    path.mkdir(parents=True, exist_ok=True)
+    log.info(f"Writing {path}")
+    analysis.datasets.write(path, overwrite=True)
+    return analysis
+
+
+def analysis_3d_modeling(analysis, target):
+    log.info(f"analysis_3d_modeling: {target}")
+
 
     # TODO: write datasets and separate fitting to next function
     # Not implemented in Gammapy yet, coming very soon.
@@ -59,7 +74,7 @@ def analysis_3d_data_reduction(target):
     analysis.read_models(f"{target}/model_3d.yaml")
     logging.info(analysis.models)
     analysis.run_fit()
-    logging.info(analysis.fit_result.parameters.to_table())
+    logging.info(f"Best fit model: \n {analysis.models}")
     path = f"{target}/{target}_3d_bestfit.rst"
     log.info(f"Writing {path}")
     analysis.fit_result.parameters.to_table().write(
@@ -69,16 +84,12 @@ def analysis_3d_data_reduction(target):
     analysis.get_flux_points()
     path = f"{target}/{target}_3d_fluxpoints.ecsv"
     log.info(f"Writing {path}")
-    keys = ["e_ref", "e_min", "e_max", "dnde", "dnde_errp", "dnde_errn", "is_ul"]
-    analysis.flux_points.data.table_formatted[keys].write(
-        path, format="ascii.ecsv", overwrite=True
+
+    analysis.flux_points.data.write(
+        path, format="gadf-sed", overwrite=True
     )
 
     return analysis  # will write to disk when possible
-
-
-def analysis_3d_modeling(target):
-    log.info(f"analysis_3d_modeling: {target}")
 
 
 def analysis_3d_summary(analysis, target):
@@ -108,21 +119,20 @@ def analysis_3d_summary(analysis, target):
     plt.savefig(f"{target}/{target}_counts.png", bbox_inches="tight")
     plt.close()
 
-    analysis.datasets["stacked"].plot_residuals(
+    analysis.datasets["stacked"].plot_residuals_spatial(
         method="diff/sqrt(model)", vmin=-0.5, vmax=0.5
     )
     plt.savefig(f"{target}/{target}_residuals.png", bbox_inches="tight")
     plt.close()
 
     # Cannot specify flux_unit outputs in cm-2 s-1 TeV-1. Default to erg
-    ax_sed, ax_residuals = analysis.flux_points.peek()
+    ax_sed, ax_residuals = analysis.flux_points.plot_fit()
 
     pwl = ref_model[target].spectral_model
     ax_sed = pwl.plot(
         (0.1, 50) * u.TeV,
         ax=ax_sed,
-        energy_power=2,
-        flux_unit="cm-2 s-1 erg-1",
+        sed_type="e2dnde",
         label="Reference",
         ls="--",
     )
@@ -145,8 +155,9 @@ def analysis_3d_summary(analysis, target):
 
 def analysis_3d(target):
     log.info(f"analysis_3d: {target}")
-    analysis = analysis_3d_data_reduction(target)
-    analysis_3d_modeling(target)
+    analysis = setup_analysis(target=target)
+    analysis_3d_data_reduction(analysis, target)
+    analysis_3d_modeling(analysis, target)
     analysis_3d_summary(analysis, target)
 
 

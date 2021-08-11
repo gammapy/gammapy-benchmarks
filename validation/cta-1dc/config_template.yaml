@@ -16,7 +16,7 @@ datasets:
               lon: {lon}
               lat: {lat}
             binsize: 0.02 deg
-            fov:
+            width:
               width: 2 deg
               height: 2 deg
         selection:
@@ -26,6 +26,10 @@ datasets:
               min: {emin}
               max: {emax}
               nbins: {nbin}
+            energy_true:
+              min: 0.1 TeV
+              max: 200 TeV
+              nbins: 50
     safe_mask:
         methods: ['aeff-default', 'offset-max']
 
@@ -42,3 +46,5 @@ flux_points:
         min: {emin}
         max: {emax}
         nbins: {fp_nbin}
+    parameters:
+      selection_optional: "all"

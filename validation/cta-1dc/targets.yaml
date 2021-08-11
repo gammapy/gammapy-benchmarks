@@ -8,7 +8,7 @@ cas_a:
   emin: 0.1 TeV
   emax: 50 TeV
   nbin: 25
-  fp_nbin: 20
+  fp_nbin: 12
 
 hess_j1702:
   tag: hess_j1702
@@ -20,7 +20,7 @@ hess_j1702:
   emin: 0.1 TeV
   emax: 160 TeV
   nbin: 35
-  fp_nbin: 25
+  fp_nbin: 12
   
 gc:
   tag: gc
@@ -32,5 +32,5 @@ gc:
   emin: 0.1 TeV
   emax: 100 TeV
   nbin: 30
-  fp_nbin: 20
+  fp_nbin: 12
 

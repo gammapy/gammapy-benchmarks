@@ -116,3 +116,10 @@ validation/joint-crab/reduced_*
 validation/event-sampling/data/*.fits
 validation/event-sampling/data/*.fits.gz
 validation/event-sampling/data/models/*/*.fits.gz
+
+validation/cta-1dc/cas_a/datasets/*.fits
+validation/cta-1dc/gc/datasets/*.fits
+validation/cta-1dc/rx_j1713/datasets/*.fits
+validation/cta-1dc/agn_j1224/datasets/*.fits
+validation/cta-1dc/hess_j1702/datasets/*.fits
+
