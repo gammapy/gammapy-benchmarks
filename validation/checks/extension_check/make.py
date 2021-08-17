@@ -3,6 +3,7 @@
 import logging
 import warnings
 import click
+import yaml
 import time
 from pathlib import Path
 
