@@ -3,6 +3,9 @@
 import logging
 import warnings
 import click
+import time
+from pathlib import Path
+
 from gammapy.data import DataStore
 from gammapy.datasets import MapDataset
 from gammapy.modeling import Fit
@@ -38,40 +41,70 @@ def cli(log_level, show_warnings):
 @cli.command("run-analyses", help="Run Gammapy validation: small extension validation.")
 def run_analyses():
     log.info("Run small source extension check.")
-
+    info = {}
     target_position = SkyCoord(329.71693826 * u.deg, -30.2255890 * u.deg, frame="icrs")
 
     log.info("Exteract observations from datastore.")
+    t = time.time()
+
     observations = select_data()
+    info["data_preparation"] = time.time() - t
+    t = time.time()
 
     binsz=0.02
     log.info(f"Performing data reduction with bin size {binsz}.")
+
     dataset = create_dataset_3d(observations, target_position, binsz)
     bkg_model = FoVBackgroundModel(dataset_name="stacked")
+    info["data_reduction"] = time.time() - t
+    t = time.time()
 
     log.info("Fitting point source.")
     point_model = define_model_pointlike(target_position)
     dataset.models = [bkg_model, point_model]
+
+    info["point_model_setting"] = time.time() - t
+    t = time.time()
+
     fit = Fit()
     result = fit.run([dataset])
+
+    info["point_model_fitting"] = time.time() - t
+    t = time.time()
+
     log.info(result)
     log.info(result["optimize_result"].parameters.to_table())
 
     log.info("Fitting extended gaussian source.")
+    t = time.time()
     gauss_model = define_model_gaussian(target_position)
     dataset.models = [bkg_model, gauss_model]
+
+    info["gauss_model_setting"] = time.time() - t
+    t = time.time()
+
     result = fit.run([dataset])
+
+    info["gauss_model_fittting"] = time.time() - t
+    t = time.time()
+
     log.info(result)
     log.info(result["optimize_result"].parameters.to_table())
     log.info("Fitting extended gaussian source.")
     log.info("Extract size UL and stat profile.")
+
+    t = time.time()
     conf_result = fit.confidence([dataset], "sigma", 3)
+    info["ul_computation"] = time.time() - t
+    t = time.time()
+
     log.info(conf_result)
 
     gauss_model.spatial_model.sigma.scan_values = np.logspace(-3.5,-1.5,10)
     profile = fit.stat_profile([dataset], "sigma", reoptimize=True)
     plot_profile(profile)
 
+    Path("bench.yaml").write_text(yaml.dump(info, sort_keys=False, indent=4))
 
 
 def select_data():
@@ -131,6 +164,9 @@ def define_model_pointlike(test_position):
         reference=1 * u.TeV,
     )
     spectral_model.parameters["index"].frozen = False
+    spatial_model.lon_0.frozen = True
+    spatial_model.lat_0.frozen = True
+
     sky_model = SkyModel(
            spatial_model=spatial_model, spectral_model=spectral_model, name="point"
     )
@@ -149,6 +185,9 @@ def define_model_gaussian(test_position):
         reference=1 * u.TeV,
     )
     spectral_model.parameters["index"].frozen = False
+    spatial_model.lon_0.frozen = True
+    spatial_model.lat_0.frozen = True
+
     sky_model = SkyModel(
            spatial_model=spatial_model, spectral_model=spectral_model, name="gauss"
     )
