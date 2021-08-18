@@ -45,14 +45,14 @@ def run_analyses():
     info = {}
     target_position = SkyCoord(329.71693826 * u.deg, -30.2255890 * u.deg, frame="icrs")
 
-    log.info("Exteract observations from datastore.")
+    log.info("Extract observations from datastore.")
     t = time.time()
 
     observations = select_data()
     info["data_preparation"] = time.time() - t
     t = time.time()
 
-    binsz=0.02
+    binsz=0.04
     log.info(f"Performing data reduction with bin size {binsz}.")
 
     dataset = create_dataset_3d(observations, target_position, binsz)
@@ -86,11 +86,13 @@ def run_analyses():
 
     result = fit.run([dataset])
 
-    info["gauss_model_fittting"] = time.time() - t
+    info["gauss_model_fitting"] = time.time() - t
     t = time.time()
 
     log.info(result)
-    log.info(result["optimize_result"].parameters.to_table())
+
+    params = result["optimize_result"].parameters.to_table()
+    log.info(params)
     log.info("Fitting extended gaussian source.")
     log.info("Extract size UL and stat profile.")
 
@@ -101,12 +103,12 @@ def run_analyses():
 
     log.info(conf_result)
 
-    gauss_model.spatial_model.sigma.scan_values = np.logspace(-3.5,-1.5,10)
+    gauss_model.spatial_model.sigma.scan_values = np.logspace(-3.5,-2.5,15)
     profile = fit.stat_profile([dataset], "sigma", reoptimize=True)
     plot_profile(profile)
 
     Path("bench.yaml").write_text(yaml.dump(info, sort_keys=False, indent=4))
-
+    params.write("gaus_results.ecsv")
 
 def select_data():
     data_store = DataStore.from_dir("$GAMMAPY_DATA/hess-dl3-dr1/")
