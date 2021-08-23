@@ -50,7 +50,7 @@ def run_analyses(type):
 
     t0 = Time("2006-07-29T20:30")
     duration = 10 * u.min
-    n_time_bins = 35
+    n_time_bins = 47
     times = t0 + np.arange(n_time_bins) * duration
     time_intervals = [
         Time([tstart, tstop]) for tstart, tstop in zip(times[:-1], times[1:])
@@ -58,6 +58,7 @@ def run_analyses(type):
 
     log.info("Filter observations in time intervals")
     short_observations = observations.select_time(time_intervals)
+    log.info(f"Number of observations produced {len(short_observations)}.")
 
     if type == "all":
         types = ["1d", "3d"]
@@ -105,7 +106,7 @@ def perform_analysis(type, observations, target_position, time_intervals):
 
     log.info(f"Run LightCurveEstimator in {type}.")
     lc_maker = LightCurveEstimator(
-        energy_edges=[0.7, 20] * u.TeV,
+        energy_edges=[0.7, 20.0] * u.TeV,
         source="pks2155",
         time_intervals=time_intervals
     )
@@ -125,7 +126,7 @@ def create_datasets_1d(observations, target_position):
     on_region = CircleSkyRegion(center=target_position, radius=on_region_radius)
 
     # Target geometry definition
-    e_reco = MapAxis.from_energy_bounds(0.4, 20, 10, "TeV")
+    e_reco = MapAxis.from_energy_bounds(0.23, 20, 12, "TeV")
     e_true = MapAxis.from_energy_bounds(0.1, 40, 40, "TeV", name="energy_true")
 
     #data reduction makers
@@ -150,7 +151,7 @@ def create_datasets_1d(observations, target_position):
 def create_datasets_3d(observations, target_position):
 
     # Target geometry definition
-    e_reco = MapAxis.from_energy_bounds(0.4, 20, 10, "TeV")
+    e_reco = MapAxis.from_energy_bounds(0.23, 20, 12, "TeV")
     e_true = MapAxis.from_energy_bounds(0.1, 40, 40, "TeV", name="energy_true")
 
     geom = WcsGeom.create(
