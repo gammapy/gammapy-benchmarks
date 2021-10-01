@@ -1,0 +1,25 @@
+# %ECSV 1.0
+# ---
+# datatype:
+# - {name: model, datatype: string}
+# - {name: type, datatype: string}
+# - {name: name, datatype: string}
+# - {name: value, datatype: float64, format: .4e}
+# - {name: unit, datatype: string}
+# - {name: error, datatype: float64, format: .3e}
+# - {name: min, datatype: float64, format: .3e}
+# - {name: max, datatype: float64, format: .3e}
+# - {name: frozen, datatype: bool}
+# schema: astropy-2.0
+model type name value unit error min max frozen
+Crab spectral index 2.5819191966831267 "" 0.0 nan nan True
+Crab spectral amplitude 4.4460166753775584e-11 "cm-2 s-1 TeV-1" 2.058147930097629e-12 nan nan False
+Crab spectral reference 1.0 TeV 0.0 nan nan True
+Crab spatial lon_0 83.61909268125427 deg 0.0 nan nan True
+Crab spatial lat_0 22.024799612139915 deg 0.0 -90.0 90.0 True
+Crab spatial sigma 0.012827432242463521 deg 0.006488352961285868 0.0 nan False
+Crab spatial e 0.0 "" 0.0 0.0 1.0 True
+Crab spatial phi 0.0 deg 0.0 nan nan True
+stacked-bkg spectral norm 0.996008668479067 "" 0.012378815263601201 nan nan False
+stacked-bkg spectral tilt 0.0 "" 0.0 nan nan True
+stacked-bkg spectral reference 1.0 TeV 0.0 nan nan True
