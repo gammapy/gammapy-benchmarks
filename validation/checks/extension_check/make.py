@@ -7,24 +7,13 @@ import yaml
 import time
 from pathlib import Path
 
-from gammapy.data import DataStore
-from gammapy.datasets import MapDataset
-from gammapy.modeling import Fit
-from gammapy.modeling.models import PowerLawSpectralModel, SkyModel, PointSpatialModel, GaussianSpatialModel, FoVBackgroundModel
-from gammapy.maps import MapAxis, WcsGeom, Map
-from gammapy.makers import (
-   SafeMaskMaker,
-   MapDatasetMaker,
-   FoVBackgroundMaker,
-)
 import matplotlib.pyplot as plt
-import astropy.units as u
-import numpy as np
-from astropy.coordinates import SkyCoord
-from regions import CircleSkyRegion
-from gammapy.utils.scripts import make_path
 
+from gammapy.analysis import AnalysisConfig, Analysis
+from gammapy.modeling.models import Models, PointSpatialModel, SkyModel
+from extension import ExtensionEstimator
 
+AVAILABLE_TARGETS = ["crab", "pks2155", "msh1552"]
 
 log = logging.getLogger(__name__)
 
@@ -40,167 +29,96 @@ def cli(log_level, show_warnings):
 
 
 @cli.command("run-analyses", help="Run Gammapy validation: small extension validation.")
-def run_analyses():
+@click.argument("targets", type=click.Choice(list(AVAILABLE_TARGETS) + ["all-targets"]))
+def run_analyses(targets):
     log.info("Run small source extension check.")
+
     info = {}
-    target_position = SkyCoord(329.71693826 * u.deg, -30.2255890 * u.deg, frame="icrs")
 
-    log.info("Extract observations from datastore.")
-    t = time.time()
+    targets = list(AVAILABLE_TARGETS) if targets == "all-targets" else [targets]
 
-    observations = select_data()
-    info["data_preparation"] = time.time() - t
-    t = time.time()
+    for target in targets:
+        t = time.time()
 
-    binsz=0.04
-    log.info(f"Performing data reduction with bin size {binsz}.")
+        config = AnalysisConfig.read(f"configs/config_{target}.yaml")
+        analysis = Analysis(config)
+        analysis.get_observations()
+        info["data_preparation"] = time.time() - t
 
-    dataset = create_dataset_3d(observations, target_position, binsz)
-    bkg_model = FoVBackgroundModel(dataset_name="stacked")
-    info["data_reduction"] = time.time() - t
-    t = time.time()
+        t = time.time()
 
-    log.info("Fitting point source.")
-    point_model = define_model_pointlike(target_position)
-    dataset.models = [bkg_model, point_model]
+        analysis.get_datasets()
+        info["data_reduction"] = time.time() - t
 
-    info["point_model_setting"] = time.time() - t
-    t = time.time()
+        models = Models.read(f"models/model_{target}.yaml")
 
-    fit = Fit()
-    result = fit.run([dataset])
+        point_models = Models(define_model_pointlike(models[0]))
+        analysis.set_models(point_models)
 
-    info["point_model_fitting"] = time.time() - t
-    t = time.time()
+        t = time.time()
+        analysis.run_fit()
 
-    log.info(result)
-    log.info(result["optimize_result"].parameters.to_table())
+        info["point_model_fitting"] = time.time() - t
+        log.info(f"\n{point_models.to_parameters_table()}")
 
-    log.info("Fitting extended gaussian source.")
-    t = time.time()
-    gauss_model = define_model_gaussian(target_position)
-    dataset.models = [bkg_model, gauss_model]
+        log.info("Fitting extended gaussian source.")
+        analysis.set_models(models)
+        t = time.time()
 
-    info["gauss_model_setting"] = time.time() - t
-    t = time.time()
+        analysis.run_fit()
 
-    result = fit.run([dataset])
+        info["gauss_model_fitting"] = time.time() - t
 
-    info["gauss_model_fitting"] = time.time() - t
-    t = time.time()
+        log.info(analysis.fit_result)
 
-    log.info(result)
+        log.info(f"\n{models.to_parameters_table()}")
 
-    params = result["optimize_result"].parameters.to_table()
-    log.info(params)
-    log.info("Fitting extended gaussian source.")
-    log.info("Extract size UL and stat profile.")
+        log.info("Extract size error, UL and stat profile.")
 
-    t = time.time()
-    conf_result = fit.confidence([dataset], "sigma", 3)
-    info["ul_computation"] = time.time() - t
-    t = time.time()
+        t = time.time()
+        analysis.models[0].spatial_model.lon_0.frozen = True
+        analysis.models[0].spatial_model.lat_0.frozen = True
+        analysis.models[0].spectral_model.index.frozen = True
 
-    log.info(conf_result)
+        size_est = ExtensionEstimator(source=models[0].name, selection_optional=["errn-errp", "ul", "scan"],
+                                size_min="0.0005 deg", size_max="0.02 deg",
+                                size_n_values=20, reoptimize=True)
+        res = size_est.run(analysis.datasets)
 
-    gauss_model.spatial_model.sigma.scan_values = np.logspace(-3.5,-2.5,15)
-    profile = fit.stat_profile([dataset], "sigma", reoptimize=True)
-    plot_profile(profile)
+        info["estimator"] = time.time() - t
+        t = time.time()
 
-    Path("bench.yaml").write_text(yaml.dump(info, sort_keys=False, indent=4))
-    params.write("gaus_results.ecsv")
+        log.info(res[0])
+        plot_profile(res[0], target)
 
-def select_data():
-    data_store = DataStore.from_dir("$GAMMAPY_DATA/hess-dl3-dr1/")
-    obs_ids = [33787, 33788, 33789, 33790, 33791, 33792, 33793, 33794, 33795, 33796, 33797, 33798, 33799, 33800, 33801]
+        Path(f"bench_{target}.yaml").write_text(yaml.dump(info, sort_keys=False, indent=4))
+        analysis.models.to_parameters_table().write(f"results/{target}_results.ecsv", overwrite=True)
 
-    observations = data_store.get_observations(obs_ids)
-    return observations
 
-def create_dataset_3d(observations, center_position, binsz):
-
-    # Target geometry definition
-    e_reco = MapAxis.from_energy_bounds(0.4, 20, 10, "TeV")
-    e_true = MapAxis.from_energy_bounds(0.1, 40, 40, "TeV", name="energy_true")
-
-    geom = WcsGeom.create(
-        skydir=center_position,
-        width=(2, 2),
-        binsz=binsz,
-        axes=[e_reco]
-    )
-
-    exclusion_region = CircleSkyRegion(center_position, 0.3*u.deg)
-    exclusion_mask = geom.region_mask([exclusion_region], inside=False)
-
-    offset_max = 2.0 * u.deg
-    #data reduction makers
-    maker = MapDatasetMaker()
-    bkg_maker = FoVBackgroundMaker(method="scale", exclusion_mask=exclusion_mask)
-    safe_mask_maker = SafeMaskMaker(methods=["aeff-max", "offset-max"], aeff_percent=10, offset_max=offset_max)
-
-    stacked = MapDataset.create(geom=geom, energy_axis_true=e_true, name="stacked")
-
-    for obs in observations:
-        cutout = stacked.cutout(obs.pointing_radec, width=2 * offset_max)
-        # A MapDataset is filled in this cutout geometry
-        dataset = maker.run(cutout, obs)
-        # The data quality cut is applied
-        dataset = safe_mask_maker.run(dataset, obs)
-        # fit background model
-        dataset = bkg_maker.run(dataset)
-        print(
-            f"Background norm obs {obs.obs_id}: {dataset.background_model.spectral_model.norm.value:.2f}"
-        )
-        stacked.stack(dataset)
-    return stacked
-
-def define_model_pointlike(test_position):
+def define_model_pointlike(model):
     spatial_model = PointSpatialModel(
-        lon_0=test_position.ra,
-        lat_0=test_position.dec,
-        frame="icrs"
+        lon_0 = model.spatial_model.lon_0,
+        lat_0 = model.spatial_model.lat_0,
+        frame=model.spatial_model.frame
     )
-    spectral_model = PowerLawSpectralModel(
-        index=3.4,
-        amplitude=2e-11 * u.Unit("1 / (cm2 s TeV)"),
-        reference=1 * u.TeV,
-    )
-    spectral_model.parameters["index"].frozen = False
-    spatial_model.lon_0.frozen = True
-    spatial_model.lat_0.frozen = True
+    spectral_model = model.spectral_model.copy()
 
     sky_model = SkyModel(
-           spatial_model=spatial_model, spectral_model=spectral_model, name="point"
+           spatial_model=spatial_model, spectral_model=spectral_model, name=model.name
     )
     return sky_model
 
-def define_model_gaussian(test_position):
-    spatial_model = GaussianSpatialModel(
-        lon_0=test_position.ra,
-        lat_0=test_position.dec,
-        frame="icrs",
-        sigma="0.02 deg"
-    )
-    spectral_model = PowerLawSpectralModel(
-        index=3.4,
-        amplitude=2e-11 * u.Unit("1 / (cm2 s TeV)"),
-        reference=1 * u.TeV,
-    )
-    spectral_model.parameters["index"].frozen = False
-    spatial_model.lon_0.frozen = True
-    spatial_model.lat_0.frozen = True
 
-    sky_model = SkyModel(
-           spatial_model=spatial_model, spectral_model=spectral_model, name="gauss"
-    )
-    return sky_model
-
-def plot_profile(profile):
+def plot_profile(profile, target):
     plt.semilogx(profile["sigma_scan"], profile["stat_scan"])
+    plt.axvline(profile["sigma"], color='k', alpha=0.5)
+    plt.axvline(profile["sigma"]-profile["sigma_errn"],linestyle='dotted', color='b', alpha=0.5)
+    plt.axvline(profile["sigma"]+profile["sigma_errp"],linestyle='dotted', color='b', alpha=0.5)
+    plt.axvline(profile["sigma_ul"], linestyle='dashed', color='r', alpha=0.5)
     plt.xlabel("Source gaussian sigma, deg")
     plt.ylabel("Total Stat")
-    plt.savefig("stat_profile.png")
+    plt.title(f"{target}")
+    plt.savefig(f"results/stat_profile_{target}.png")
 
 if __name__ == "__main__":
    logging.basicConfig(level=logging.INFO)
