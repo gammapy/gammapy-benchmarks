@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import astropy.units as u
 
 from gammapy.analysis import AnalysisConfig, Analysis
 from gammapy.modeling.models import Models, PointSpatialModel, SkyModel
@@ -62,6 +63,8 @@ def run_analyses(targets):
         log.info(f"\n{point_models.to_parameters_table()}")
 
         log.info("Fitting extended gaussian source.")
+
+        analysis.datasets.models = []
         analysis.set_models(models)
         t = time.time()
 
@@ -80,15 +83,18 @@ def run_analyses(targets):
         analysis.models[0].spatial_model.lat_0.frozen = True
         analysis.models[0].spectral_model.index.frozen = True
 
-        size_est = ExtensionEstimator(source=models[0].name, selection_optional=["errn-errp", "ul", "scan"],
-                                size_min="0.0005 deg", size_max="0.02 deg",
-                                size_n_values=20, reoptimize=True)
+        size_est = ExtensionEstimator(source=models[0].name,
+                                      energy_edges=[0.2, 10.0]*u.TeV,
+                                      selection_optional=["errn-errp", "ul", "scan"],
+                                      size_min="0.08 deg", size_max="0.12 deg",
+                                      size_n_values=20,
+                                      reoptimize=True)
         res = size_est.run(analysis.datasets)
 
         info["estimator"] = time.time() - t
         t = time.time()
 
-        log.info(res[0])
+        log.info(res)
         plot_profile(res[0], target)
 
         Path(f"bench_{target}.yaml").write_text(yaml.dump(info, sort_keys=False, indent=4))
@@ -104,7 +110,7 @@ def define_model_pointlike(model):
     spectral_model = model.spectral_model.copy()
 
     sky_model = SkyModel(
-           spatial_model=spatial_model, spectral_model=spectral_model, name=model.name
+           spatial_model=spatial_model, spectral_model=spectral_model, name=f"{model.name}_point"
     )
     return sky_model
 

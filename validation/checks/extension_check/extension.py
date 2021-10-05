@@ -101,7 +101,10 @@ class ExtensionEstimator(ParameterEstimator):
             zip(self.energy_edges[:-1], self.energy_edges[1:]),
             desc="Energy bins"
         ):
-            row = self.estimate_size(datasets)
+            datasets_sliced = datasets.slice_by_energy(energy_min=energy_min, energy_max=energy_max)
+            datasets_sliced = Datasets([_.to_image(name=_.name) for _ in datasets_sliced])
+            datasets_sliced.models = datasets.models#.copy()
+            row = self.estimate_size(datasets_sliced)
             rows.append(row)
         return rows
         
