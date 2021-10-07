@@ -1,0 +1,25 @@
+# %ECSV 1.0
+# ---
+# datatype:
+# - {name: model, datatype: string}
+# - {name: type, datatype: string}
+# - {name: name, datatype: string}
+# - {name: value, datatype: float64, format: .4e}
+# - {name: unit, datatype: string}
+# - {name: error, datatype: float64, format: .3e}
+# - {name: min, datatype: float64, format: .3e}
+# - {name: max, datatype: float64, format: .3e}
+# - {name: frozen, datatype: bool}
+# schema: astropy-2.0
+model type name value unit error min max frozen
+gauss spectral index 3.519084054136577 "" 0.0 nan nan True
+gauss spectral amplitude 8.169912474475489e-11 "cm-2 s-1 TeV-1" 8.366937005529674e-13 nan nan False
+gauss spectral reference 1.0 TeV 0.0 nan nan True
+gauss spatial lon_0 329.7156744227953 deg 0.0 nan nan True
+gauss spatial lat_0 -30.222745830458265 deg 0.0 -90.0 90.0 True
+gauss spatial sigma 0.009984626045794975 deg 0.00012919854744297815 0.0 nan False
+gauss spatial e 0.0 "" 0.0 0.0 1.0 True
+gauss spatial phi 0.0 deg 0.0 nan nan True
+stacked-bkg spectral norm 0.9696989142313466 "" 0.008739757745866137 nan nan False
+stacked-bkg spectral tilt 0.0 "" 0.0 nan nan True
+stacked-bkg spectral reference 1.0 TeV 0.0 nan nan True

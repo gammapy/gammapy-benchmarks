@@ -1,0 +1,26 @@
+general:
+    log: {level: DEBUG, filename: null, filemode: null, format: null, datefmt: null}
+    outdir: .
+observations:
+    datastore: $GAMMAPY_DATA/hess-dl3-dr1/
+    obs_ids: [23523, 23526, 23559, 23592]
+datasets:
+    type: 3d
+    stack: true
+    geom:
+        wcs:
+            skydir: {frame: icrs,  lon: 83.633 deg, lat: 22.014 deg}
+            binsize: 0.02 deg
+            width: {width: 4 deg, height: 4 deg}
+            binsize_irf: 0.5 deg
+        selection:
+            offset_max: 2.5 deg
+        axes:
+            energy: {min: 0.2 TeV, max: 20.0 TeV, nbins: 16}
+            energy_true: {min: 0.1 TeV, max: 50.0 TeV, nbins: 30}
+    map_selection: ['counts', 'exposure', 'background', 'psf', 'edisp']
+    background: {method: fov_background, exclusion: exclusion_mask_crab.fits}
+    safe_mask: {methods: ['offset-max', 'bkg-peak', 'aeff-max'], parameters: {offset_max: 2.1 deg, aeff_percent: 10}}
+fit:
+        fit_range: {min: 0.2 TeV, max: 20.0 TeV}
+
