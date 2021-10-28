@@ -13,7 +13,7 @@ from gammapy.modeling.models import (GaussianSpatialModel, Models,
                                      PowerLawSpectralModel, SkyModel,
                                     )
 
-N_ITER = int(os.environ.get("GAMMAPY_BENCH_N_ITER", 50))
+N_ITER = int(os.environ.get("GAMMAPY_BENCH_N_ITER", 10))
 N_SRC = int(os.environ.get("GAMMAPY_BENCH_N_SRC", 10))
 
 def prepare_dataset():
