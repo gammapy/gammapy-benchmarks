@@ -164,18 +164,26 @@ class Validation_3FHL:
 
     def parallel_regions(self, processes):
         log.info("Executing parallel_regions()")
-        with mp.Pool(processes=processes) as pool:
-            args = [
-                (
-                    kr,
-                    self.ROIs.GLON[kr - 1],
-                    self.ROIs.GLAT[kr - 1],
-                    self.ROIs.RADIUS[kr - 1],
-                )
-                for kr in self.ROIs_sel
-            ]
-            pool.starmap(self.run_region, args)
-
+        if processes >1:
+            with mp.Pool(processes=processes) as pool:
+                args = [
+                    (
+                        kr,
+                        self.ROIs.GLON[kr - 1],
+                        self.ROIs.GLAT[kr - 1],
+                        self.ROIs.RADIUS[kr - 1],
+                    )
+                    for kr in self.ROIs_sel
+                ]
+                pool.starmap(self.run_region, args)
+        else:
+            for kr in self.ROIs_sel:
+                self.run_region(kr,
+                        self.ROIs.GLON[kr - 1],
+                        self.ROIs.GLAT[kr - 1],
+                        self.ROIs.RADIUS[kr - 1],
+                        )
+    
     def run_region(self, kr, lon, lat, radius):
         #    TODO: for now we have to read/create the allsky maps each in each job
         #    because we can't pickle <functools._lru_cache_wrapper object
@@ -318,13 +326,13 @@ class Validation_3FHL:
         print("ROI_num", str(kr), "\n", results)
         fit_stat = datasets.stat_sum()
 
-        if results.message != "Optimization failed.":
+        if results['optimize_result'].message != "Optimization failed.":
             filedata = Path(self.resdir) / f"3FHL_ROI_num{kr}_datasets.yaml"
             filemodel = Path(self.resdir) / f"3FHL_ROI_num{kr}_models.yaml"
             datasets.write(filedata, filemodel, overwrite=True)
             np.savez(
                 self.resdir / f"3FHL_ROI_num{kr}_fit_infos.npz",
-                message=results.message,
+                message=results['optimize_result'].message,
                 stat=[cat_stat, fit_stat],
             )
 
@@ -344,9 +352,11 @@ class Validation_3FHL:
                         n_sigma_ul=2,
                         selection_optional=["ul"],
                     ).run(datasets=datasets)
+                    flux_points.meta["sqrt_ts_threshold"] = 1
+
                     filename = self.resdir / f"{model.name}_flux_points.fits"
                     flux_points.write(filename, overwrite=True)
-
+    
             exec_time = time() - roi_time - exec_time
             print("ROI", kr, " Flux points time (s): ", exec_time)
 
@@ -372,17 +382,14 @@ class Validation_3FHL:
                     and self.FHL3[model.name].data["ROI_num"] == kr
                     and self.FHL3[model.name].data["Signif_Avg"] >= self.sig_cut
                 ):
-
                     res_spec = model.spectral_model
                     cat_spec = self.FHL3[model.name].spectral_model()
 
                     res_fp = FluxPoints.read(
-                        self.resdir / f"{model.name}_flux_points.fits"
+                        self.resdir / f"{model.name}_flux_points.fits",
+                        reference_model = cat_spec
                     )
-                    res_fp.table["is_ul"] = res_fp.table["ts"] < 1.0
-                    cat_fp = self.FHL3[model.name].flux_points.to_sed_type(
-                        "dnde", model=cat_spec
-                    )
+                    cat_fp = self.FHL3[model.name].flux_points
                     self.update_spec_diags(
                         dataset, model, cat_spec, res_spec, cat_fp, res_fp
                     )
@@ -413,21 +420,21 @@ class Validation_3FHL:
         plt.close("all")
 
     def plot_spec(self, kr, model, cat_spec, res_spec, cat_fp, res_fp):
-        energy_range = [0.01, 2] * u.TeV
+        energy_bounds = [0.01, 2] * u.TeV
         plt.figure(figsize=(6, 6), dpi=150)
         ax = cat_spec.plot(
-            energy_range=energy_range, energy_power=2, label="3FHL Catalogue", color="k"
+            energy_bounds=energy_bounds, energy_power=2, label="3FHL Catalogue", color="k"
         )
-        cat_spec.plot_error(ax=ax, energy_range=energy_range, energy_power=2)
+        cat_spec.plot_error(ax=ax, energy_bounds=energy_bounds, energy_power=2)
         res_spec.plot(
             ax=ax,
-            energy_range=energy_range,
+            energy_bounds=energy_bounds,
             energy_power=2,
             label="Gammapy fit",
             color="b",
         )
         res_spec.plot_error(
-            ax=ax, energy_range=energy_range, energy_power=2, facecolor="c"
+            ax=ax, energy_bounds=energy_bounds, energy_power=2, facecolor="c"
         )
 
         cat_fp.plot(ax=ax, energy_power=2, color="k")
@@ -438,12 +445,11 @@ class Validation_3FHL:
         plt.close("all")
 
     def update_spec_diags(self, dataset, model, cat_spec, res_spec, cat_fp, res_fp):
-
-        ind = ~(res_fp.is_ul) & ~(cat_fp.is_ul)
+        ind = ~(res_fp.is_ul.data) & ~(cat_fp.is_ul.data)
         self.diags["errel"]["flux_points"] += list(
-            relative_error(cat_fp.table["dnde"][ind], res_fp.table["dnde"][ind])
+            relative_error(cat_fp.dnde.data[ind], res_fp.dnde.data[ind])
         )
-        self.diags["cat_fp_sel"] += list(cat_fp.table["dnde"][ind])
+        self.diags["cat_fp_sel"] += list(cat_fp.dnde.data[ind])
 
         if isinstance(res_spec, PowerLawSpectralModel):
             self.diags["params"]["PL_index"].append(
@@ -708,7 +714,6 @@ def cli(selection, processes, fit):
 
     validation = Validation_3FHL(selection=selection, savefig=True)
     validation.run_all(run_fit=fit, get_diags=True, processes=processes)
-
 
 if __name__ == "__main__":
     cli()
