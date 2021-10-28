@@ -352,7 +352,7 @@ class Validation_3FHL:
                         n_sigma_ul=2,
                         selection_optional=["ul"],
                     ).run(datasets=datasets)
-                    flux_points.meta["sqrt_ts_threshold"] = 1
+                    flux_points.meta["sqrt_ts_threshold_ul"] = 1
 
                     filename = self.resdir / f"{model.name}_flux_points.fits"
                     flux_points.write(filename, overwrite=True)
