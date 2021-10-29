@@ -10,6 +10,9 @@ import numpy as np
 from gammapy.analysis import Analysis, AnalysisConfig
 from gammapy.modeling.models import Models
 
+# TODO: remove import once fit options are defined from config
+from gammapy.modeling import Fit
+
 log = logging.getLogger(__name__)
 
 AVAILABLE_TARGETS = ["crab", "pks2155", "msh1552"]
@@ -128,8 +131,9 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
             analysis.models[0].spatial_model.phi.frozen = False
             analysis.models[0].spatial_model.r_0.value = 0.3
     log.info(f"Running fit ...")
-
-    analysis.run_fit(optimize_opts={"print_level": 3})
+    # TODO: mv to config file once Fit options are available in AnalysisConfig
+    analysis.fit = Fit(optimize_opts={"print_level" : 3})
+    analysis.run_fit()
 
     log.info(f"Writing {path_res}")
     write_fit_summary(
