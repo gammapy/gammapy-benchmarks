@@ -99,7 +99,7 @@ def compute_correlations(stacked_on_off):
     lima_maps = estimator.run(stacked_on_off)
 
     significance_map = lima_maps["sqrt_ts"]
-    excess_map = lima_maps["excess"]
+    excess_map = lima_maps.npred_excess
     return significance_map, excess_map
 
 def compute_profile(stacked_on_off):
