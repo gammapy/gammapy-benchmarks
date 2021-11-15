@@ -2,8 +2,7 @@ from regions import CircleSkyRegion
 import time
 from gammapy.analysis import Analysis, AnalysisConfig
 from gammapy.makers import RingBackgroundMaker
-from gammapy.estimators import ExcessMapEstimator, ExcessProfileEstimator
-from gammapy.maps import Map
+from gammapy.estimators import ExcessMapEstimator, FluxProfileEstimator
 from gammapy.datasets import MapDatasetOnOff
 import yaml
 from astropy import units as u
@@ -109,7 +108,10 @@ def compute_profile(stacked_on_off):
     boxes = make_orthogonal_rectangle_sky_regions(
         start_line, end_line, wcs, 0.1 * u.deg, 20
     )
-    prof_maker = ExcessProfileEstimator(boxes, energy_edges=[0.5, 1, 5] * u.TeV)
+    prof_maker = FluxProfileEstimator(
+        regions=boxes,
+        energy_edges=[0.5, 1, 5] * u.TeV
+    )
     imp_prof = prof_maker.run(stacked_on_off)
     return imp_prof
 
