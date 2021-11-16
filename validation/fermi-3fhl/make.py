@@ -326,13 +326,13 @@ class Validation_3FHL:
         print("ROI_num", str(kr), "\n", results)
         fit_stat = datasets.stat_sum()
 
-        if results['optimize_result'].message != "Optimization failed.":
+        if results.message != "Optimization failed.":
             filedata = Path(self.resdir) / f"3FHL_ROI_num{kr}_datasets.yaml"
             filemodel = Path(self.resdir) / f"3FHL_ROI_num{kr}_models.yaml"
             datasets.write(filedata, filemodel, overwrite=True)
             np.savez(
                 self.resdir / f"3FHL_ROI_num{kr}_fit_infos.npz",
-                message=results['optimize_result'].message,
+                message=results.message,
                 stat=[cat_stat, fit_stat],
             )
 
