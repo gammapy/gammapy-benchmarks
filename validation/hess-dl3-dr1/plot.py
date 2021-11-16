@@ -77,11 +77,11 @@ def make_plots(
 ):
     fig, ax = plt.subplots(figsize=(7, 5))
     plt.rc("text", usetex=True)
-    opts = {"energy_power": 2, "ax": ax}
+    opts = {"sed_type":"e2dnde", "ax": ax}
 
     reference_spectrum.plot(
         **opts,
-        energy_range=["0.5 TeV", "50 TeV"],
+        energy_bounds=["0.5 TeV", "50 TeV"],
         color="red",
         alpha=0.8,
         label=f"Reference: \n    -$\Gamma$={reference_spectrum.index.value:5.2f} $\pm$ {reference_spectrum_errors['index_err']:5.2f},"
@@ -90,7 +90,7 @@ def make_plots(
     )
     result_spectrum.plot(
         **opts,
-        energy_range=["0.5 TeV", "50 TeV"],
+        energy_bounds=["0.5 TeV", "50 TeV"],
         color="blue",
         alpha=0.8,
         label=f"Validation: \n    -$\Gamma$={result_spectrum.index.value:5.2f} $\pm$ {result_spectrum_errors['index_err']:5.2f},"

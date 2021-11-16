@@ -47,9 +47,9 @@ flux_points:
     energy:
         min: 0.1 TeV
         max: 100 TeV
-        nbins: 24
+        nbins: 8
     source: {tag}
-    parameters: {{'reoptimize' : True}}
+    parameters: {{'reoptimize' : True, 'selection_optional': ['errn-errp', 'ul']}}
 
 
 
