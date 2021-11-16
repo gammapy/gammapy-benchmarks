@@ -10,6 +10,9 @@ import numpy as np
 from gammapy.analysis import Analysis, AnalysisConfig
 from gammapy.modeling.models import Models
 
+# TODO: remove import once fit options are defined from config
+from gammapy.modeling import Fit
+
 log = logging.getLogger(__name__)
 
 AVAILABLE_TARGETS = ["crab", "pks2155", "msh1552"]
@@ -97,10 +100,6 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
     for obs in analysis.observations:
         bkg = obs.bkg
 
-        for data in bkg.data.data:
-            is_zero = (data == 0)
-            data[is_zero] = np.min(data)
-
         obs.bkg = bkg
 
     log.info(f"Running data reduction")
@@ -129,7 +128,7 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
             analysis.models[0].spatial_model.r_0.value = 0.3
     log.info(f"Running fit ...")
 
-    analysis.run_fit(optimize_opts={"print_level": 3})
+    analysis.run_fit()
 
     log.info(f"Writing {path_res}")
     write_fit_summary(
@@ -146,7 +145,7 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
                     parameter.frozen = True
         analysis.get_flux_points()
         flux_points = analysis.flux_points.data
-        flux_points.table["is_ul"] = flux_points.table["ts"] < 4
+
         keys = [
             "e_ref",
             "e_min",
@@ -158,10 +157,8 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
             "dnde_ul",
         ]
         log.info(f"Writing {path_res}")
-        flux_points.table_formatted[keys].write(
-            path_res / f"flux-points-{method}.ecsv", format="ascii.ecsv"
-        )
-
+        table = flux_points.to_table(sed_type="dnde", format="gadf-sed")[keys]
+        table.write(path_res / f"flux-points-{method}.ecsv", format="ascii.ecsv")
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

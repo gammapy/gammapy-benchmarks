@@ -44,3 +44,4 @@ flux_points:
         max: 100 TeV
         nbins: 24
     source: {tag}
+    parameters: {{'selection_optional': ['errn-errp', 'ul']}}
