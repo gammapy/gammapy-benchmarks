@@ -27,22 +27,22 @@ AVAILABLE_VALIDATIONS = {
         "command": "make.py",
         "args": ["all", "all-models"],
     },
-    # "fermi-3fhl": {"folder": "fermi-3fhl", "command": "make.py", "args": []},
-    # "hess-dl3-dr1": {
-    #     "folder": "hess-dl3-dr1",
-    #     "command": "make.py",
-    #     "args": ["run-analyses", "all-targets", "all-methods"],
-    # },
-    # "joint-crab-analyses": {
-    #     "folder": "joint-crab",
-    #     "command": "make.py",
-    #     "args": ["run-analyses", "all"],
-    # },
-    # "joint-crab-fit": {
-    #     "folder": "joint-crab",
-    #     "command": "make.py",
-    #     "args": ["run-fit", "all"],
-    # },
+    "fermi-3fhl": {"folder": "fermi-3fhl", "command": "make.py", "args": []},
+    "hess-dl3-dr1": {
+        "folder": "hess-dl3-dr1",
+        "command": "make.py",
+        "args": ["run-analyses", "all-targets", "all-methods"],
+    },
+    "joint-crab-analyses": {
+        "folder": "joint-crab",
+        "command": "make.py",
+        "args": ["run-analyses", "all"],
+    },
+    "joint-crab-fit": {
+        "folder": "joint-crab",
+        "command": "make.py",
+        "args": ["run-fit", "all"],
+    },
     "lightcurve": {
         "folder": "lightcurve",
         "command": "make.py",
