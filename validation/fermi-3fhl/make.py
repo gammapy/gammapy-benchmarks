@@ -406,14 +406,14 @@ class Validation_3FHL:
 
         plt.figure(figsize=(6, 6), dpi=150)
         npred = dataset.npred().sum_over_axes()
-        fig, ax, cb = npred.plot(cmap=cm.nipy_spectral, add_cbar=True, norm=LogNorm())
+        ax = npred.plot(cmap=cm.nipy_spectral, add_cbar=True, norm=LogNorm())
         plt.title("Npred")
         cl = ax.get_images()[0].get_clim()
         plt.savefig(self.resdir / f"npred_{dataset.name}.png", dpi=plt.gcf().dpi)
 
         plt.figure(figsize=(6, 6), dpi=150)
         nobs = dataset.counts.sum_over_axes()
-        fig, ax, cb = nobs.plot(cmap=cm.nipy_spectral, add_cbar=True, norm=LogNorm())
+        ax = nobs.plot(cmap=cm.nipy_spectral, add_cbar=True, norm=LogNorm())
         plt.title("Nobs")
         ax.get_images()[0].set_clim(cl)
         plt.savefig(self.resdir / f"counts_{dataset.name}.png", dpi=plt.gcf().dpi)
