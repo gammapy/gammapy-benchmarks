@@ -76,7 +76,6 @@ def make_plots(
     result_fpoints,
 ):
     fig, ax = plt.subplots(figsize=(7, 5))
-    plt.rc("text", usetex=True)
     opts = {"sed_type":"e2dnde", "ax": ax}
 
     reference_spectrum.plot(
