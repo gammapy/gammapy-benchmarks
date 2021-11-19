@@ -33,6 +33,11 @@ AVAILABLE_VALIDATIONS = {
         "command": "make.py",
         "args": ["run-analyses", "all-targets", "all-methods"],
     },
+    "hess-dl3-dr1-plot": {
+        "folder": "hess-dl3-dr1",
+        "command": "plot.py",
+        "args": [],
+    },
     "joint-crab-analyses": {
         "folder": "joint-crab",
         "command": "make.py",
