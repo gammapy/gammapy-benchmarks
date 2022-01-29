@@ -1,50 +1,50 @@
 analysis_3d:
-  CPU_max: 102.7
-  CPU_mean: 99.89789473684213
-  memory_peak: 1281.527
-  total_time: 48.584
-analysis_3d_joint:
   CPU_max: 103.0
-  CPU_mean: 99.86926345609066
-  memory_peak: 2990.945
-  total_time: 357.752
+  CPU_mean: 98.98190476190474
+  memory_peak: 1282.785
+  total_time: 53.523
+analysis_3d_joint:
+  CPU_max: 103.1
+  CPU_mean: 99.94574616457463
+  memory_peak: 2980.727
+  total_time: 362.573
 io:
-  CPU_max: 100.9
-  CPU_mean: 99.87499999999999
-  memory_peak: 562.266
-  total_time: 2.525
+  CPU_max: 103.0
+  CPU_mean: 100.125
+  memory_peak: 883.691
+  total_time: 2.523
 lightcurve_1d:
   CPU_max: 101.1
-  CPU_mean: 99.93684210526317
-  memory_peak: 433.438
-  total_time: 19.736
+  CPU_mean: 99.93913043478263
+  memory_peak: 433.371
+  total_time: 23.72
 lightcurve_3d:
-  CPU_max: 103.0
-  CPU_mean: 99.98506493506493
-  memory_peak: 1500.551
-  total_time: 234.502
+  CPU_max: 103.1
+  CPU_mean: 99.77463312368972
+  memory_peak: 1497.129
+  total_time: 241.322
 npred:
-  CPU_max: 103.0
-  CPU_mean: 100.00000000000001
-  memory_peak: 627.27
-  total_time: 51.662
+  CPU_max: 103.1
+  CPU_mean: 99.96666666666667
+  memory_peak: 624.332
+  total_time: 52.02
 ring_background_estimator:
-  CPU_max: 102.6
-  CPU_mean: 99.89772727272727
-  memory_peak: 619.059
-  total_time: 22.799
+  CPU_max: 101.2
+  CPU_mean: 99.98333333333333
+  memory_peak: 743.582
+  total_time: 24.74
 spectrum_1d:
-  CPU_max: 102.8
-  CPU_mean: 99.9095238095238
-  memory_peak: 432.074
-  total_time: 11.141
+  CPU_max: 101.1
+  CPU_mean: 99.89999999999999
+  memory_peak: 431.875
+  total_time: 12.619
 spectrum_1d_joint:
-  CPU_max: 102.5
-  CPU_mean: 99.96617647058825
-  memory_peak: 490.262
-  total_time: 34.968
+  CPU_max: 103.0
+  CPU_mean: 99.99767441860469
+  memory_peak: 480.062
+  total_time: 43.906
 tsmap_estimator:
-  CPU_max: 102.8
-  CPU_mean: 99.98275862068965
-  memory_peak: 566.473
-  total_time: 29.87
+  CPU_max: 103.0
+  CPU_mean: 99.98846153846155
+  memory_peak: 604.035
+  total_time: 39.88
