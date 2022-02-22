@@ -24,7 +24,7 @@ def data_prep():
         "$GAMMAPY_DATA/fermi-3fhl-gc/fermi-3fhl-gc-exposure-cube.fits.gz"
     )
     # unit is not properly stored on the file. We add it manually
-    exposure.unit = "cm2s"
+    exposure = Map.from_geom(exposure.geom, data=exposure.data, unit="cm2s")
 
     psfmap = PSFMap.read(
         "$GAMMAPY_DATA/fermi-3fhl-gc/fermi-3fhl-gc-psf-cube.fits.gz", format="gtpsf"
