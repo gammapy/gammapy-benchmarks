@@ -1,50 +1,50 @@
 analysis_3d:
-  CPU_max: 103.1
-  CPU_mean: 99.98
-  memory_peak: 1245.789
-  total_time: 45.927
+  CPU_max: 102.9
+  CPU_mean: 99.97383177570093
+  memory_peak: 1259.223
+  total_time: 54.568
 analysis_3d_joint:
-  CPU_max: 103.1
-  CPU_mean: 99.89721407624634
-  memory_peak: 3019.34
-  total_time: 344.641
+  CPU_max: 103.0
+  CPU_mean: 99.89348404255318
+  memory_peak: 3021.883
+  total_time: 380.476
 io:
-  CPU_max: 101.1
-  CPU_mean: 100.6
-  memory_peak: 617.613
-  total_time: 2.522
+  CPU_max: 101.0
+  CPU_mean: 100.22
+  memory_peak: 889.445
+  total_time: 3.029
 lightcurve_1d:
-  CPU_max: 103.1
-  CPU_mean: 99.71944444444442
-  memory_peak: 479.602
-  total_time: 18.667
-lightcurve_3d:
-  CPU_max: 101.3
-  CPU_mean: 100.00148514851486
-  memory_peak: 1338.82
-  total_time: 204.345
-npred:
-  CPU_max: 103.1
-  CPU_mean: 99.97619047619048
-  memory_peak: 639.176
-  total_time: 53.503
-ring_background_estimator:
-  CPU_max: 103.1
-  CPU_mean: 99.95853658536583
-  memory_peak: 687.105
-  total_time: 21.194
-spectrum_1d:
   CPU_max: 101.1
-  CPU_mean: 99.895
-  memory_peak: 434.238
-  total_time: 10.593
+  CPU_mean: 99.52653061224488
+  memory_peak: 439.848
+  total_time: 25.264
+lightcurve_3d:
+  CPU_max: 103.0
+  CPU_mean: 99.98309572301426
+  memory_peak: 1337.254
+  total_time: 248.576
+npred:
+  CPU_max: 103.0
+  CPU_mean: 99.97757009345794
+  memory_peak: 632.012
+  total_time: 54.584
+ring_background_estimator:
+  CPU_max: 102.9
+  CPU_mean: 100.0134615384615
+  memory_peak: 688.047
+  total_time: 26.792
+spectrum_1d:
+  CPU_max: 101.0
+  CPU_mean: 99.94999999999999
+  memory_peak: 434.344
+  total_time: 13.641
 spectrum_1d_joint:
-  CPU_max: 103.1
-  CPU_mean: 99.97966101694917
+  CPU_max: 102.5
+  CPU_mean: 99.95581395348836
   memory_peak: 452.293
-  total_time: 30.269
+  total_time: 43.956
 tsmap_estimator:
-  CPU_max: 103.1
-  CPU_mean: 100.01346153846157
-  memory_peak: 545.645
-  total_time: 26.744
+  CPU_max: 101.1
+  CPU_mean: 98.74444444444444
+  memory_peak: 615.742
+  total_time: 41.448
