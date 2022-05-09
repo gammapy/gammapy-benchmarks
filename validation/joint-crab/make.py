@@ -39,12 +39,13 @@ instrument_opts = dict(
         "on_radius": "0.11 deg",
         "stack": False,
         "containment": True,
+        "required_irf": ['aeff', 'edisp', 'psf'],
         "emin": "0.66 TeV",
         "emax": "30 TeV",
         "color": "#002E63",
     },
     magic={
-        "on_radius": "0.14 deg",
+        "on_radius": "0.1414 deg",
         "stack": False,
         "containment": False,
         "emin": "0.08 TeV",
@@ -138,6 +139,9 @@ def data_reduction(instrument):
     config.datasets.stack = instrument_opts[instrument]["stack"]
     config.datasets.containment_correction = instrument_opts[instrument]["containment"]
     config.datasets.on_region.radius = instrument_opts[instrument]["on_radius"]
+
+    if instrument == "hess":
+        config.observations.required_irf = instrument_opts[instrument]["required_irf"]
 
     if instrument == "fact":
         config.datasets.safe_mask.methods = ["aeff-default"]

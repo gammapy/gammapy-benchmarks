@@ -24,8 +24,8 @@ class FermiDatasetMaker:
     ):
         # Read data
         self.events = EventList.read(evt_file)
-        self.exposure = HpxNDMap.read(exp_file)
-        self.exposure.unit = u.Unit("cm2s")  # no unit stored on map...
+        exposure = HpxNDMap.read(exp_file)
+        self.exposure = exposure.copy(unit="cm2s")  # no unit stored on map...
         self.psf = PSFMap.read(psf_file, format="gtpsf")
 
     def _make_gti(self):
