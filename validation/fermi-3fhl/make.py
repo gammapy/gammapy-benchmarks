@@ -195,6 +195,7 @@ class Validation_3FHL:
         exposure_hpx = Map.read(
             "$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_exposure_cube_hpx.fits.gz"
         )
+
         exposure_hpx = exposure_hpx.copy(unit="cm2 s")
 
         # psf
@@ -685,9 +686,9 @@ def extrapolate_iem_model(logEc_extra):
         10 ** logEc_extra, unit="MeV", name="energy_true", interp="log"
     )
     geom_3D = iem_fermi.geom.to_image().to_cube([Ec_ax])
-
-    iem_fermi_extra = Map.from_geom(geom_3D, data=iem_extra.astype("float32"))
-    iem_fermi_extra.unit = "cm-2 s-1 MeV-1 sr-1"
+    
+    data = iem_extra.astype("float32")
+    iem_fermi_extra = Map.from_geom(geom_3D, data=data, unit="cm-2 s-1 MeV-1 sr-1")
 
     log.info(f"Writing {outfile}")
     iem_fermi_extra.write(outfile, overwrite=True)
