@@ -196,6 +196,8 @@ class Validation_3FHL:
             "$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_exposure_cube_hpx.fits.gz"
         )
 
+        exposure_hpx = exposure_hpx.copy(unit="cm2 s")
+
         # psf
         psf_map = PSFMap.read(
             "$GAMMAPY_DATA/fermi_3fhl/fermi_3fhl_psf_gc.fits.gz", format="gtpsf"
@@ -422,22 +424,22 @@ class Validation_3FHL:
         energy_bounds = [0.01, 2] * u.TeV
         plt.figure(figsize=(6, 6), dpi=150)
         ax = cat_spec.plot(
-            energy_bounds=energy_bounds, energy_power=2, label="3FHL Catalogue", color="k"
+            energy_bounds=energy_bounds, sed_type="e2dnde", label="3FHL Catalogue", color="k"
         )
-        cat_spec.plot_error(ax=ax, energy_bounds=energy_bounds, energy_power=2)
+        cat_spec.plot_error(ax=ax, energy_bounds=energy_bounds, sed_type="e2dnde")
         res_spec.plot(
             ax=ax,
             energy_bounds=energy_bounds,
-            energy_power=2,
+            sed_type="e2dnde",
             label="Gammapy fit",
             color="b",
         )
         res_spec.plot_error(
-            ax=ax, energy_bounds=energy_bounds, energy_power=2, facecolor="c"
+            ax=ax, energy_bounds=energy_bounds, sed_type="e2dnde", facecolor="c"
         )
 
-        cat_fp.plot(ax=ax, energy_power=2, color="k")
-        res_fp.plot(ax=ax, energy_power=2, color="b")
+        cat_fp.plot(ax=ax, sed_type="e2dnde", color="k")
+        res_fp.plot(ax=ax, sed_type="e2dnde", color="b")
         plt.legend()
         tag = model.name.replace(" ", "_")
         plt.savefig(self.resdir / f"spec_{tag}_ROI_num{kr}.png", dpi=plt.gcf().dpi)
