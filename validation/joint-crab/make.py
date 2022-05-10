@@ -205,12 +205,12 @@ def make_contours(datasets, result, npoints):
 
     fit = Fit()
     fit.optimize(datasets=datasets)
-
+ 
     contours = dict()
     contour = fit.stat_contour(
         datasets=datasets,
-        x=result.parameters["alpha"],
-        y=result.parameters["beta"],
+        x=datasets.parameters["alpha"],
+        y=datasets.parameters["beta"],
         numpoints=npoints,
         sigma=np.sqrt(2.3),
     )
@@ -221,8 +221,8 @@ def make_contours(datasets, result, npoints):
 
     contour = fit.stat_contour(
         datasets=datasets,
-        x=result.parameters["amplitude"],
-        y=result.parameters["beta"],
+        x=datasets.parameters["amplitude"],
+        y=datasets.parameters["beta"],
         numpoints=npoints,
         sigma=np.sqrt(2.3),
     )
@@ -233,8 +233,8 @@ def make_contours(datasets, result, npoints):
 
     contour = fit.stat_contour(
         datasets=datasets,
-        x=result.parameters["amplitude"],
-        y=result.parameters["alpha"],
+        x=datasets.parameters["amplitude"],
+        y=datasets.parameters["alpha"],
         numpoints=npoints,
         sigma=np.sqrt(2.3),
     )
@@ -421,7 +421,7 @@ def make_summary(instrument):
         paper_result = yaml.safe_load(file)
 
     for par in paper_result["parameters"]:
-        if par["name"] is not "reference":
+        if par["name"] != "reference":
             name = par["name"]
             ref = par["value"]
             ref_error = par["error"]
