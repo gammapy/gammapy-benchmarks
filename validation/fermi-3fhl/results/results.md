@@ -51,7 +51,7 @@ Optimization failed. Estimated distance to minimum too large. 0.0
 flux_points   
 Rel. err. <10%: 79.06976744186046   
 Rel. err. <30%: 97.67441860465117   
-Rel. err. mean: -3.819775888971713   
+Rel. err. mean: -3.8197778859171154   
 
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/flux_points_errel.png)
 
@@ -62,7 +62,7 @@ dx/x <30% :  100.0
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/PL_index_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: 0.18274057591210574   
+Rel. err. mean: 0.18273139530289453   
 compatibility: 100.0   
 
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/PL_index_errel.png)
@@ -76,7 +76,7 @@ dx/x <30% :  100.0
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/PL_amplitude_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -0.4811108672506582   
+Rel. err. mean: -0.4806061620524382   
 compatibility: 100.0   
 
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/PL_amplitude_errel.png)
@@ -90,7 +90,7 @@ dx/x <30% :  100.0
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/LP_alpha_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: 0.5682982966066001   
+Rel. err. mean: 0.568363451866599   
 compatibility: 100.0   
 
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/LP_alpha_errel.png)
@@ -104,7 +104,7 @@ dx/x <30% :  50.0
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/LP_beta_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -2.4707552643478468   
+Rel. err. mean: -2.470953516059916   
 compatibility: 100.0   
 
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/LP_beta_errel.png)
@@ -118,7 +118,7 @@ dx/x <30% :  100.0
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/LP_amplitude_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -1.134161430312279   
+Rel. err. mean: -1.1339814028376674   
 compatibility: 100.0   
 
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/LP_amplitude_errel.png)
