@@ -107,6 +107,7 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
 
     log.info(f"Setting the model")
     models = Models.read(f"{tag}/model.yaml")
+
     analysis.set_models(models)
 
     if method == "3d":
@@ -126,6 +127,15 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
             analysis.models[0].spatial_model.e.frozen = False
             analysis.models[0].spatial_model.phi.frozen = False
             analysis.models[0].spatial_model.r_0.value = 0.3
+            analysis.models[0].spatial_model.r_0.min = 0.02
+    else:
+        analysis.models[0].spatial_model.lat_0.frozen = True
+        analysis.models[0].spatial_model.lon_0.frozen = True
+        if target_dict["spatial_model"] == "DiskSpatialModel":
+            analysis.models[0].spatial_model.e.frozen = True
+            analysis.models[0].spatial_model.phi.frozen = True
+            analysis.models[0].spatial_model.r_0.frozen = True
+
     log.info(f"Running fit ...")
 
     analysis.run_fit()
@@ -144,7 +154,7 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
                 if parameter is not dataset.background_model.spectral_model.norm:
                     parameter.frozen = True
 
-        analysis.fit = Fit(confidence_opts={"backend": "scipy"})
+        analysis.fit = Fit()#confidence_opts={"backend": "scipy"})
 
         analysis.get_flux_points()
         flux_points = analysis.flux_points.data
