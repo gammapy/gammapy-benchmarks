@@ -11,6 +11,22 @@ components:
     - name: lat_0
       value: -59.16
       unit: deg
+    - name: r_0
+      value: 0.2
+      unit: deg
+      min: 0.1
+      max: 0.5
+      frozen: true
+    - name: e
+      value: 0
+      frozen: true
+    - name: phi
+      value: 0
+      unit: deg
+      frozen: true
+    - name: edge_width
+      value: 0.01
+      frozen: true
   spectral:
     type: PowerLawSpectralModel
     parameters:

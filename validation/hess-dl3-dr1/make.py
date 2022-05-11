@@ -124,17 +124,12 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
         analysis.models[0].spatial_model.lon_0.max = lon + delta
 
         if target_dict["spatial_model"] == "DiskSpatialModel":
+            analysis.models[0].spatial_model.r_0.frozen = False
             analysis.models[0].spatial_model.e.frozen = False
             analysis.models[0].spatial_model.phi.frozen = False
-            analysis.models[0].spatial_model.r_0.value = 0.3
-            analysis.models[0].spatial_model.r_0.min = 0.02
     else:
         analysis.models[0].spatial_model.lat_0.frozen = True
         analysis.models[0].spatial_model.lon_0.frozen = True
-        if target_dict["spatial_model"] == "DiskSpatialModel":
-            analysis.models[0].spatial_model.e.frozen = True
-            analysis.models[0].spatial_model.phi.frozen = True
-            analysis.models[0].spatial_model.r_0.frozen = True
 
     log.info(f"Running fit ...")
 
