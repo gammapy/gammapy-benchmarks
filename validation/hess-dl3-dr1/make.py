@@ -154,7 +154,7 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
                 if parameter is not dataset.background_model.spectral_model.norm:
                     parameter.frozen = True
 
-        analysis.fit = Fit()#confidence_opts={"backend": "scipy"})
+        analysis.fit = Fit(confidence_opts={"backend": "scipy"})
 
         analysis.get_flux_points()
         flux_points = analysis.flux_points.data
