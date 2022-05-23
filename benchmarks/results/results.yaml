@@ -1,50 +1,50 @@
 analysis_3d:
-  CPU_max: 101.4
-  CPU_mean: 100.01298701298701
-  memory_peak: 1229.723
-  total_time: 39.284
+  CPU_max: 102.9
+  CPU_mean: 99.94000000000001
+  memory_peak: 1269.551
+  total_time: 58.598
 analysis_3d_joint:
-  CPU_max: 101.4
-  CPU_mean: 99.90880281690139
-  memory_peak: 3136.285
-  total_time: 286.547
+  CPU_max: 103.0
+  CPU_mean: 99.94932182490751
+  memory_peak: 3140.223
+  total_time: 410.195
 io:
-  CPU_max: 101.3
-  CPU_mean: 100.275
-  memory_peak: 523.75
-  total_time: 2.518
+  CPU_max: 101.0
+  CPU_mean: 99.73333333333333
+  memory_peak: 672.32
+  total_time: 3.534
 lightcurve_1d:
-  CPU_max: 101.3
-  CPU_mean: 99.76969696969697
-  memory_peak: 486.906
-  total_time: 17.124
+  CPU_max: 101.0
+  CPU_mean: 99.4688888888889
+  memory_peak: 445.691
+  total_time: 23.256
 lightcurve_3d:
-  CPU_max: 101.3
-  CPU_mean: 100.00723684210526
-  memory_peak: 1342.93
-  total_time: 153.623
+  CPU_max: 102.9
+  CPU_mean: 99.98622222222222
+  memory_peak: 1343.359
+  total_time: 227.866
 npred:
-  CPU_max: 101.3
-  CPU_mean: 100.01463414634145
-  memory_peak: 638.332
-  total_time: 41.806
+  CPU_max: 102.9
+  CPU_mean: 99.97179487179488
+  memory_peak: 639.625
+  total_time: 59.641
 ring_background_estimator:
-  CPU_max: 103.2
-  CPU_mean: 99.90256410256413
-  memory_peak: 675.102
-  total_time: 20.146
+  CPU_max: 102.9
+  CPU_mean: 99.93333333333332
+  memory_peak: 690.336
+  total_time: 27.812
 spectrum_1d:
-  CPU_max: 103.2
-  CPU_mean: 100.02727272727272
-  memory_peak: 440.555
-  total_time: 11.583
+  CPU_max: 102.9
+  CPU_mean: 99.953125
+  memory_peak: 440.762
+  total_time: 16.671
 spectrum_1d_joint:
-  CPU_max: 101.3
-  CPU_mean: 100.01803278688526
-  memory_peak: 458.102
-  total_time: 31.222
+  CPU_max: 101.0
+  CPU_mean: 100.0095744680851
+  memory_peak: 495.758
+  total_time: 47.993
 tsmap_estimator:
-  CPU_max: 101.3
-  CPU_mean: 100.00769230769234
-  memory_peak: 623.637
-  total_time: 26.696
+  CPU_max: 102.9
+  CPU_mean: 99.98139534883718
+  memory_peak: 602.699
+  total_time: 43.963
