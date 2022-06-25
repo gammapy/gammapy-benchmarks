@@ -1,4 +1,4 @@
-data_preparation: 19.21693778038025
-run_asmooth: 1.426541805267334
-compute_correlations: 0.10327482223510742
-compute_ExcessProfileEstimator: 0.10806655883789062
+data_preparation: 16.23763108253479
+run_asmooth: 1.1926214694976807
+compute_correlations: 0.08734440803527832
+compute_ExcessProfileEstimator: 0.08678078651428223
