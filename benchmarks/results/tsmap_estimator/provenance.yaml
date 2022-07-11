@@ -5,7 +5,7 @@ env:
 software:
   astropy: '5.1'
   gammapy: 0.20.2.dev21+gb8dfc5f72
-  numpy: 1.23.0
+  numpy: 1.23.1
   python_executable: /usr/share/miniconda/envs/gammapy-dev/bin/python
   python_version: 3.8.13
   scipy: 1.8.1
