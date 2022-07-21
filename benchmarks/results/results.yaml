@@ -1,50 +1,50 @@
 analysis_3d:
-  CPU_max: 102.8
-  CPU_mean: 99.88691588785046
-  memory_peak: 1272.559
-  total_time: 54.727
+  CPU_max: 102.9
+  CPU_mean: 99.94000000000003
+  memory_peak: 1276.598
+  total_time: 45.971
 analysis_3d_joint:
   CPU_max: 102.9
-  CPU_mean: 99.93688311688311
-  memory_peak: 3005.629
-  total_time: 390.657
+  CPU_mean: 99.86402349486049
+  memory_peak: 3004.777
+  total_time: 344.529
 io:
-  CPU_max: 100.7
-  CPU_mean: 99.86666666666667
-  memory_peak: 576.227
-  total_time: 3.55
+  CPU_max: 101.0
+  CPU_mean: 99.8
+  memory_peak: 921.449
+  total_time: 3.029
 lightcurve_1d:
-  CPU_max: 102.6
-  CPU_mean: 99.78400000000002
-  memory_peak: 448.18
-  total_time: 25.823
+  CPU_max: 101.1
+  CPU_mean: 99.79142857142858
+  memory_peak: 447.633
+  total_time: 18.182
 lightcurve_3d:
-  CPU_max: 102.8
-  CPU_mean: 99.97858585858586
-  memory_peak: 1496.645
-  total_time: 251.387
+  CPU_max: 103.2
+  CPU_mean: 99.98081534772184
+  memory_peak: 1492.594
+  total_time: 211.172
 npred:
-  CPU_max: 102.7
-  CPU_mean: 99.97719298245613
-  memory_peak: 638.59
-  total_time: 58.341
+  CPU_max: 103.0
+  CPU_mean: 99.95208333333333
+  memory_peak: 640.723
+  total_time: 49.012
 ring_background_estimator:
-  CPU_max: 102.7
-  CPU_mean: 99.90188679245281
-  memory_peak: 685.207
-  total_time: 27.366
-spectrum_1d:
-  CPU_max: 102.8
-  CPU_mean: 99.84838709677422
-  memory_peak: 442.914
-  total_time: 16.209
-spectrum_1d_joint:
-  CPU_max: 102.7
-  CPU_mean: 99.9191011235955
-  memory_peak: 509.711
-  total_time: 45.561
-tsmap_estimator:
   CPU_max: 102.9
-  CPU_mean: 99.94578313253014
-  memory_peak: 596.676
-  total_time: 42.549
+  CPU_mean: 99.925
+  memory_peak: 679.863
+  total_time: 20.709
+spectrum_1d:
+  CPU_max: 102.9
+  CPU_mean: 99.97
+  memory_peak: 442.258
+  total_time: 10.607
+spectrum_1d_joint:
+  CPU_max: 102.8
+  CPU_mean: 99.91228070175438
+  memory_peak: 503.723
+  total_time: 29.301
+tsmap_estimator:
+  CPU_max: 101.1
+  CPU_mean: 100.008
+  memory_peak: 535.34
+  total_time: 25.763
