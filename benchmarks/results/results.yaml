@@ -1,50 +1,50 @@
 analysis_3d:
-  CPU_max: 103.0
-  CPU_mean: 98.45471698113207
-  memory_peak: 1344.434
-  total_time: 54.043
+  CPU_max: 103.1
+  CPU_mean: 98.40280373831777
+  memory_peak: 1358.844
+  total_time: 54.478
 analysis_3d_joint:
-  CPU_max: 103.0
-  CPU_mean: 99.81358695652175
-  memory_peak: 3007.496
-  total_time: 372.283
+  CPU_max: 103.1
+  CPU_mean: 99.94899425287356
+  memory_peak: 3117.66
+  total_time: 351.637
 io:
-  CPU_max: 102.7
-  CPU_mean: 100.01666666666667
-  memory_peak: 926.52
-  total_time: 3.533
+  CPU_max: 101.1
+  CPU_mean: 99.9
+  memory_peak: 518.137
+  total_time: 3.027
 lightcurve_1d:
-  CPU_max: 103.0
-  CPU_mean: 99.87857142857142
-  memory_peak: 452.699
-  total_time: 21.711
+  CPU_max: 101.2
+  CPU_mean: 99.90256410256407
+  memory_peak: 452.934
+  total_time: 20.174
 lightcurve_3d:
-  CPU_max: 103.0
-  CPU_mean: 99.98583509513743
-  memory_peak: 1493.859
-  total_time: 239.377
+  CPU_max: 103.1
+  CPU_mean: 99.99715536105032
+  memory_peak: 1494.797
+  total_time: 231.061
 npred:
-  CPU_max: 102.9
-  CPU_mean: 99.97155963302754
-  memory_peak: 654.312
-  total_time: 55.571
+  CPU_max: 103.1
+  CPU_mean: 99.97524752475249
+  memory_peak: 653.258
+  total_time: 51.469
 ring_background_estimator:
   CPU_max: 102.9
-  CPU_mean: 99.94313725490197
-  memory_peak: 718.23
-  total_time: 26.262
+  CPU_mean: 99.95106382978729
+  memory_peak: 694.52
+  total_time: 24.228
 spectrum_1d:
-  CPU_max: 101.1
-  CPU_mean: 99.96333333333332
-  memory_peak: 447.344
-  total_time: 15.65
+  CPU_max: 101.2
+  CPU_mean: 99.9035714285714
+  memory_peak: 496.324
+  total_time: 14.628
 spectrum_1d_joint:
-  CPU_max: 103.0
-  CPU_mean: 99.97790697674421
-  memory_peak: 504.047
-  total_time: 43.924
+  CPU_max: 101.2
+  CPU_mean: 99.99512195121952
+  memory_peak: 506.051
+  total_time: 41.877
 tsmap_estimator:
-  CPU_max: 103.0
-  CPU_mean: 99.94024390243902
-  memory_peak: 648.203
-  total_time: 41.907
+  CPU_max: 101.2
+  CPU_mean: 99.96363636363638
+  memory_peak: 573.062
+  total_time: 39.359
