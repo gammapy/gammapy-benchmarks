@@ -4,18 +4,46 @@ components:
     spectral:
         type: LogParabolaSpectralModel
         parameters:
-        - {name: amplitude, value: 9.651417810272714e-13, unit: cm-2 s-1 TeV-1, min: .nan,
-            max: .nan, frozen: false}
-        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-        - {name: alpha, value: 2.018279318238902, unit: '', min: .nan, max: .nan,
-            frozen: false}
-        - {name: beta, value: 0.14232027655616739, unit: '', min: .nan, max: .nan,
-            frozen: false}
+        -   name: amplitude
+            value: 9.159645214470146e-13
+            unit: cm-2 s-1 TeV-1
+            error: 1.4710352582392792e-13
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            frozen: true
+        -   name: alpha
+            value: 2.118865133143842
+            error: 0.1325663130188044
+        -   name: beta
+            value: 0.13554714190930964
+            error: 0.08277250722414185
     spatial:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: -0.0021219379619746453, unit: deg, min: .nan, max: .nan,
-            frozen: false}
-        - {name: lat_0, value: -0.0038421066045941643, unit: deg, min: -90.0, max: 90.0,
-            frozen: false}
+        -   name: lon_0
+            value: 0.0007513602256752816
+            unit: deg
+            error: 0.0060418828133337365
+        -   name: lat_0
+            value: 0.00029455148521920216
+            unit: deg
+            error: 0.005726978302696425
+-   type: FoVBackgroundModel
+    datasets_names:
+    - 0pYEiPiv
+    spectral:
+        type: PowerLawNormSpectralModel
+        parameters:
+        -   name: norm
+            value: 1.0
+            frozen: true
+        -   name: tilt
+            value: 0.0
+            frozen: true
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            frozen: true
+covariance: best-fit-model_0088_covariance.dat

@@ -1,8 +1,0 @@
-components:
--   name: cLNVn-YR
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0261263169196937, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.008101911133713946, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [97RyBu5x]

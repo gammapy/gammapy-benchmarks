@@ -1,9 +1,0 @@
-components:
--   name: wM58iV92
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0115082934346393, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.0038969126995414783, unit: '', min: .nan, max: .nan,
-        frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [s_ZfQ8yh]

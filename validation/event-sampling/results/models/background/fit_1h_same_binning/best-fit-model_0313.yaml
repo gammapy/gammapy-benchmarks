@@ -1,8 +1,0 @@
-components:
--   name: 0AA5MEg9
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9979800462825823, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.0004073358454286827, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [KkR5dSME]

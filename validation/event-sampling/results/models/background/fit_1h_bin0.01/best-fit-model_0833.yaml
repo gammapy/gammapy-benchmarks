@@ -1,8 +1,0 @@
-components:
--   name: Lb_1cO3C
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.007009113303622, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.00560579585157372, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [E1JfUeyc]

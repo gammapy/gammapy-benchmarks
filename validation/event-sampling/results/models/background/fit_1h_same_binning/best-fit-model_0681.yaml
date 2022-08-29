@@ -1,8 +1,0 @@
-components:
--   name: nFOjgQC5
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9729595541441223, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.016931752769803403, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [AS237Q1F]

@@ -1,8 +1,0 @@
-components:
--   name: 55OB1G5B
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9915622199968148, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.004453943381375152, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [wj4NhkHA]

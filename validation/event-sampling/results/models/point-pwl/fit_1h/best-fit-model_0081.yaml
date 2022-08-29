@@ -1,29 +1,46 @@
 components:
--   name: YHbPo_Pn-bkg
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0, unit: '', min: 0.0, max: .nan, frozen: true, error: 0.0}
-    - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
-        error: 0.0}
-    datasets_names: [YHbPo_Pn]
 -   name: point-pwl
     type: SkyModel
     spectral:
         type: PowerLawSpectralModel
         parameters:
-        - {name: index, value: 2.1369350044804105, unit: '', min: .nan, max: .nan,
-            frozen: false, error: 0.06281301969426552}
-        - {name: amplitude, value: 1.14111024360795e-12, unit: cm-2 s-1 TeV-1, min: .nan,
-            max: .nan, frozen: false, error: 9.94712216110695e-14}
-        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
-            error: 0.0}
+        -   name: index
+            value: 2.1377609153105426
+            error: 0.07884352375141249
+        -   name: amplitude
+            value: 1.059181474845196e-12
+            unit: cm-2 s-1 TeV-1
+            error: 1.1468266900863891e-13
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            frozen: true
     spatial:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: -0.0034455101970086136, unit: deg, min: .nan, max: .nan,
-            frozen: false, error: 0.0034046347168347406}
-        - {name: lat_0, value: -0.0023126959705312864, unit: deg, min: .nan, max: .nan,
-            frozen: false, error: 0.0037703972542438755}
-covariance: results/models/point-pwl/fit_1h/best-fit-model_0081_covariance.dat
+        -   name: lon_0
+            value: 0.008650274263748807
+            unit: deg
+            error: 0.0027724051385862253
+        -   name: lat_0
+            value: 0.002454020373626846
+            unit: deg
+            error: 0.003209723463226174
+-   type: FoVBackgroundModel
+    datasets_names:
+    - pf1fLAXM
+    spectral:
+        type: PowerLawNormSpectralModel
+        parameters:
+        -   name: norm
+            value: 1.0
+            frozen: true
+        -   name: tilt
+            value: 0.0
+            frozen: true
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            frozen: true
+covariance: best-fit-model_0081_covariance.dat

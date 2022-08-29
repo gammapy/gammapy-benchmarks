@@ -1,8 +1,0 @@
-components:
--   name: BuIWP86S
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9738499247145711, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.01560784985988557, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [36kIsL4D]

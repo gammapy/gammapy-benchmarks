@@ -1,9 +1,0 @@
-components:
--   name: _xLs7Lq-
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.99591132530809, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.0023288093811176386, unit: '', min: .nan, max: .nan,
-        frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [x9357k-B]

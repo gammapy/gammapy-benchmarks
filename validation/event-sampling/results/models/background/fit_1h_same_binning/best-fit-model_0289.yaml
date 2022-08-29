@@ -1,8 +1,0 @@
-components:
--   name: 3_FaXg5a
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.001027208708722, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.0005848952216556377, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [nzQC0YrD]

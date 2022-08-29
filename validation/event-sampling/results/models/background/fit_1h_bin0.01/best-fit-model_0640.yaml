@@ -1,8 +1,0 @@
-components:
--   name: Fky-OWuO
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.021738376909811, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.013838842387473734, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [J338pFZi]

@@ -1,8 +1,0 @@
-components:
--   name: W83l7v65
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0010058657415688, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.00240679183106222, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [BEvSlelw]

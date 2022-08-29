@@ -1,8 +1,0 @@
-components:
--   name: jNhP40PY
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9910088099391143, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.003774377608609162, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [zx3HEKcG]

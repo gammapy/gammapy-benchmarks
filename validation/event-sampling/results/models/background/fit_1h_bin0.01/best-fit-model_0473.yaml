@@ -1,9 +1,0 @@
-components:
--   name: o-KrAgWb
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0029915879696896, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -5.7121409954689916e-05, unit: '', min: .nan, max: .nan,
-        frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [8bZEvT4b]

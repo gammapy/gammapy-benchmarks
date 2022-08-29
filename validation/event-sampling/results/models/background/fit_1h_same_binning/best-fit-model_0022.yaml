@@ -1,8 +1,0 @@
-components:
--   name: AhnxpDvF
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.988744000244159, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.007738868588497193, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [8EO4oJ3q]

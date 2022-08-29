@@ -1,9 +1,0 @@
-components:
--   name: Ngrq3fbl
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0061538098351983, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.0016430492032275944, unit: '', min: .nan, max: .nan,
-        frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [WF-p5tH2]

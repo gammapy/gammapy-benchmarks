@@ -1,8 +1,0 @@
-components:
--   name: J2DLxp5k
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0054525913424897, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.004207218687278228, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [wSLrPsXj]

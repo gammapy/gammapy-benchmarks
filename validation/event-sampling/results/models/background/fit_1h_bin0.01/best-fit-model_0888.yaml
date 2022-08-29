@@ -1,9 +1,0 @@
-components:
--   name: t28VBJVh
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0092486291513065, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.0049972595598621675, unit: '', min: .nan, max: .nan,
-        frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [Cw2Dounf]

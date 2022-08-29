@@ -1,9 +1,0 @@
-components:
--   name: L7_d6fvd
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.009206687322595, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.0007706753800953221, unit: '', min: .nan, max: .nan,
-        frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [5FWFQze1]

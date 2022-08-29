@@ -1,8 +1,0 @@
-components:
--   name: IWvSwA-b
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9997865846218885, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.0011593010823589924, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [dmM4h4OG]

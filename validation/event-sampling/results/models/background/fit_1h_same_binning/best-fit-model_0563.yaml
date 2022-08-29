@@ -1,8 +1,0 @@
-components:
--   name: M-u7iU0M
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0030797053617189, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.003441619177817679, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [EnPCfx3b]

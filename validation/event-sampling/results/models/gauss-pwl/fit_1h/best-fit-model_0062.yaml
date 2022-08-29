@@ -4,20 +4,54 @@ components:
     spectral:
         type: PowerLawSpectralModel
         parameters:
-        - {name: index, value: 2.0149493789574593, unit: '', min: .nan, max: .nan,
-            frozen: false}
-        - {name: amplitude, value: 1.1357628229594167e-12, unit: cm-2 s-1 TeV-1, min: .nan,
-            max: .nan, frozen: false}
-        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+        -   name: index
+            value: 2.0357342713240048
+            error: 0.1773967135879862
+        -   name: amplitude
+            value: 6.734348325409953e-13
+            unit: cm-2 s-1 TeV-1
+            error: 2.657728060806307e-13
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            frozen: true
     spatial:
         type: GaussianSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: -0.00011688153055045789, unit: deg, min: .nan, max: .nan,
-            frozen: false}
-        - {name: lat_0, value: 0.043632919390859115, unit: deg, min: -90.0, max: 90.0,
-            frozen: false}
-        - {name: sigma, value: 0.3144047111370344, unit: deg, min: 0.0, max: .nan,
-            frozen: false}
-        - {name: e, value: 0.0, unit: '', min: 0.0, max: 1.0, frozen: true}
-        - {name: phi, value: 0.0, unit: deg, min: .nan, max: .nan, frozen: true}
+        -   name: lon_0
+            value: -0.007761778968274399
+            unit: deg
+            error: 0.07434022163259048
+        -   name: lat_0
+            value: 0.048305434356066636
+            unit: deg
+            error: 0.07213548823348112
+        -   name: sigma
+            value: 0.19658593429840474
+            unit: deg
+            error: 0.05602430297626091
+        -   name: e
+            value: 0.0
+            frozen: true
+        -   name: phi
+            value: 0.0
+            unit: deg
+            frozen: true
+-   type: FoVBackgroundModel
+    datasets_names:
+    - zwnZPRo8
+    spectral:
+        type: PowerLawNormSpectralModel
+        parameters:
+        -   name: norm
+            value: 1.0
+            frozen: true
+        -   name: tilt
+            value: 0.0
+            frozen: true
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            frozen: true
+covariance: best-fit-model_0062_covariance.dat

@@ -1,8 +1,0 @@
-components:
--   name: MZnW5tWq
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9977587354306903, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 2.463283793475773e-05, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [v70RFblc]

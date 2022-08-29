@@ -1,8 +1,0 @@
-components:
--   name: zlAgnYqK
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0135580241733084, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.014989910278209792, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [MOIn_yom]

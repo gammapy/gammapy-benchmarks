@@ -1,8 +1,0 @@
-components:
--   name: AkS7BNdG
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0104195936476006, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.006932305733575103, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [feL61cGk]

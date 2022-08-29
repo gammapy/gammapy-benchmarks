@@ -1,8 +1,0 @@
-components:
--   name: r0x1gRub
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.005676556633318, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.0017337164588352096, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [sITeBJD5]

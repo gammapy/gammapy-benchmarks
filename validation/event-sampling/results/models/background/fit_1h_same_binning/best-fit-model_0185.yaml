@@ -1,8 +1,0 @@
-components:
--   name: KNqk46_Y
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.98945550604007, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.006716480286238407, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [r9cZqvLf]

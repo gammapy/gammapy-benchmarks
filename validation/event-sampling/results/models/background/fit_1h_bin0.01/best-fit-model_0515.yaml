@@ -1,9 +1,0 @@
-components:
--   name: FBgq_7MU
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0003697383391255, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.0008766658047264962, unit: '', min: .nan, max: .nan,
-        frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [XCyg4f5q]

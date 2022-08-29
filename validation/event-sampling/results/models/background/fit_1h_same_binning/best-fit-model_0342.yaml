@@ -1,8 +1,0 @@
-components:
--   name: Ner5MGuc
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9839293006298004, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.011003382605489704, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [tYDsYsFr]

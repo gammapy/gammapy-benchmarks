@@ -1,8 +1,0 @@
-components:
--   name: Y-mG8_zU
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9984456544717162, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.0038852512574526093, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [SL0_y0UW]

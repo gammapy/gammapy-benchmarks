@@ -36,16 +36,15 @@ AVAILABLE_MODELS = [
     "point-ecpl-3fgl",
     "point-ecpl-4fgl",
     "point-template",
-    "diffuse-cube",
     "disk-pwl",
     "gauss-pwl",
+    "diffuse-cube",
 ]
 
 DPI = 120
 
 # observation config
-IRF_FILE = "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits"
-# IRF_FILE = "$GAMMAPY_DATA/cta-prod3b/caldb/data/cta/prod3b-v2/bcf/South_z20_50h/irf_file.fits"
+IRF_FILE = "$GAMMAPY_DATA/cta-caldb/Prod5-South-20deg-AverageAz-14MSTs37SSTs.180000s-v0.1.fits.gz"
 
 POINTING = SkyCoord(0.0, 0.5, frame="galactic", unit="deg")
 LIVETIME = 1 * u.hr
@@ -83,7 +82,7 @@ def get_filename_best_fit_model(filename_model, obs_id, livetime):
 
     path = (
         BASE_PATH
-        / f"results/models/{model_str}/fit_{livetime.value:.0f}{livetime.unit}/covariance"
+        / f"results/models/{model_str}/fit_{livetime.value:.0f}{livetime.unit}"
     )
     path.mkdir(exist_ok=True, parents=True)
     path = (
@@ -142,7 +141,7 @@ def all_cmd(model, obs_ids, obs_all, simple, core):
     filename_dataset = get_filename_dataset(LIVETIME)
 
     log.info(f"Preparing datasets")
-    if simple:
+    if simple==True:
         filename_dataset = Path(
             str(filename_dataset).replace("dataset", "dataset_simple")
         )
@@ -374,27 +373,33 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
 
     log.info(f"Reading {filename_model}")
     models = Models.read(filename_model)
+
     models.append(FoVBackgroundModel(dataset_name=dataset.name))
+#    models.write(filename_model, overwrite=True)
+#    models = Models.read(filename_model)
 
     dataset.models = models
 
-    if binned:
+    if binned==True:
         dataset.fake()
 
     if dataset.background_model:
         dataset.background_model.parameters["norm"].frozen = True
 
-    fit = Fit(optimize_opts={"print_level": 1})
-
-    result = fit.run(dataset=[dataset])
+    fit = Fit()
+    result = fit.run(datasets=dataset)
 
     log.info(f"Fit info: {result}")
 
     # write best fit model
     path = get_filename_best_fit_model(filename_model, obs_id, LIVETIME)
     path = path.absolute()
-    if binned:
+
+    if binned==True:
         path = Path(str(path).replace("/fit", "/fit_fake"))
+        print(binned)
+        print(f"siamo qui: {path}")
+
     log.info(f"Writing {path}")
     # write best-fit model and covariance
     dataset.models.write(str(path), overwrite=True)
@@ -428,7 +433,7 @@ def fit_gather(model_name, livetime, binned=False):
         BASE_PATH
         / f"results/models/{model_name}/fit_{livetime.value:.0f}{livetime.unit}"
     )
-    if binned:
+    if binned==True:
         path = Path(str(path).replace("/fit", "/fit_fake"))
 
     for filename in path.glob("*.yaml"):
@@ -445,7 +450,7 @@ def fit_gather(model_name, livetime, binned=False):
 
     table = table_from_row_data(rows)
     name = f"fit-results-all_{livetime.value:.0f}{livetime.unit}"
-    if binned:
+    if binned==True:
         name = "fit_binned-results-all"
     filename = f"results/models/{model_name}/{name}.fits.gz"
     log.info(f"Writing {filename}")
@@ -486,12 +491,12 @@ def plot_spectra(model, model_best_fit, obs_id, livetime):
         log.info(f"SkyDiffuseCube: no spectral model to plot")
     else:
         ax = model.spectral_model.plot(
-            energy_range=(0.1, 300) * u.TeV, label="Sim. model"
+            energy_bounds=(0.1, 300) * u.TeV, label="Sim. model"
         )
         model_best_fit.spectral_model.plot(
-            energy_range=(0.1, 300) * u.TeV, label="Best-fit model", ax=ax,
+            energy_bounds=(0.1, 300) * u.TeV, label="Best-fit model", ax=ax,
         )
-        model_best_fit.spectral_model.plot_error(energy_range=(0.1, 300) * u.TeV, ax=ax)
+        model_best_fit.spectral_model.plot_error(energy_bounds=(0.1, 300) * u.TeV, ax=ax)
 
         ax.legend()
         obs_id = int(obs_id)
@@ -642,7 +647,7 @@ def plot_pull_distribution_cmd(model, binned):
 
 def plot_pull_distribution(model_name, livetime, binned=False):
     name = f"fit-results-all_{livetime.value:.0f}{livetime.unit}"
-    if binned:
+    if binned==True:
         name = "fit_binned-results-all"
     filename = BASE_PATH / f"results/models/{model_name}/{name}.fits.gz"
     results = Table.read(str(filename))
@@ -652,7 +657,7 @@ def plot_pull_distribution(model_name, livetime, binned=False):
     names = [name for name in results.colnames if "err" not in name]
 
     plots = f"plots_{livetime.value:.0f}{livetime.unit}"
-    if binned:
+    if binned==True:
         plots = "plots_fake"
     for name in names:
         # TODO: report mean and stdev here as well
@@ -667,7 +672,7 @@ def plot_pull_distribution(model_name, livetime, binned=False):
         pull = (values - par.value) / values_err
 
         # print("Number of fits beyond 5 sigmas: ",(np.where( (pull<-5) )))
-        plt.hist(pull, bins=21, normed=True, range=(-5, 5))
+        plt.hist(pull, bins=21, density=True, range=(-5, 5))
         plt.xlim(-5, 5)
         plt.xlabel("(value - value_true) / error")
         plt.ylabel("PDF")

@@ -1,8 +1,0 @@
-components:
--   name: plL53_qI
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.005402833895646, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.0004584942140105129, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [lvSG4961]

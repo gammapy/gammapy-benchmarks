@@ -1,8 +1,0 @@
-components:
--   name: FlCxp5JR
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0021788789449482, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.003520900674545316, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [7Enmn0TG]

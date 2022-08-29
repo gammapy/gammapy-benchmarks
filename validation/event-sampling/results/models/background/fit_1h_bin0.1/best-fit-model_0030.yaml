@@ -1,8 +1,0 @@
-components:
--   name: 4lKwypi_
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.000072971125927, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.002449069265550319, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [hdB9adhJ]

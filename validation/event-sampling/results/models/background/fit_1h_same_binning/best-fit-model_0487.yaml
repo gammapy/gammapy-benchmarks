@@ -1,8 +1,0 @@
-components:
--   name: FvE7xbte
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9874126737105182, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.008175353533269952, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [TMLV_WCp]

@@ -1,8 +1,0 @@
-components:
--   name: bmu54QAW
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.002383180310118, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.003570044454604512, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [uMfSS5_8]

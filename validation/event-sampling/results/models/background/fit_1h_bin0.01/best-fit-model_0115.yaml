@@ -1,8 +1,0 @@
-components:
--   name: dEFfvDKV
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0159664711808496, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.011166758341393383, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [-_C5Jagr]

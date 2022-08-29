@@ -1,8 +1,0 @@
-components:
--   name: MYEK2rGv
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0316100836269717, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.017454408754159864, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [brMLYLbG]

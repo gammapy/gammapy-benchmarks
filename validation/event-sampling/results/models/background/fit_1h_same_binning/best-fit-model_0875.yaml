@@ -1,8 +1,0 @@
-components:
--   name: 3HPW7dMk
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0001233603347481, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.001637976281592573, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [zSd9ykTS]

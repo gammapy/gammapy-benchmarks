@@ -1,9 +1,0 @@
-components:
--   name: C8hA-wju
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0019960737264477, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.0014799445963497742, unit: '', min: .nan, max: .nan,
-        frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [mCbHNgsA]

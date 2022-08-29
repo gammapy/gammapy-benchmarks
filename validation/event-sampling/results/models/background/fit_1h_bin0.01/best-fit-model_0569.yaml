@@ -1,8 +1,0 @@
-components:
--   name: UE1N67SB
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.980015958446459, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.01151408734750572, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [WK2ko_4m]

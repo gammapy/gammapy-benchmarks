@@ -1,8 +1,0 @@
-components:
--   name: BXEL2U8M
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9999751334842533, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.001606982914384247, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [p_5Rbhmk]

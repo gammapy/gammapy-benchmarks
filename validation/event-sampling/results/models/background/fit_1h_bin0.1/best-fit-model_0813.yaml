@@ -1,8 +1,0 @@
-components:
--   name: VQ1WlRX3
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0056357019262117, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.001705551403244057, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [W7P5ryAs]

@@ -1,8 +1,0 @@
-components:
--   name: azvd33Mv
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9825808741843216, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.004282497543784389, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [O3PL7qtJ]

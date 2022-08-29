@@ -1,8 +1,40 @@
 components:
--   name: gll_iem_v06_cutout
-    type: SkyDiffuseCube
-    filename: $GAMMAPY_DATA/fermi_3fhl/gll_iem_v06_cutout.fits
-    parameters:
-    - {name: norm, value: 1.0230362328271474, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
+-   name: diffuse-cube
+    type: SkyModel
+    spectral:
+        type: PowerLawNormSpectralModel
+        parameters:
+        -   name: norm
+            value: 0.9599149273840356
+            error: 0.03024739940713865
+        -   name: tilt
+            value: 0.0
+            frozen: true
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            frozen: true
+    spatial:
+        type: TemplateSpatialModel
+        frame: galactic
+        parameters: []
+        filename: /Users/fabiopintore/LAVORO/Gammapy/gammapy-data/fermi-3fhl-gc/gll_iem_v06_gc.fits.gz
+        normalize: false
+        unit: 1 / (cm2 MeV s sr)
+-   type: FoVBackgroundModel
+    datasets_names:
+    - TnjI1jNn
+    spectral:
+        type: PowerLawNormSpectralModel
+        parameters:
+        -   name: norm
+            value: 1.0
+            frozen: true
+        -   name: tilt
+            value: 0.0
+            frozen: true
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            frozen: true
+covariance: best-fit-model_0005_covariance.dat

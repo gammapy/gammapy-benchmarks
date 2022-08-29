@@ -1,8 +1,0 @@
-components:
--   name: dEGFftLn
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0213759192850547, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.013026544124164029, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [mwlV4g69]

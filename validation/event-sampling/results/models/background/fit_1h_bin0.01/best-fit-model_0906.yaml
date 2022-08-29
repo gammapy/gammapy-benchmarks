@@ -1,8 +1,0 @@
-components:
--   name: 56z5PfUv
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9851079807658412, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.006655653046411598, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [Dw-_TJSw]

@@ -1,8 +1,0 @@
-components:
--   name: oncKEotL
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0327107308847805, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.019771866705333825, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [MdwUusi4]

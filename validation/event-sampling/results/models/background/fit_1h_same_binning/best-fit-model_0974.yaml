@@ -1,8 +1,0 @@
-components:
--   name: H6xtG42Q
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0012349307115378, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.001746083165844656, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [yUW-BNH2]

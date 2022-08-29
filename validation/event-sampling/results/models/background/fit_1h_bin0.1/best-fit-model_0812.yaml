@@ -1,8 +1,0 @@
-components:
--   name: T43rucMH
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9986198020185861, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.00013145195875533, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [DnpS7Fp7]

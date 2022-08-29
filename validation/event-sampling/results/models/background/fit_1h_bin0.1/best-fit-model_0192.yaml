@@ -1,8 +1,0 @@
-components:
--   name: 3x0kbs3P
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0057062023513739, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.002706701506005417, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [DEpKDxql]

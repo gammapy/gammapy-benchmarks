@@ -1,8 +1,0 @@
-components:
--   name: 89BmadX3
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0115705975046465, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.002801309288003078, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [xVm7_Vjm]

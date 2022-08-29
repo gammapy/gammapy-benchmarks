@@ -1,8 +1,0 @@
-components:
--   name: j-CGo-0S
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.999044872420376, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.003273544681188084, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [AYUqucFd]

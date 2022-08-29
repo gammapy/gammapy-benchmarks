@@ -1,8 +1,0 @@
-components:
--   name: iC1bGpH4
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0312339103894996, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.015380329802587899, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [9toHE2KF]

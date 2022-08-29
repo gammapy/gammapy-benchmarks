@@ -1,31 +1,49 @@
 components:
--   name: E39O1a8g-bkg
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0, unit: '', min: 0.0, max: .nan, frozen: true, error: 0.0}
-    - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
-        error: 0.0}
-    datasets_names: [E39O1a8g]
 -   name: point-log-parabola
     type: SkyModel
     spectral:
         type: LogParabolaSpectralModel
         parameters:
-        - {name: amplitude, value: 1.0995786896017883e-12, unit: cm-2 s-1 TeV-1, min: .nan,
-            max: .nan, frozen: false, error: 1.375746931652359e-13}
-        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
-            error: 0.0}
-        - {name: alpha, value: 1.8503567846850004, unit: '', min: .nan, max: .nan,
-            frozen: false, error: 0.11227219424431928}
-        - {name: beta, value: 0.2136267277722347, unit: '', min: .nan, max: .nan,
-            frozen: false, error: 0.06643245808931664}
+        -   name: amplitude
+            value: 1.1182388549874048e-12
+            unit: cm-2 s-1 TeV-1
+            error: 1.5850795230369558e-13
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            frozen: true
+        -   name: alpha
+            value: 1.8830614261089338
+            error: 0.12619049876313765
+        -   name: beta
+            value: 0.15784870459309885
+            error: 0.06890900825416368
     spatial:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: -0.005270016025567908, unit: deg, min: .nan, max: .nan,
-            frozen: false, error: 0.0037816511278345264}
-        - {name: lat_0, value: 0.000645980766132007, unit: deg, min: .nan, max: .nan,
-            frozen: false, error: 0.004013094037026454}
+        -   name: lon_0
+            value: -0.003047740486226835
+            unit: deg
+            error: 0.004599280147234515
+        -   name: lat_0
+            value: 0.0010887919093065246
+            unit: deg
+            error: 0.004347374539668826
+-   type: FoVBackgroundModel
+    datasets_names:
+    - AJVv4OSG
+    spectral:
+        type: PowerLawNormSpectralModel
+        parameters:
+        -   name: norm
+            value: 1.0
+            frozen: true
+        -   name: tilt
+            value: 0.0
+            frozen: true
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            frozen: true
 covariance: best-fit-model_0000_covariance.dat

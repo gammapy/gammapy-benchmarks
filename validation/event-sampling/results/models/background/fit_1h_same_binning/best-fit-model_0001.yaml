@@ -1,8 +1,0 @@
-components:
--   name: 2FOT9QZQ
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0062764517694252, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.008895772333368794, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [L25LVCG1]

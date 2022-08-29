@@ -1,9 +1,0 @@
-components:
--   name: kpkZE1ru
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0084664300883492, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.0033173817523836466, unit: '', min: .nan, max: .nan,
-        frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [Ukq7YNmU]

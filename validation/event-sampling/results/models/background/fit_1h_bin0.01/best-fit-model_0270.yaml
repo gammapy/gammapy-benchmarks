@@ -1,8 +1,0 @@
-components:
--   name: lMau_ENS
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0195349395996862, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.010846337399508797, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [vLOqI537]

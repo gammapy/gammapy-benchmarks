@@ -1,8 +1,0 @@
-components:
--   name: gLn80pSt
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0079966233029767, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.004572519698041386, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [NGM_VIpl]

@@ -1,8 +1,0 @@
-components:
--   name: CU9PL26W
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9968192438132504, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.002014240476371159, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [YY8xz5v1]

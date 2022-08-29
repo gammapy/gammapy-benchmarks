@@ -1,9 +1,0 @@
-components:
--   name: UEcg9zZD
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.001611588070932, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.0015696293859263203, unit: '', min: .nan, max: .nan,
-        frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [zEGD_DmM]

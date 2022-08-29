@@ -1,8 +1,0 @@
-components:
--   name: z5VIgO6F
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0037121316344058, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.005162020058864952, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [xcU9Muv7]

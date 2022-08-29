@@ -1,9 +1,0 @@
-components:
--   name: gZIDiXUb
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0032702756338736, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.0026995759507772725, unit: '', min: .nan, max: .nan,
-        frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [nYlEtor8]

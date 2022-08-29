@@ -1,8 +1,0 @@
-components:
--   name: o7Selu3P
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0098667496912728, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.006634311816722627, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [slD-nWoo]

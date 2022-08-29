@@ -1,8 +1,0 @@
-components:
--   name: lf4p635s
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0083577159859956, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.005960465798148941, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [ABEGey3z]

@@ -4,19 +4,50 @@ components:
     spectral:
         type: ExpCutoffPowerLawSpectralModel
         parameters:
-        - {name: index, value: 1.9151048730586604, unit: '', min: .nan, max: .nan,
-            frozen: false}
-        - {name: amplitude, value: 1.4109111771284342e-12, unit: cm-2 s-1 TeV-1, min: .nan,
-            max: .nan, frozen: false}
-        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-        - {name: lambda_, value: 0.10986231991372719, unit: TeV-1, min: .nan, max: .nan,
-            frozen: false}
-        - {name: alpha, value: 1.0, unit: '', min: .nan, max: .nan, frozen: true}
+        -   name: index
+            value: 2.0014122877176854
+            error: 0.015954723842878514
+        -   name: amplitude
+            value: 1.00242689994196e-12
+            unit: cm-2 s-1 TeV-1
+            error: 4.9059172913190696e-14
+        -   name: reference
+            value: 7.0
+            unit: TeV
+            frozen: true
+        -   name: lambda_
+            value: 0.057226306348902724
+            unit: TeV-1
+            error: 0.00626556888894255
+        -   name: alpha
+            value: 1.0
+            frozen: true
     spatial:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: 0.0004956053063642521, unit: deg, min: .nan, max: .nan,
-            frozen: false}
-        - {name: lat_0, value: -0.002014223937990778, unit: deg, min: -90.0, max: 90.0,
-            frozen: false}
+        -   name: lon_0
+            value: -0.001552250153132366
+            unit: deg
+            error: 0.0005901594546187516
+        -   name: lat_0
+            value: 0.0004139382367815761
+            unit: deg
+            error: 0.0005748148282330159
+-   type: FoVBackgroundModel
+    datasets_names:
+    - aFglfcK-
+    spectral:
+        type: PowerLawNormSpectralModel
+        parameters:
+        -   name: norm
+            value: 1.0
+            frozen: true
+        -   name: tilt
+            value: 0.0
+            frozen: true
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            frozen: true
+covariance: best-fit-model_0048_covariance.dat

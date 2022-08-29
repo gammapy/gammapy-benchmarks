@@ -1,8 +1,0 @@
-components:
--   name: Sr6yW-N2
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9899643659020159, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.0018368126323708386, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [bxtSnKnn]

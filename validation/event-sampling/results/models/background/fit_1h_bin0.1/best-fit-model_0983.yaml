@@ -1,8 +1,0 @@
-components:
--   name: mWNc7O02
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9930510801834846, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.0037425647028030023, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [Kt-DQumU]

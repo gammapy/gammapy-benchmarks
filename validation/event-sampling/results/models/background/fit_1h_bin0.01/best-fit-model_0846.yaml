@@ -1,8 +1,0 @@
-components:
--   name: SreR4s-4
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9846812857671086, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.010066155825359675, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [x3qdSA29]

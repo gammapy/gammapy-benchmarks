@@ -1,8 +1,0 @@
-components:
--   name: ia-H1XlT
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0228816646747627, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.01250458233364403, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [Lj1CdlKO]

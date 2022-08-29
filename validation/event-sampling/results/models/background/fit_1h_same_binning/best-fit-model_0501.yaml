@@ -1,9 +1,0 @@
-components:
--   name: GmBRpv7f
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0037547499083042, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.0051322622726695044, unit: '', min: .nan, max: .nan,
-        frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [vP91GQg5]

@@ -1,9 +1,0 @@
-components:
--   name: QKUIUFY5
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0057349625025456, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.0026805967507597867, unit: '', min: .nan, max: .nan,
-        frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [8doX4Vwk]

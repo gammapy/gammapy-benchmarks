@@ -1,8 +1,0 @@
-components:
--   name: kg7SvCD5
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0171847529222955, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.012908585271582623, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [p7QZ-2K6]

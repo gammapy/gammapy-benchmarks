@@ -1,8 +1,0 @@
-components:
--   name: JDf8bW80
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.000655692065794, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: -0.004566567880164039, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [sya5se7E]

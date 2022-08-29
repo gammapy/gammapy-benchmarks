@@ -1,33 +1,53 @@
 components:
--   name: GlOI-0cv-bkg
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 1.0, unit: '', min: 0.0, max: .nan, frozen: true, error: 0.0}
-    - {name: tilt, value: 0.0, unit: '', min: .nan, max: .nan, frozen: true, error: 0.0}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
-        error: 0.0}
-    datasets_names: [GlOI-0cv]
 -   name: point-ecpl
     type: SkyModel
     spectral:
         type: ExpCutoffPowerLawSpectralModel
         parameters:
-        - {name: index, value: 2.03293474932192, unit: '', min: .nan, max: .nan, frozen: false,
-            error: 0.0936744022552162}
-        - {name: amplitude, value: 8.063750165568713e-13, unit: cm-2 s-1 TeV-1, min: .nan,
-            max: .nan, frozen: false, error: 8.894287365426223e-14}
-        - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true,
-            error: 0.0}
-        - {name: lambda_, value: 0.04367859866784394, unit: TeV-1, min: .nan, max: .nan,
-            frozen: false, error: 0.01300420813421953}
-        - {name: alpha, value: 4.55122490355222, unit: '', min: .nan, max: .nan, frozen: false,
-            error: 6.230981036156794}
+        -   name: index
+            value: 1.99170000230321
+            error: 0.01528017748479424
+        -   name: amplitude
+            value: 1.009642916509579e-12
+            unit: cm-2 s-1 TeV-1
+            error: 4.657269497767603e-14
+        -   name: reference
+            value: 7.0
+            unit: TeV
+            frozen: true
+        -   name: lambda_
+            value: 0.04626121639178482
+            unit: TeV-1
+            error: 0.005358595440243799
+        -   name: alpha
+            value: 1.0
+            frozen: true
     spatial:
         type: PointSpatialModel
         frame: galactic
         parameters:
-        - {name: lon_0, value: 0.0023958800746886086, unit: deg, min: .nan, max: .nan,
-            frozen: false, error: 0.004322228369704309}
-        - {name: lat_0, value: 0.0020927243057559685, unit: deg, min: .nan, max: .nan,
-            frozen: false, error: 0.004686464372388325}
+        -   name: lon_0
+            value: -0.0003444467534621901
+            unit: deg
+            error: 0.0005795946528513057
+        -   name: lat_0
+            value: 0.0001827445778273193
+            unit: deg
+            error: 0.0005820525954398779
+-   type: FoVBackgroundModel
+    datasets_names:
+    - Mw_L1FVv
+    spectral:
+        type: PowerLawNormSpectralModel
+        parameters:
+        -   name: norm
+            value: 1.0
+            frozen: true
+        -   name: tilt
+            value: 0.0
+            frozen: true
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            frozen: true
 covariance: best-fit-model_0000_covariance.dat

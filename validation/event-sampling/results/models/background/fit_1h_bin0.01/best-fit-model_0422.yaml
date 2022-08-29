@@ -1,8 +1,0 @@
-components:
--   name: gScog5gq
-    type: BackgroundModel
-    parameters:
-    - {name: norm, value: 0.9879680444407273, unit: '', min: 0.0, max: .nan, frozen: false}
-    - {name: tilt, value: 0.005879162750910962, unit: '', min: .nan, max: .nan, frozen: false}
-    - {name: reference, value: 1.0, unit: TeV, min: .nan, max: .nan, frozen: true}
-    datasets_names: [PwIzypjX]
