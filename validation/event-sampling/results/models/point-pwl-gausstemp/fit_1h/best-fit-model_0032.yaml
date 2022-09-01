@@ -1,0 +1,57 @@
+components:
+-   name: point-pwl-gausstemp
+    type: SkyModel
+    spectral:
+        type: PowerLawSpectralModel
+        parameters:
+        -   name: index
+            value: 1.9650038808443606
+            error: 0.018315071237260137
+        -   name: amplitude
+            value: 4.8931798214193524e-11
+            unit: cm-2 s-1 TeV-1
+            error: 2.123538673502889e-11
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            frozen: true
+    spatial:
+        type: PointSpatialModel
+        frame: galactic
+        parameters:
+        -   name: lon_0
+            value: 0.00040878848432348067
+            unit: deg
+            error: 0.0010564851231357035
+        -   name: lat_0
+            value: -0.001813553726271462
+            unit: deg
+            error: 0.001033813103892855
+    temporal:
+        type: GaussianTemporalModel
+        parameters:
+        -   name: t_ref
+            value: 51544.03074287037
+            unit: d
+            frozen: true
+        -   name: sigma
+            value: 0.09826634703019324
+            unit: h
+            error: 0.04398355341329003
+-   type: FoVBackgroundModel
+    datasets_names:
+    - LSEFw6pc
+    spectral:
+        type: PowerLawNormSpectralModel
+        parameters:
+        -   name: norm
+            value: 1.0
+            frozen: true
+        -   name: tilt
+            value: 0.0
+            frozen: true
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            frozen: true
+covariance: best-fit-model_0032_covariance.dat

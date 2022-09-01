@@ -1,0 +1,6 @@
+|                     Parameters | test_source.spectral.index | test_source.spectral.amplitude | test_source.spectral.reference | test_source.temporal.t0 | test_source.temporal.t_ref |
+|     test_source.spectral.index |                        0.0 |                            0.0 |                            0.0 |                     0.0 |                        0.0 |
+| test_source.spectral.amplitude |                        0.0 |          4.567131320281514e-24 |                            0.0 | -1.3983359739877192e-14 |                        0.0 |
+| test_source.spectral.reference |                        0.0 |                            0.0 |                            0.0 |                     0.0 |                        0.0 |
+|        test_source.temporal.t0 |                        0.0 |        -1.3983359739877192e-14 |                            0.0 |   8.284238663266011e-05 |                        0.0 |
+|     test_source.temporal.t_ref |                        0.0 |                            0.0 |                            0.0 |                     0.0 |                        0.0 |

@@ -1,0 +1,57 @@
+components:
+-   name: point-pwl-expdecay
+    type: SkyModel
+    spectral:
+        type: PowerLawSpectralModel
+        parameters:
+        -   name: index
+            value: 2.01743845596164
+            error: 0.019879820437388725
+        -   name: amplitude
+            value: 4.940752115301607e-11
+            unit: cm-2 s-1 TeV-1
+            error: 2.2548972699636167e-11
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            frozen: true
+    spatial:
+        type: PointSpatialModel
+        frame: galactic
+        parameters:
+        -   name: lon_0
+            value: -0.0006550019256057452
+            unit: deg
+            error: 0.0011268097450417278
+        -   name: lat_0
+            value: -3.140025846849748e-05
+            unit: deg
+            error: 0.0011626715176009722
+    temporal:
+        type: ExpDecayTemporalModel
+        parameters:
+        -   name: t0
+            value: 0.19860552097936834
+            unit: h
+            error: 0.10332116345633206
+        -   name: t_ref
+            value: 51544.00074287037
+            unit: d
+            frozen: true
+-   type: FoVBackgroundModel
+    datasets_names:
+    - wIqcvf0g
+    spectral:
+        type: PowerLawNormSpectralModel
+        parameters:
+        -   name: norm
+            value: 1.0
+            frozen: true
+        -   name: tilt
+            value: 0.0
+            frozen: true
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            frozen: true
+covariance: best-fit-model_0090_covariance.dat

@@ -1,0 +1,29 @@
+components:
+-   name: test_source
+    type: SkyModel
+    spectral:
+        type: PowerLawSpectralModel
+        parameters:
+        -   name: index
+            value: 2.0
+            frozen: true
+        -   name: amplitude
+            value: 5.1276263886521403e-11
+            unit: cm-2 s-1 TeV-1
+            error: 2.323995657670176e-12
+        -   name: reference
+            value: 1.0
+            unit: TeV
+            frozen: true
+    temporal:
+        type: ExpDecayTemporalModel
+        parameters:
+        -   name: t0
+            value: 0.1864761103446219
+            unit: h
+            error: 0.007894736785120067
+        -   name: t_ref
+            value: 51544.00074287037
+            unit: d
+            frozen: true
+covariance: best-fit-model_0022_covariance.dat
