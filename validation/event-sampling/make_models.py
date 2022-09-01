@@ -8,6 +8,8 @@ from pathlib import Path
 
 import astropy.units as u
 from astropy.coordinates import SkyCoord, Angle
+from astropy.table import Table
+from astropy.time import Time
 import numpy as np
 from regions import CircleSkyRegion
 
@@ -29,6 +31,9 @@ from gammapy.modeling.models import (
     PowerLawNormSpectralModel,
     FoVBackgroundModel,
     TemplateSpectralModel,
+    ExpDecayTemporalModel,
+    GaussianTemporalModel,
+    LightCurveTemplateTemporalModel,
 )
 
 log = logging.getLogger(__name__)
@@ -47,6 +52,9 @@ AVAILABLE_MODELS = [
     "diffuse-cube",
     "disk-pwl",
     "gauss-pwl",
+    "point-pwl-expdecay",
+    "point-pwl-gausstemp",
+    "point-pwl-lightemplate",
 ]
 
 
@@ -81,6 +89,7 @@ def make_model(model):
     spatial_model = PointSpatialModel(lon_0="0.0 deg",
                                       lat_0="0.0 deg",
                                       frame="galactic")
+    temporal_model = None
 
     if model=="point-pwl":
         spectral_model = PowerLawSpectralModel(
@@ -173,9 +182,62 @@ def make_model(model):
                                              sigma = 0.3 * u.deg,
                                              frame="galactic")
 
+    if model=="point-pwl-expdecay":
+        spectral_model = PowerLawSpectralModel(
+                            index=2.0,
+                            amplitude="5e-11 TeV-1 cm-2 s-1",
+                            reference="1 TeV"
+                            )
+                            
+        t0 = 0.2 * u.hr
+        t_ref = Time(51544.00074287037, format="mjd", scale="tt").mjd * u.d
+        temporal_model = ExpDecayTemporalModel(t_ref=t_ref, t0=t0)
+        temporal_model.t_ref.frozen=True
+
+    if model=="point-pwl-gausstemp":
+        spectral_model = PowerLawSpectralModel(
+                            index=2.0,
+                            amplitude="5e-11 TeV-1 cm-2 s-1",
+                            reference="1 TeV"
+                            )
+                            
+        sigma = 0.1 * u.hr
+        t_ref = Time(51544.03074287037, format="mjd", scale="tt").mjd * u.d
+        temporal_model = GaussianTemporalModel(t_ref=t_ref, sigma=sigma)
+        temporal_model.t_ref.frozen=True
+
+    if model=="point-pwl-lightemplate":
+        livetime = 1 * u.hr
+        sigma = 0.1 * u.h
+        t_ref = Time(51544.00074287037, format="mjd", scale="tt")
+        times = t_ref.mjd * u.d + livetime * np.linspace(0, 1, 1000)
+
+        flare_model = GaussianTemporalModel(t_ref=times[500], sigma=sigma)
+
+        # create the astropy table
+        from gammapy.utils.time import time_ref_to_dict
+        meta = time_ref_to_dict(t_ref)
+        lc = Table()
+        lc.meta = meta
+        lc.meta["TIMEUNIT"] = 's'
+
+        t = Time(times, format="mjd", scale="tt")
+        lc["TIME"] = (times - times[0]).to("s")
+        lc["NORM"] = flare_model(t) * 10
+
+        lc.write("./models/lc.fits", overwrite=True)
+    
+        spectral_model = PowerLawSpectralModel(
+                            index=2.0,
+                            amplitude="5e-11 TeV-1 cm-2 s-1",
+                            reference="1 TeV"
+                            )
+                            
+        temporal_model = LightCurveTemplateTemporalModel.read("./models/lc.fits")
 
     sky_model = SkyModel(spectral_model = spectral_model,
                          spatial_model = spatial_model,
+                         temporal_model = temporal_model,
                          name=model)
         
     save_model(sky_model, bkg_model, f"{model}.yaml")

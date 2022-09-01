@@ -29,7 +29,7 @@ components:
             error: 0.0035170081967535747
 -   type: FoVBackgroundModel
     datasets_names:
-    - PyrZ_1MB
+    - qW2dsKis
     spectral:
         type: PowerLawNormSpectralModel
         parameters:

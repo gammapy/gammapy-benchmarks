@@ -29,7 +29,7 @@ components:
             error: 0.004423113228379949
 -   type: FoVBackgroundModel
     datasets_names:
-    - sKIAPmuF
+    - z6WdJfmy
     spectral:
         type: PowerLawNormSpectralModel
         parameters:

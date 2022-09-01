@@ -29,7 +29,7 @@ components:
             error: 0.0036116606024607194
 -   type: FoVBackgroundModel
     datasets_names:
-    - BRC1d-eZ
+    - boTutYva
     spectral:
         type: PowerLawNormSpectralModel
         parameters:

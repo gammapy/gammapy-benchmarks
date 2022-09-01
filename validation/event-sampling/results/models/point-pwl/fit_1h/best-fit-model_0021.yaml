@@ -29,7 +29,7 @@ components:
             error: 0.003784035255974267
 -   type: FoVBackgroundModel
     datasets_names:
-    - Ro4ixiFs
+    - RjDEkuju
     spectral:
         type: PowerLawNormSpectralModel
         parameters:

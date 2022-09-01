@@ -5,22 +5,27 @@ from itertools import repeat
 from pathlib import Path
 
 import astropy.units as u
+from astropy.time import Time
 import click
 import matplotlib.pyplot as plt
 import numpy as np
-from astropy.coordinates import SkyCoord
+from astropy.coordinates import SkyCoord, Angle
 from astropy.table import Table
 from regions import CircleSkyRegion
 from scipy.stats import norm
 
-from gammapy.data import GTI, EventList, Observation
-from gammapy.datasets import MapDataset, MapDatasetEventSampler
-from gammapy.estimators import ExcessMapEstimator
+from gammapy.data import GTI, EventList, Observation, Observations
+from gammapy.datasets import MapDataset, MapDatasetEventSampler, SpectrumDataset, Datasets, FluxPointsDataset
+from gammapy.estimators import ExcessMapEstimator, LightCurveEstimator
 from gammapy.irf import EnergyDispersion2D, load_cta_irfs
-from gammapy.makers import MapDatasetMaker
-from gammapy.maps import Map, MapAxis, WcsGeom
+from gammapy.makers import MapDatasetMaker, ReflectedRegionsBackgroundMaker, SpectrumDatasetMaker
+from gammapy.maps import Map, MapAxis, WcsGeom, RegionGeom
 from gammapy.modeling import Fit
-from gammapy.modeling.models import Models, FoVBackgroundModel
+from gammapy.modeling.models import (
+    Models,
+    FoVBackgroundModel,
+    SkyModel,
+    )
 from gammapy.utils.table import table_from_row_data
 
 log = logging.getLogger(__name__)
@@ -36,9 +41,12 @@ AVAILABLE_MODELS = [
     "point-ecpl-3fgl",
     "point-ecpl-4fgl",
     "point-template",
+    "diffuse-cube",
     "disk-pwl",
     "gauss-pwl",
-    "diffuse-cube",
+    "point-pwl-expdecay",
+    "point-pwl-gausstemp",
+    "point-pwl-lightemplate",
 ]
 
 DPI = 120
@@ -49,6 +57,7 @@ IRF_FILE = "$GAMMAPY_DATA/cta-caldb/Prod5-South-20deg-AverageAz-14MSTs37SSTs.180
 POINTING = SkyCoord(0.0, 0.5, frame="galactic", unit="deg")
 LIVETIME = 1 * u.hr
 GTI_TABLE = GTI.create(start=0 * u.s, stop=LIVETIME.to(u.s))
+TIME_REF = Time(51544.00074287037, format="mjd", scale="tt")
 
 # dataset config
 ENERGY_AXIS = MapAxis.from_energy_bounds("0.1 TeV", "100 TeV", nbin=10, per_decade=True)
@@ -198,7 +207,7 @@ def prepare_dataset(filename_dataset):
     log.info(f"Reading {IRF_FILE}")
     irfs = load_cta_irfs(IRF_FILE)
     observation = Observation.create(
-        obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs
+        obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs, tstart=TIME_REF
     )
 
     empty = MapDataset.create(
@@ -210,6 +219,10 @@ def prepare_dataset(filename_dataset):
     filename_dataset.parent.mkdir(exist_ok=True, parents=True)
     log.info(f"Writing {filename_dataset}")
     dataset.write(filename_dataset, overwrite=True)
+    
+    filename_observation = Path(str(filename_dataset).replace("dataset","observation"))
+    log.info(f"Writing {filename_observation}")
+    observation.write(filename_observation, overwrite=True)
 
 
 def prepare_dataset_simple(filename_dataset):
@@ -375,9 +388,7 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
     models = Models.read(filename_model)
 
     models.append(FoVBackgroundModel(dataset_name=dataset.name))
-#    models.write(filename_model, overwrite=True)
-#    models = Models.read(filename_model)
-
+    model_copy = models.copy()
     dataset.models = models
 
     if binned==True:
@@ -398,21 +409,155 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
     if binned==True:
         path = Path(str(path).replace("/fit", "/fit_fake"))
         print(binned)
-        print(f"siamo qui: {path}")
 
     log.info(f"Writing {path}")
     # write best-fit model and covariance
     dataset.models.write(str(path), overwrite=True)
 
-    # write covariance
-    # path = get_filename_covariance(path)
-    # if binned:
-    #    path = Path(str(path).replace("/fit","/fit_fake"))
-    # log.info(f"Writing {path}")
+    if dataset.models[0].temporal_model is not None:
+        log.info(f"Fit temporal models")
+        fit_temporal_model(filename_dataset, filename_model,
+                            model_copy, obs_id, dataset)
 
-    # TODO: exclude background parameters for now, as they are fixed anyway
-    # covariance = result.parameters.get_subcovariance(models.parameters)
-    # np.savetxt(path, covariance)
+
+def fit_temporal_model(filename_dataset, filename_model, models, obs_id, dataset):
+    observation_filled = make_observation(filename_dataset, filename_model, obs_id)
+
+    short_observations, time_intervals = make_shorter_observations(observation_filled)
+
+    lc_1d = make_lc(dataset, models, short_observations, time_intervals, obs_id)
+
+    temporal_model = fit_lc(dataset, models, lc_1d, obs_id)
+
+    plot_lc_fit(lc_1d, temporal_model, dataset, obs_id)
+
+
+def make_observation(filename_dataset, filename_model, obs_id):
+    irfs = load_cta_irfs(IRF_FILE)
+    observation_filled = Observation.create(
+                                obs_id=1001, pointing=POINTING,
+                                livetime=LIVETIME, irfs=irfs, tstart=TIME_REF
+                                )
+
+    filename_events = get_filename_events(filename_dataset, filename_model, obs_id)
+    log.info(f"Reading {filename_events}")
+    events = EventList.read(filename_events)
+
+    observation_filled._events = events
+
+    return observation_filled
+
+
+def make_shorter_observations(observation_filled):
+    #HARDCODED
+    duration = 3 * u.min
+    n_time_bins = 20
+    ###
+    times = TIME_REF + np.arange(n_time_bins) * duration
+    time_intervals = [
+        Time([tstart, tstop]) for tstart, tstop in zip(times[:-1], times[1:])
+                    ]
+
+    log.info(f"Making shorter observations")
+    observations_filled = Observations([observation_filled])
+    short_observations = observations_filled.select_time(time_intervals)
+
+    return short_observations, time_intervals
+
+
+def make_lc(dataset, models, short_observations, time_intervals, obs_id):
+    target = models[0].spatial_model.position
+    on_region_radius = Angle("0.11 deg")
+    on_region = CircleSkyRegion(center=target, radius=on_region_radius)
+
+    geom = RegionGeom.create(region=on_region, axes=[ENERGY_AXIS])
+    stacked = SpectrumDataset.create(geom, energy_axis_true=ENERGY_AXIS_TRUE)
+    maker = SpectrumDatasetMaker(
+                        containment_correction=True,
+                        selection=["counts", "exposure", "edisp"])
+    bkg_maker = ReflectedRegionsBackgroundMaker()
+
+    log.info(f"Making short datasets..")
+    datasets = Datasets()
+    for obs in short_observations:
+        dataset_new = maker.run(stacked.copy(), obs)
+        dataset_new = bkg_maker.run(dataset_new, obs)
+        datasets.append(dataset_new)
+
+    sky_model = SkyModel(
+                        spatial_model=None,
+                        spectral_model=models[0].spectral_model,
+                        name="test_source"
+                        )
+    datasets.models = sky_model
+
+    lc_maker_1d = LightCurveEstimator(
+                    energy_edges=[0.1, 10] * u.TeV,
+                    source="test_source",
+                    time_intervals=time_intervals,
+                    selection_optional=None,
+                    n_sigma_ul=3
+                    )
+    lc_1d = lc_maker_1d.run(datasets)
+    lc_1d.sqrt_ts_threshold_ul = 3
+
+    lc_1d.plot(marker="o")
+    path = (
+        BASE_PATH
+        / f"results/models/{dataset.models[0].name}/plots_{LIVETIME.value:.0f}{LIVETIME.unit}/temporal/"
+    )
+    filename = path / f"lightcurve_{obs_id:04d}.png"
+    filename.parent.mkdir(parents=True, exist_ok=True)
+    save_figure(filename)
+
+    return lc_1d
+
+
+def fit_lc(dataset, models, lc_1d, obs_id):
+    datasets = Datasets()
+    for idx, fp in enumerate(lc_1d.iter_by_axis(axis_name="time")):
+        dataset_new = FluxPointsDataset(data=fp, name=f"time-bin-{idx}")
+        datasets.append(dataset_new)
+
+    models[0].spectral_model.parameters["index"].frozen = True
+    #temporal_model = ExpDecayTemporalModel(t0="10 min", t_ref=TIME_REF.mjd * u.d)
+    model = SkyModel(
+        spectral_model=models[0].spectral_model,
+        temporal_model=models[0].temporal_model,
+        name="test_source",
+        )
+    datasets.models = model
+
+    log.info(f"Fit the model")
+    fit = Fit()
+    result = fit.run(datasets=datasets)
+
+    log.info(f"Save the model")
+    path = (
+        BASE_PATH
+        / f"results/models/{dataset.models[0].name}/fit_{LIVETIME.value:.0f}{LIVETIME.unit}_temporal/"
+    )
+    filename = path / f"best-fit-model_{obs_id:04d}.yaml"
+    filename.parent.mkdir(parents=True, exist_ok=True)
+    datasets.models.write(filename, overwrite=True)
+
+    return datasets.models[0].temporal_model
+
+
+def plot_lc_fit(lc_1d, temporal_model, dataset, obs_id):
+    log.info(f"Plot the results")
+    lc_1d._data["norm_err"].data = lc_1d._data["norm_err"].data / max(lc_1d.norm.data)
+    lc_1d._data["norm"].data = lc_1d._data["norm"].data / max(lc_1d.norm.data)
+
+    ax = lc_1d.plot(sed_type="norm", axis_name="time")
+
+    time_range = lc_1d.geom.axes["time"].time_bounds
+    temporal_model.plot(time_range=time_range, label="Best fit model")
+
+    ax.set_yscale("linear")
+    plt.legend()
+    filename = f"results/models/{dataset.models[0].name}/plots_{LIVETIME.value:.0f}{LIVETIME.unit}/temporal/lightcurve_fit_{obs_id:04d}.png"
+    save_figure(filename)
 
 
 @cli.command("fit-gather", help="Gather fit results from the given model")
@@ -672,8 +817,10 @@ def plot_pull_distribution(model_name, livetime, binned=False):
         pull = (values - par.value) / values_err
 
         # print("Number of fits beyond 5 sigmas: ",(np.where( (pull<-5) )))
-        plt.hist(pull, bins=21, density=True, range=(-5, 5))
-        plt.xlim(-5, 5)
+#        plt.hist(pull, bins=21, density=True, range=(-5, 5))
+        plt.hist(pull, bins=21, density=True, range=(np.min(pull), np.max(pull)))
+#        plt.xlim(-5, 5)
+        plt.xlim(np.min(pull), np.max(pull))
         plt.xlabel("(value - value_true) / error")
         plt.ylabel("PDF")
         plt.title(f"Pull distribution for {model_name}: {name} ")

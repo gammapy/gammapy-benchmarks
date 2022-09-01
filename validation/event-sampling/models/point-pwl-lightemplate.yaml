@@ -1,16 +1,14 @@
 components:
--   name: point-pwl
+-   name: point-pwl-lightemplate
     type: SkyModel
     spectral:
         type: PowerLawSpectralModel
         parameters:
         -   name: index
-            value: 2.178967123749983
-            error: 0.08163692271500726
+            value: 2.0
         -   name: amplitude
-            value: 1.1000307037793736e-12
+            value: 5.0e-11
             unit: cm-2 s-1 TeV-1
-            error: 1.1720573320118961e-13
         -   name: reference
             value: 1.0
             unit: TeV
@@ -20,22 +18,22 @@ components:
         frame: galactic
         parameters:
         -   name: lon_0
-            value: 8.305818018037015e-05
+            value: 0.0
             unit: deg
-            error: 0.0042042646905638284
         -   name: lat_0
-            value: -0.006535541517970804
+            value: 0.0
             unit: deg
-            error: 0.0045691877655944435
+    temporal:
+        type: LightCurveTemplateTemporalModel
+        filename: models/lc.fits
 -   type: FoVBackgroundModel
     datasets_names:
-    - epJKH-9r
+    - my-dataset
     spectral:
         type: PowerLawNormSpectralModel
         parameters:
         -   name: norm
             value: 1.0
-            frozen: true
         -   name: tilt
             value: 0.0
             frozen: true
@@ -43,4 +41,4 @@ components:
             value: 1.0
             unit: TeV
             frozen: true
-covariance: best-fit-model_0022_covariance.dat
+covariance: point-pwl-lightemplate_covariance.dat
