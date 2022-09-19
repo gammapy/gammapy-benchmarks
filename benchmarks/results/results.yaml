@@ -1,50 +1,50 @@
 analysis_3d:
-  CPU_max: 103.3
-  CPU_mean: 98.61315789473684
-  memory_peak: 1287.445
-  total_time: 38.773
+  CPU_max: 103.0
+  CPU_mean: 81.88066666666666
+  memory_peak: 1302.973
+  total_time: 76.26
 analysis_3d_joint:
-  CPU_max: 101.4
-  CPU_mean: 99.86292947558769
-  memory_peak: 3028.629
-  total_time: 278.963
+  CPU_max: 103.1
+  CPU_mean: 99.9404332129964
+  memory_peak: 2964.262
+  total_time: 420.169
 io:
-  CPU_max: 99.3
-  CPU_mean: 99.3
-  memory_peak: 580.852
-  total_time: 2.517
+  CPU_max: 101.1
+  CPU_mean: 100.06666666666666
+  memory_peak: 526.934
+  total_time: 3.532
 lightcurve_1d:
-  CPU_max: 101.3
-  CPU_mean: 99.7875
-  memory_peak: 453.453
-  total_time: 16.616
+  CPU_max: 101.1
+  CPU_mean: 99.82857142857144
+  memory_peak: 494.836
+  total_time: 25.248
 lightcurve_3d:
-  CPU_max: 101.3
-  CPU_mean: 99.97944785276071
-  memory_peak: 1533.168
-  total_time: 164.67
+  CPU_max: 102.9
+  CPU_mean: 99.96285714285713
+  memory_peak: 1552.012
+  total_time: 265.593
 npred:
-  CPU_max: 103.3
-  CPU_mean: 99.98999999999998
-  memory_peak: 655.848
-  total_time: 40.796
+  CPU_max: 103.1
+  CPU_mean: 99.96363636363637
+  memory_peak: 655.121
+  total_time: 61.627
 ring_background_estimator:
-  CPU_max: 101.3
-  CPU_mean: 99.97105263157897
-  memory_peak: 684.297
-  total_time: 19.64
+  CPU_max: 103.1
+  CPU_mean: 100.02115384615385
+  memory_peak: 710.242
+  total_time: 26.758
 spectrum_1d:
-  CPU_max: 101.4
-  CPU_mean: 99.95714285714286
-  memory_peak: 447.75
-  total_time: 11.078
+  CPU_max: 101.1
+  CPU_mean: 99.97333333333331
+  memory_peak: 447.449
+  total_time: 15.65
 spectrum_1d_joint:
-  CPU_max: 101.3
-  CPU_mean: 99.97796610169492
-  memory_peak: 506.746
-  total_time: 30.21
+  CPU_max: 102.8
+  CPU_mean: 99.94895833333332
+  memory_peak: 465.504
+  total_time: 48.977
 tsmap_estimator:
-  CPU_max: 101.3
-  CPU_mean: 99.97884615384618
-  memory_peak: 640.453
-  total_time: 26.69
+  CPU_max: 103.0
+  CPU_mean: 99.98202247191013
+  memory_peak: 629.285
+  total_time: 45.453
