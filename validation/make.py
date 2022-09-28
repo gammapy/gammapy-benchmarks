@@ -109,7 +109,7 @@ def run_validations(validations):
 
     if validations == "all":
         # TODO: enable event sampling again
-        validations = list(AVAILABLE_VALIDATIONS)[2:]
+        validations = list(AVAILABLE_VALIDATIONS)[1:]
     else:
         validations = [validations]
 
