@@ -166,7 +166,7 @@ def run_analysis(method, target_dict, debug, skip_flux_points):
         ]
         log.info(f"Writing {path_res}")
         table = flux_points.to_table(sed_type="dnde", format="gadf-sed")[keys]
-        table.write(path_res / f"flux-points-{method}.ecsv", format="ascii.ecsv")
+        table.write(path_res / f"flux-points-{method}.ecsv", format="ascii.ecsv", overwrite=True)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
