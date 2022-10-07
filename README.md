@@ -11,3 +11,8 @@ The badge below displays the status of last nightly set of checks.
 - [validation](validation) - Gammapy correctness checks (model fitting, spectra, lightcurves, ...)
 
 ![](https://github.com/gammapy/gammapy-benchmarks/workflows/benchmarks%20and%20validation/badge.svg)
+
+### Note if you cloned this repository before Oct 7th 2022
+
+The  primary branch was renamed `main`. See the following instructions:
+https://github.com/gammapy/gammapy/wiki/Changing-master-branch-to-main
