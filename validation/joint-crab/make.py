@@ -215,8 +215,8 @@ def make_contours(datasets, result, npoints):
         sigma=np.sqrt(2.3),
     )
     contours["contour_alpha_beta"] = {
-        "alpha": contour["alpha"].tolist(),
-        "beta": (contour["beta"] * np.log(10)).tolist(),
+        "alpha": contour["crab.spectral.alpha"].tolist(),
+        "beta": (contour["crab.spectral.beta"] * np.log(10)).tolist(),
     }
 
     contour = fit.stat_contour(
@@ -227,8 +227,8 @@ def make_contours(datasets, result, npoints):
         sigma=np.sqrt(2.3),
     )
     contours["contour_amplitude_beta"] = {
-        "amplitude": contour["amplitude"].tolist(),
-        "beta": (contour["beta"] * np.log(10)).tolist(),
+        "amplitude": contour["crab.spectral.amplitude"].tolist(),
+        "beta": (contour["crab.spectral.beta"] * np.log(10)).tolist(),
     }
 
     contour = fit.stat_contour(
@@ -239,8 +239,8 @@ def make_contours(datasets, result, npoints):
         sigma=np.sqrt(2.3),
     )
     contours["contour_amplitude_alpha"] = {
-        "amplitude": contour["amplitude"].tolist(),
-        "alpha": contour["alpha"].tolist(),
+        "amplitude": contour["crab.spectral.amplitude"].tolist(),
+        "alpha": contour["crab.spectral.alpha"].tolist(),
     }
 
     return contours
