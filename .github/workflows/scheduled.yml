@@ -14,7 +14,7 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v2
       - name: get env file
-        run: curl -O https://raw.githubusercontent.com/gammapy/gammapy/master/environment-dev.yml
+        run: curl -O https://raw.githubusercontent.com/gammapy/gammapy/main/environment-dev.yml
       - name: create and activate env
         uses: conda-incubator/setup-miniconda@v2
         with:
