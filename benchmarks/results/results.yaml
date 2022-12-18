@@ -1,50 +1,50 @@
 analysis_3d:
-  CPU_max: 103.0
-  CPU_mean: 99.96200000000003
-  memory_peak: 1327.922
-  total_time: 51.005
+  CPU_max: 101.4
+  CPU_mean: 99.975
+  memory_peak: 1360.57
+  total_time: 38.765
 analysis_3d_joint:
-  CPU_max: 103.1
-  CPU_mean: 99.96304654442878
-  memory_peak: 2986.129
-  total_time: 358.569
+  CPU_max: 101.4
+  CPU_mean: 99.95271028037382
+  memory_peak: 3014.152
+  total_time: 269.862
 io:
-  CPU_max: 101.2
-  CPU_mean: 99.97999999999999
-  memory_peak: 923.598
-  total_time: 3.026
+  CPU_max: 101.3
+  CPU_mean: 99.85
+  memory_peak: 577.516
+  total_time: 2.516
 lightcurve_1d:
-  CPU_max: 101.2
-  CPU_mean: 99.92051282051283
-  memory_peak: 453.664
-  total_time: 20.202
+  CPU_max: 101.3
+  CPU_mean: 99.7931034482759
+  memory_peak: 453.754
+  total_time: 15.101
 lightcurve_3d:
-  CPU_max: 103.2
-  CPU_mean: 99.98792372881357
-  memory_peak: 1490.25
-  total_time: 238.832
+  CPU_max: 101.3
+  CPU_mean: 99.98065476190474
+  memory_peak: 1493.195
+  total_time: 169.678
 npred:
-  CPU_max: 102.8
-  CPU_mean: 99.98130841121497
-  memory_peak: 650.898
-  total_time: 54.575
+  CPU_max: 103.3
+  CPU_mean: 99.95641025641027
+  memory_peak: 652.141
+  total_time: 39.779
 ring_background_estimator:
-  CPU_max: 102.9
-  CPU_mean: 99.91304347826087
-  memory_peak: 678.219
-  total_time: 23.738
+  CPU_max: 101.4
+  CPU_mean: 97.25945945945948
+  memory_peak: 676.562
+  total_time: 19.13
 spectrum_1d:
-  CPU_max: 101.2
-  CPU_mean: 99.96799999999999
-  memory_peak: 451.344
-  total_time: 13.129
+  CPU_max: 101.4
+  CPU_mean: 99.99999999999999
+  memory_peak: 451.262
+  total_time: 10.572
 spectrum_1d_joint:
-  CPU_max: 101.2
-  CPU_mean: 99.98082191780821
-  memory_peak: 467.875
-  total_time: 37.36
+  CPU_max: 101.3
+  CPU_mean: 99.9844827586207
+  memory_peak: 472.984
+  total_time: 29.704
 tsmap_estimator:
-  CPU_max: 101.2
-  CPU_mean: 99.99365079365081
-  memory_peak: 643.465
-  total_time: 32.319
+  CPU_max: 101.3
+  CPU_mean: 100.00000000000001
+  memory_peak: 643.457
+  total_time: 26.182
