@@ -2,6 +2,7 @@ name: benchmarks profiler
 on:
   repository_dispatch:
     types: [dev-benchmarks]
+  workflow_dispatch: {}
 jobs:
   checks:
     runs-on: ubuntu-latest
