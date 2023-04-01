@@ -1,50 +1,50 @@
 analysis_3d:
-  CPU_max: 101.7
-  CPU_mean: 99.95784313725497
-  memory_peak: 1353.645
-  total_time: 51.957
-analysis_3d_joint:
   CPU_max: 103.1
-  CPU_mean: 99.95844155844158
-  memory_peak: 3163.434
-  total_time: 350.125
+  CPU_mean: 99.93951612903227
+  memory_peak: 1397.938
+  total_time: 63.126
+analysis_3d_joint:
+  CPU_max: 103.0
+  CPU_mean: 99.96926770708282
+  memory_peak: 3163.293
+  total_time: 421.175
 io:
-  CPU_max: 101.2
-  CPU_mean: 99.97999999999999
-  memory_peak: 922.227
-  total_time: 3.024
+  CPU_max: 102.6
+  CPU_mean: 99.64999999999999
+  memory_peak: 518.336
+  total_time: 3.536
 lightcurve_1d:
-  CPU_max: 101.2
-  CPU_mean: 99.62580645161287
-  memory_peak: 450.578
-  total_time: 16.135
+  CPU_max: 101.1
+  CPU_mean: 99.71333333333334
+  memory_peak: 451.168
+  total_time: 15.65
 lightcurve_3d:
-  CPU_max: 103.2
-  CPU_mean: 99.97764423076924
-  memory_peak: 1370.723
-  total_time: 210.325
+  CPU_max: 102.9
+  CPU_mean: 99.9855238095238
+  memory_peak: 1369.945
+  total_time: 265.627
 npred:
-  CPU_max: 101.2
-  CPU_mean: 99.97766990291267
-  memory_peak: 646.727
-  total_time: 52.466
+  CPU_max: 102.9
+  CPU_mean: 99.98048780487805
+  memory_peak: 648.668
+  total_time: 62.659
 ring_background_estimator:
-  CPU_max: 103.2
-  CPU_mean: 99.90447761194031
-  memory_peak: 729.48
-  total_time: 34.298
+  CPU_max: 103.0
+  CPU_mean: 99.98441558441559
+  memory_peak: 751.707
+  total_time: 39.399
 spectrum_1d:
-  CPU_max: 101.2
-  CPU_mean: 99.89285714285712
-  memory_peak: 448.207
-  total_time: 14.62
+  CPU_max: 101.1
+  CPU_mean: 99.96562499999999
+  memory_peak: 447.973
+  total_time: 16.662
 spectrum_1d_joint:
-  CPU_max: 102.5
-  CPU_mean: 99.95573770491802
-  memory_peak: 475.777
-  total_time: 31.269
+  CPU_max: 103.0
+  CPU_mean: 99.98550724637684
+  memory_peak: 469.91
+  total_time: 35.342
 tsmap_estimator:
-  CPU_max: 101.2
-  CPU_mean: 99.98311688311689
-  memory_peak: 555.738
-  total_time: 39.335
+  CPU_max: 102.9
+  CPU_mean: 99.99294117647058
+  memory_peak: 612.07
+  total_time: 43.449
