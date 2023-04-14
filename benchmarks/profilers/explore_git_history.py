@@ -7,8 +7,9 @@ import matplotlib.pyplot as plt
 from scipy import ndimage as ndi
 import datetime
 import subprocess
-import glob
-from pathlib import Path
+import sys
+sys.path.append('../')
+from make import AVAILABLE_BENCHMARKS
 
 log = logging.getLogger()
 
@@ -137,20 +138,18 @@ def run_profiler(gammapy, benchmarks, bench, dates, commits=None):
 
 if __name__ == "__main__":
    logging.basicConfig(level=logging.INFO)
-   
-   benchmarks = "../../"
-   files = glob.glob("../*.py")
-   benchs = [Path(f).stem for f in files if Path(f).stem != "make"]
 
-   for bench in benchs:
-       print(bench)
+   benchmarks = "../../"
+
+   for bench in AVAILABLE_BENCHMARKS.keys():
+       log.info(bench)
        try:
            dates, bench_times, labels, commits = get_benchmark_history(bench, benchmarks)
            mask = plot_benchmark_history(bench, dates, bench_times, labels)
            ind_peak = np.where(mask)[0]
            for ind in ind_peak:
-               print("Peak : ", dates[ind])
+               log.info("Peak : ", dates[ind])
        except:
-           print("skipped")
+           log.info("skipped")
            continue
 

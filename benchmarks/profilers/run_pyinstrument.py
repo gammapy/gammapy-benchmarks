@@ -1,11 +1,11 @@
-import glob
 import subprocess
-from pathlib import Path
+import sys 
 
-files = glob.glob("../*.py")
+sys.path.append('../')
+from make import AVAILABLE_BENCHMARKS
 
-for f in files:
-   path = Path(f) 
-   if path.stem != "make":
-       subprocess.call(f"pyinstrument -r html -o ./pyinstrument-{path.stem}.html {f}", shell=True)
-
+if __name__ == "__main__":
+    for name, filename in AVAILABLE_BENCHMARKS.items():
+       path = f"../{filename}"
+       subprocess.call(f"pyinstrument -r html -o ./pyinstrument-{name}.html {path}", shell=True)
+    

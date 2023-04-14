@@ -1,13 +1,11 @@
-import glob
 import subprocess
-from pathlib import Path
+import sys
+sys.path.append('../')
+from make import AVAILABLE_BENCHMARKS
 
-files = glob.glob("../*.py")
-
-for f in files:
-   path = Path(f) 
-   if path.stem != "make":
-       subprocess.call(f"memray run -o ./memray-{path.stem}.bin {f} ", shell=True)
-       subprocess.call(f"memray table -o ./memray-table-{path.stem}.html ./memray-{path.stem}.bin", shell=True)
-       subprocess.call(f"memray flamegraph -o ./memray-flamegraph-{path.stem}.html ./memray-{path.stem}.bin", shell=True)
+for name, filename in AVAILABLE_BENCHMARKS.items():
+   path = "../{filename}"
+   subprocess.call(f"memray run -o ./memray-{name}.bin {path} ", shell=True)
+   subprocess.call(f"memray table -o ./memray-table-{name}.html ./memray-{name}.bin", shell=True)
+   subprocess.call(f"memray flamegraph -o ./memray-flamegraph-{name}.html ./memray-{name}.bin", shell=True)
 
