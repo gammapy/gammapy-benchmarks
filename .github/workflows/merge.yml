@@ -1,0 +1,49 @@
+name: benchmarks profiler
+on:
+  repository_dispatch:
+    types: [dev-benchmarks]
+  workflow_dispatch: {}
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    env:
+      GAMMAPY_DATA: /home/runner/work/gammapy-benchmarks/gammapy-benchmarks/gammapy-datasets/dev
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v2
+      - name: get env file
+        run: curl -O https://raw.githubusercontent.com/gammapy/gammapy/main/environment-dev.yml
+      - name: create and activate env
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: gammapy-dev
+          environment-file: environment-dev.yml
+          auto-update-conda: true
+      - name: install gammapy
+        run: |
+          pip install git+https://github.com/gammapy/gammapy.git#egg=gammapy
+          pip install psrecord
+          conda info
+          conda list
+          gammapy info
+      - name: download datasets
+        run: gammapy download datasets
+      - name: run benchmarks
+        run: |
+          cd benchmarks/profilers
+          python run_pyinstrument.py
+      - name: commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4.1.6
+        if: success()
+        with:
+          commit_author: GitHub Actions <actions@github.com>
+          commit_message: commit results from benchmarks
+      - name: slack notification
+        uses: rtCamp/action-slack-notify@v2.0.0
+        if: failure()
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_MESSAGE: 'Benchmarks profiling failed'
