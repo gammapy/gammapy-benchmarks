@@ -1,0 +1,8 @@
+|                           Parameters |   0 |   1 |   2 |   3 |   4 |   5 |   6 |
+| point-enedip_template.spectral.const | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+|  point-enedip_template.spatial.lon_0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+|  point-enedip_template.spatial.lat_0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| point-enedip_template.temporal.t_ref | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+|         my-dataset-bkg.spectral.norm | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+|         my-dataset-bkg.spectral.tilt | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+|    my-dataset-bkg.spectral.reference | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |

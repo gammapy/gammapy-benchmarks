@@ -18,6 +18,7 @@ from gammapy.modeling.models import (
     Model,
     Models,
     SkyModel,
+    ConstantSpectralModel,
     PowerLawSpectralModel,
     PointSpatialModel,
     DiskSpatialModel,
@@ -55,6 +56,7 @@ AVAILABLE_MODELS = [
     "point-pwl-expdecay",
     "point-pwl-gausstemp",
     "point-pwl-lightemplate",
+    "point-enedip_template",
 ]
 
 
@@ -223,7 +225,7 @@ def make_model(model):
 
         t = Time(times, format="mjd", scale="tt")
         lc["TIME"] = (times - times[0]).to("s")
-        lc["NORM"] = flare_model(t) * 10
+        lc["NORM"] = flare_model(t)
 
         lc.write("./models/lc.fits", overwrite=True)
     
@@ -234,6 +236,13 @@ def make_model(model):
                             )
                             
         temporal_model = LightCurveTemplateTemporalModel.read("./models/lc.fits")
+
+    if model=="point-enedip_template":
+        spectral_model = ConstantSpectralModel(const="1 cm-2 s-1 TeV-1")
+
+        filename = "$GAMMAPY_DATA/gravitational_waves/GW_example_DC_map_file.fits.gz"
+        temporal_model = LightCurveTemplateTemporalModel.read(filename, format="map")
+        temporal_model.t_ref.value = 51544.00074287037
 
     sky_model = SkyModel(spectral_model = spectral_model,
                          spatial_model = spatial_model,
