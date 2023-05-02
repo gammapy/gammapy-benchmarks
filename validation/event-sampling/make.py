@@ -47,6 +47,7 @@ AVAILABLE_MODELS = [
     "point-pwl-expdecay",
     "point-pwl-gausstemp",
     "point-pwl-lightemplate",
+    "point-enedip_template",
 ]
 
 DPI = 120
