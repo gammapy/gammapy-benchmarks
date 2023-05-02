@@ -3,6 +3,9 @@ components:
     type: SkyModel
     spectral:
         type: TemplateSpectralModel
+        parameters:
+        -   name: norm
+            value: 1.0
         energy:
             data:
             - 0.10000000000000002
@@ -91,9 +94,7 @@ components:
             value: 1.0
         -   name: tilt
             value: 0.0
-            frozen: true
         -   name: reference
             value: 1.0
             unit: TeV
-            frozen: true
 covariance: point-template_covariance.dat
