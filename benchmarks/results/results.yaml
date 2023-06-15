@@ -1,50 +1,50 @@
 analysis_3d:
-  CPU_max: 102.9
-  CPU_mean: 99.96145833333333
-  memory_peak: 1575.34
-  total_time: 48.985
+  CPU_max: 101.4
+  CPU_mean: 99.9508474576271
+  memory_peak: 1547.59
+  total_time: 30.202
 analysis_3d_joint:
-  CPU_max: 103.0
-  CPU_mean: 99.88812415654522
-  memory_peak: 3389.453
-  total_time: 374.741
+  CPU_max: 103.3
+  CPU_mean: 99.65325443786979
+  memory_peak: 3436.148
+  total_time: 255.733
 io:
-  CPU_max: 101.1
-  CPU_mean: 99.87142857142858
-  memory_peak: 1046.723
-  total_time: 4.039
+  CPU_max: 101.2
+  CPU_mean: 99.85
+  memory_peak: 560.559
+  total_time: 2.517
 lightcurve_1d:
-  CPU_max: 101.1
-  CPU_mean: 99.47741935483869
-  memory_peak: 637.145
-  total_time: 16.158
+  CPU_max: 101.3
+  CPU_mean: 99.7611111111111
+  memory_peak: 637.336
+  total_time: 9.563
 lightcurve_3d:
-  CPU_max: 103.0
-  CPU_mean: 99.98884026258206
-  memory_peak: 1575.43
-  total_time: 231.315
+  CPU_max: 103.3
+  CPU_mean: 99.96237288135592
+  memory_peak: 1529.84
+  total_time: 149.013
 npred:
-  CPU_max: 103.0
-  CPU_mean: 99.96022727272727
-  memory_peak: 847.695
-  total_time: 44.962
+  CPU_max: 101.4
+  CPU_mean: 99.98833333333333
+  memory_peak: 721.727
+  total_time: 30.715
 ring_background_estimator:
-  CPU_max: 103.0
-  CPU_mean: 99.92063492063492
-  memory_peak: 812.828
-  total_time: 32.329
+  CPU_max: 101.4
+  CPU_mean: 100.01904761904763
+  memory_peak: 826.879
+  total_time: 21.646
 spectrum_1d:
-  CPU_max: 103.0
-  CPU_mean: 99.98387096774192
-  memory_peak: 632.707
-  total_time: 16.155
+  CPU_max: 101.3
+  CPU_mean: 100.01499999999999
+  memory_peak: 632.988
+  total_time: 10.57
 spectrum_1d_joint:
-  CPU_max: 103.0
-  CPU_mean: 99.9830985915493
-  memory_peak: 659.0
-  total_time: 36.37
+  CPU_max: 103.3
+  CPU_mean: 99.93863636363639
+  memory_peak: 659.508
+  total_time: 22.651
 tsmap_estimator:
-  CPU_max: 101.1
-  CPU_mean: 99.99285714285713
-  memory_peak: 849.02
-  total_time: 42.931
+  CPU_max: 101.3
+  CPU_mean: 99.928
+  memory_peak: 811.016
+  total_time: 25.677
