@@ -13,7 +13,7 @@ jobs:
       GAMMAPY_DATA: /home/runner/work/gammapy-benchmarks/gammapy-benchmarks/gammapy-datasets/dev
     steps:
       - name: checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
       - name: get env file
         run: curl -O https://raw.githubusercontent.com/gammapy/gammapy/main/environment-dev.yml
       - name: create and activate env
