@@ -1,50 +1,50 @@
 analysis_3d:
-  CPU_max: 101.4
-  CPU_mean: 98.58548387096774
-  memory_peak: 1527.43
-  total_time: 31.711
+  CPU_max: 101.1
+  CPU_mean: 98.65862068965518
+  memory_peak: 1653.598
+  total_time: 44.435
 analysis_3d_joint:
-  CPU_max: 103.3
-  CPU_mean: 99.77671517671516
-  memory_peak: 3391.355
-  total_time: 242.66
+  CPU_max: 103.1
+  CPU_mean: 99.66238532110093
+  memory_peak: 3581.707
+  total_time: 330.935
 io:
-  CPU_max: 101.4
-  CPU_mean: 99.78
-  memory_peak: 623.02
-  total_time: 3.019
+  CPU_max: 101.2
+  CPU_mean: 99.98571428571428
+  memory_peak: 767.504
+  total_time: 4.035
 lightcurve_1d:
-  CPU_max: 101.3
-  CPU_mean: 99.475
-  memory_peak: 493.359
-  total_time: 8.564
+  CPU_max: 101.2
+  CPU_mean: 99.26296296296296
+  memory_peak: 621.547
+  total_time: 14.134
 lightcurve_3d:
-  CPU_max: 101.4
-  CPU_mean: 99.91930501930501
-  memory_peak: 1614.598
-  total_time: 130.897
+  CPU_max: 103.0
+  CPU_mean: 99.89287833827893
+  memory_peak: 1754.348
+  total_time: 170.667
 npred:
-  CPU_max: 101.3
-  CPU_mean: 99.9677966101695
-  memory_peak: 730.926
-  total_time: 30.214
+  CPU_max: 103.0
+  CPU_mean: 99.89753086419753
+  memory_peak: 858.859
+  total_time: 41.419
 ring_background_estimator:
-  CPU_max: 103.3
-  CPU_mean: 99.92439024390244
-  memory_peak: 690.363
-  total_time: 21.147
+  CPU_max: 103.0
+  CPU_mean: 99.91698113207548
+  memory_peak: 811.27
+  total_time: 27.27
 spectrum_1d:
-  CPU_max: 101.3
-  CPU_mean: 99.99999999999999
-  memory_peak: 500.73
-  total_time: 10.571
+  CPU_max: 103.0
+  CPU_mean: 99.93703703703704
+  memory_peak: 628.742
+  total_time: 14.132
 spectrum_1d_joint:
-  CPU_max: 101.4
-  CPU_mean: 99.96428571428571
-  memory_peak: 529.062
-  total_time: 21.648
+  CPU_max: 103.0
+  CPU_mean: 99.9241379310345
+  memory_peak: 655.871
+  total_time: 29.786
 tsmap_estimator:
-  CPU_max: 101.3
-  CPU_mean: 99.95964912280701
-  memory_peak: 623.945
-  total_time: 29.201
+  CPU_max: 103.1
+  CPU_mean: 99.98222222222222
+  memory_peak: 609.117
+  total_time: 45.953
