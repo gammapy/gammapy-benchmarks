@@ -1,50 +1,50 @@
 analysis_3d:
-  CPU_max: 101.2
-  CPU_mean: 99.96376811594202
-  memory_peak: 1536.098
-  total_time: 35.291
+  CPU_max: 101.3
+  CPU_mean: 99.95151515151514
+  memory_peak: 1538.574
+  total_time: 33.739
 analysis_3d_joint:
-  CPU_max: 101.7
-  CPU_mean: 99.83552397868561
-  memory_peak: 3458.766
-  total_time: 284.378
+  CPU_max: 101.3
+  CPU_mean: 99.90056710775046
+  memory_peak: 3389.766
+  total_time: 266.904
 io:
-  CPU_max: 101.2
-  CPU_mean: 99.61999999999999
-  memory_peak: 645.734
-  total_time: 3.023
+  CPU_max: 101.3
+  CPU_mean: 99.72
+  memory_peak: 645.758
+  total_time: 3.02
 lightcurve_1d:
-  CPU_max: 101.2
-  CPU_mean: 99.93157894736842
-  memory_peak: 495.5
-  total_time: 10.081
+  CPU_max: 101.3
+  CPU_mean: 99.89565217391306
+  memory_peak: 496.266
+  total_time: 12.085
 lightcurve_3d:
-  CPU_max: 103.1
-  CPU_mean: 99.93584905660379
-  memory_peak: 1635.238
-  total_time: 160.834
+  CPU_max: 101.3
+  CPU_mean: 99.94200743494422
+  memory_peak: 1632.523
+  total_time: 135.964
 npred:
-  CPU_max: 103.1
-  CPU_mean: 99.96619718309861
-  memory_peak: 733.082
-  total_time: 36.314
+  CPU_max: 101.3
+  CPU_mean: 99.94393939393939
+  memory_peak: 733.059
+  total_time: 33.745
 ring_background_estimator:
   CPU_max: 101.3
-  CPU_mean: 99.90666666666667
-  memory_peak: 708.566
-  total_time: 23.194
+  CPU_mean: 99.89767441860467
+  memory_peak: 727.555
+  total_time: 22.154
 spectrum_1d:
-  CPU_max: 101.2
-  CPU_mean: 99.80454545454545
-  memory_peak: 502.895
-  total_time: 11.595
+  CPU_max: 101.3
+  CPU_mean: 99.86666666666666
+  memory_peak: 502.984
+  total_time: 11.076
 spectrum_1d_joint:
-  CPU_max: 101.2
-  CPU_mean: 99.97446808510637
-  memory_peak: 531.715
-  total_time: 24.201
+  CPU_max: 103.3
+  CPU_mean: 97.7826086956522
+  memory_peak: 531.242
+  total_time: 23.667
 tsmap_estimator:
-  CPU_max: 101.2
-  CPU_mean: 99.94576271186442
-  memory_peak: 596.504
-  total_time: 30.252
+  CPU_max: 101.4
+  CPU_mean: 99.92333333333335
+  memory_peak: 718.625
+  total_time: 30.718
