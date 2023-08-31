@@ -7,5 +7,5 @@ software:
   gammapy: 1.2.dev515+gc71cb4707
   numpy: 1.25.2
   python_executable: /usr/share/miniconda/envs/gammapy-dev/bin/python
-  python_version: 3.9.17
+  python_version: 3.9.18
   scipy: 1.11.2
