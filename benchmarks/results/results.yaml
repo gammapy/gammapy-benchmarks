@@ -1,50 +1,50 @@
 analysis_3d:
-  CPU_max: 101.3
-  CPU_mean: 99.97999999999998
-  memory_peak: 1538.891
-  total_time: 30.703
+  CPU_max: 101.2
+  CPU_mean: 99.93599999999999
+  memory_peak: 1543.781
+  total_time: 38.327
 analysis_3d_joint:
-  CPU_max: 103.3
-  CPU_mean: 99.88004115226335
-  memory_peak: 3437.031
-  total_time: 245.161
+  CPU_max: 103.1
+  CPU_mean: 99.87463884430178
+  memory_peak: 3461.809
+  total_time: 314.661
 io:
-  CPU_max: 101.4
-  CPU_mean: 99.8
-  memory_peak: 629.555
-  total_time: 3.02
+  CPU_max: 101.2
+  CPU_mean: 100.21666666666668
+  memory_peak: 962.719
+  total_time: 3.528
 lightcurve_1d:
-  CPU_max: 101.3
-  CPU_mean: 99.98333333333333
-  memory_peak: 496.09
-  total_time: 9.563
+  CPU_max: 101.2
+  CPU_mean: 99.90526315789474
+  memory_peak: 495.762
+  total_time: 10.084
 lightcurve_3d:
-  CPU_max: 103.3
-  CPU_mean: 99.94699646643109
-  memory_peak: 1633.195
-  total_time: 142.983
+  CPU_max: 103.1
+  CPU_mean: 99.93846153846157
+  memory_peak: 1634.008
+  total_time: 164.384
 npred:
-  CPU_max: 103.2
-  CPU_mean: 99.96000000000001
-  memory_peak: 733.391
-  total_time: 30.715
+  CPU_max: 103.1
+  CPU_mean: 99.93924050632914
+  memory_peak: 733.383
+  total_time: 40.352
 ring_background_estimator:
-  CPU_max: 101.3
-  CPU_mean: 99.97073170731707
-  memory_peak: 686.973
-  total_time: 21.145
+  CPU_max: 101.2
+  CPU_mean: 99.90217391304346
+  memory_peak: 686.773
+  total_time: 23.695
 spectrum_1d:
-  CPU_max: 101.3
-  CPU_mean: 99.99999999999999
-  memory_peak: 503.293
-  total_time: 10.571
+  CPU_max: 101.2
+  CPU_mean: 99.99545454545455
+  memory_peak: 503.523
+  total_time: 11.596
 spectrum_1d_joint:
   CPU_max: 101.3
-  CPU_mean: 99.93720930232558
-  memory_peak: 530.699
-  total_time: 22.152
+  CPU_mean: 99.96458333333334
+  memory_peak: 530.945
+  total_time: 24.705
 tsmap_estimator:
-  CPU_max: 101.3
-  CPU_mean: 99.92982456140349
-  memory_peak: 595.398
-  total_time: 29.2
+  CPU_max: 101.2
+  CPU_mean: 99.91311475409837
+  memory_peak: 717.105
+  total_time: 31.267
