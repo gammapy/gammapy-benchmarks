@@ -1,50 +1,50 @@
 analysis_3d:
-  CPU_max: 103.1
-  CPU_mean: 99.92179487179487
-  memory_peak: 1531.824
-  total_time: 39.886
+  CPU_max: 101.4
+  CPU_mean: 99.90952380952382
+  memory_peak: 1536.223
+  total_time: 32.216
 analysis_3d_joint:
-  CPU_max: 103.1
-  CPU_mean: 99.85676100628932
-  memory_peak: 3461.824
-  total_time: 321.625
+  CPU_max: 103.3
+  CPU_mean: 99.8993951612903
+  memory_peak: 3389.824
+  total_time: 250.201
 io:
-  CPU_max: 101.2
-  CPU_mean: 99.74285714285715
-  memory_peak: 646.102
-  total_time: 4.041
+  CPU_max: 101.3
+  CPU_mean: 99.38000000000002
+  memory_peak: 646.109
+  total_time: 3.019
 lightcurve_1d:
   CPU_max: 101.3
-  CPU_mean: 99.72500000000001
-  memory_peak: 495.855
-  total_time: 12.617
+  CPU_mean: 99.84444444444443
+  memory_peak: 495.777
+  total_time: 9.566
 lightcurve_3d:
-  CPU_max: 103.0
-  CPU_mean: 99.91525885558583
-  memory_peak: 1631.73
-  total_time: 185.726
+  CPU_max: 101.4
+  CPU_mean: 99.92931596091204
+  memory_peak: 1635.355
+  total_time: 155.059
 npred:
-  CPU_max: 103.0
-  CPU_mean: 99.90641025641025
-  memory_peak: 733.402
-  total_time: 39.92
+  CPU_max: 101.3
+  CPU_mean: 99.94262295081968
+  memory_peak: 733.406
+  total_time: 31.219
 ring_background_estimator:
-  CPU_max: 101.2
-  CPU_mean: 99.94705882352942
-  memory_peak: 686.484
-  total_time: 26.259
+  CPU_max: 101.4
+  CPU_mean: 99.93170731707316
+  memory_peak: 708.73
+  total_time: 21.143
 spectrum_1d:
-  CPU_max: 101.2
-  CPU_mean: 99.86799999999998
-  memory_peak: 503.465
-  total_time: 13.122
+  CPU_max: 101.3
+  CPU_mean: 99.91
+  memory_peak: 502.996
+  total_time: 10.571
 spectrum_1d_joint:
-  CPU_max: 103.1
-  CPU_mean: 99.92857142857143
-  memory_peak: 530.949
-  total_time: 28.782
+  CPU_max: 103.3
+  CPU_mean: 99.95111111111112
+  memory_peak: 530.668
+  total_time: 23.161
 tsmap_estimator:
-  CPU_max: 101.2
-  CPU_mean: 99.96376811594203
-  memory_peak: 596.262
-  total_time: 35.359
+  CPU_max: 101.3
+  CPU_mean: 99.95964912280701
+  memory_peak: 688.676
+  total_time: 29.201
