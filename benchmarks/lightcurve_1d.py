@@ -9,10 +9,10 @@ from astropy.coordinates import Angle, SkyCoord
 from astropy.time import Time
 from regions import CircleSkyRegion
 
-from gammapy.data import Observation
+from gammapy.data import Observation, FixedPointingInfo
 from gammapy.datasets import SpectrumDataset
 from gammapy.estimators import LightCurveEstimator
-from gammapy.irf import load_cta_irfs
+from gammapy.irf import load_irf_dict_from_file
 from gammapy.makers import SpectrumDatasetMaker
 from gammapy.maps import MapAxis, RegionGeom
 from gammapy.modeling import Fit
@@ -26,7 +26,7 @@ gti_t0 = Time("2020-03-01")
 
 def simulate():
 
-    irfs = load_cta_irfs(
+    irfs = load_irf_dict_from_file(
         "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits"
     )
 
@@ -44,7 +44,8 @@ def simulate():
 
     geom = RegionGeom(on_region, axes=[energy_axis])
 
-    pointing = SkyCoord(0.5, 0.5, unit="deg", frame="galactic")
+    pointing_pos = SkyCoord(0.5, 0.5, unit="deg", frame="galactic")
+    pointing = FixedPointingInfo(fixed_icrs=pointing_pos.icrs)
 
     spectral_model = PowerLawSpectralModel(
         index=3, amplitude="1e-11 cm-2 s-1 TeV-1", reference="1 TeV"

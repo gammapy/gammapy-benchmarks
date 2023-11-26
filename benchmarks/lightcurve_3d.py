@@ -8,10 +8,10 @@ import yaml
 from astropy.coordinates import Angle, SkyCoord
 from astropy.time import Time
 
-from gammapy.data import Observation
+from gammapy.data import Observation, FixedPointingInfo
 from gammapy.datasets import Datasets, MapDataset
 from gammapy.estimators import LightCurveEstimator
-from gammapy.irf import load_cta_irfs
+from gammapy.irf import load_irf_dict_from_file
 from gammapy.makers import MapDatasetMaker, SafeMaskMaker
 from gammapy.maps import MapAxis, WcsGeom
 from gammapy.modeling import Fit
@@ -26,7 +26,7 @@ gti_t0 = Time("2020-03-01")
 
 def simulate():
 
-    irfs = load_cta_irfs(
+    irfs = load_irf_dict_from_file(
         "$GAMMAPY_DATA/cta-1dc/caldb/data/cta/1dc/bcf/South_z20_50h/irf_file.fits"
     )
 
@@ -34,7 +34,8 @@ def simulate():
     energy_reco = MapAxis.from_edges(
         np.logspace(-1.0, 1.0, 10), unit="TeV", name="energy", interp="log"
     )
-    pointing = SkyCoord(0.5, 0.5, unit="deg", frame="galactic")
+    pointing_pos = SkyCoord(0.5, 0.5, unit="deg", frame="galactic")
+    pointing = FixedPointingInfo(fixed_icrs=pointing_pos.icrs)
     geom = WcsGeom.create(
         skydir=center, binsz=0.02, width=(4, 4), frame="galactic", axes=[energy_reco],
     )
