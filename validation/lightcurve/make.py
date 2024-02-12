@@ -175,7 +175,7 @@ def create_datasets_3d(observations, target_position):
     dataset_empty = MapDataset.create(geom=geom, energy_axis_true=e_true)
 
     for obs in observations:
-        cutout = dataset_empty.cutout(obs.pointing_radec, width=2 * offset_max)
+        cutout = dataset_empty.cutout(obs.get_pointing_icrs(obs.tmid), width=2 * offset_max)
         # A MapDataset is filled in this cutout geometry
         dataset = maker.run(cutout, obs)
         # The data quality cut is applied
