@@ -17,41 +17,41 @@
  All following values are given in percent 
 
 
-- ['Optimization terminated successfully..'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully., but uncertainties are unreliable.'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully..'] -
+- ['Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully, but uncertainties are unreliable.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'] -
 
-['Optimization terminated successfully..'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully., but uncertainties are unreliable.'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully..']
-Optimization terminated successfully. 0.0   
-['Optimization terminated successfully..'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully., but uncertainties are unreliable.'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully..']
+['Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully, but uncertainties are unreliable.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.']
+Optimization terminated successfully. 87.5   
+['Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully, but uncertainties are unreliable.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.']
 Optimization failed. 0.0   
-['Optimization terminated successfully..'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully., but uncertainties are unreliable.'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully..'
- 'Optimization terminated successfully..']
+['Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully, but uncertainties are unreliable.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.'
+ 'Optimization terminated successfully.']
 Optimization failed. Estimated distance to minimum too large. 0.0   
 
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/Cash_stat_corr.png)
@@ -59,7 +59,7 @@ Optimization failed. Estimated distance to minimum too large. 0.0
 flux_points   
 Rel. err. <10%: 81.48148148148148   
 Rel. err. <30%: 98.14814814814815   
-Rel. err. mean: -3.4280848913151565   
+Rel. err. mean: -3.430496200122107   
 
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/flux_points_errel.png)
 
@@ -70,7 +70,7 @@ dx/x <30% :  100.0
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/PL_index_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: 0.09589454444064734   
+Rel. err. mean: 0.09191182159024938   
 compatibility: 100.0   
 
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/PL_index_errel.png)
@@ -84,7 +84,7 @@ dx/x <30% :  100.0
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/PL_amplitude_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -0.21250488249447436   
+Rel. err. mean: -0.22452292297864637   
 compatibility: 100.0   
 
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/PL_amplitude_errel.png)
@@ -98,7 +98,7 @@ dx/x <30% :  100.0
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/LP_alpha_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -0.4242299199705339   
+Rel. err. mean: -0.424104742659548   
 compatibility: 100.0   
 
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/LP_alpha_errel.png)
@@ -112,7 +112,7 @@ dx/x <30% :  50.0
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/LP_beta_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -1.9331417054725721   
+Rel. err. mean: -1.952851149080078   
 compatibility: 100.0   
 
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/LP_beta_errel.png)
@@ -126,7 +126,7 @@ dx/x <30% :  100.0
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/LP_amplitude_corr.png)
 Rel. err. <10%: 100.0   
 Rel. err. <30%: 100.0   
-Rel. err. mean: -1.2716822529890732   
+Rel. err. mean: -1.2781345203423595   
 compatibility: 100.0   
 
  ![](/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/validation/fermi-3fhl/results/LP_amplitude_errel.png)
