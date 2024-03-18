@@ -1,50 +1,50 @@
 analysis_3d:
-  CPU_max: 101.3
-  CPU_mean: 99.97027027027028
-  memory_peak: 1863.914
-  total_time: 19.156
+  CPU_max: 101.2
+  CPU_mean: 99.955
+  memory_peak: 1868.875
+  total_time: 20.66
 analysis_3d_joint:
-  CPU_max: 101.3
-  CPU_mean: 99.9449180327869
-  memory_peak: 3692.18
-  total_time: 154.177
+  CPU_max: 102.9
+  CPU_mean: 99.95423197492165
+  memory_peak: 3621.438
+  total_time: 161.336
 io:
   CPU_max: 101.3
-  CPU_mean: 100.63333333333333
-  memory_peak: 1006.156
-  total_time: 2.014
+  CPU_mean: 99.75
+  memory_peak: 1002.477
+  total_time: 2.519
 lightcurve_1d:
   CPU_max: 101.3
-  CPU_mean: 100.04615384615384
-  memory_peak: 911.496
-  total_time: 7.052
+  CPU_mean: 99.9642857142857
+  memory_peak: 912.121
+  total_time: 7.574
 lightcurve_3d:
-  CPU_max: 103.2
-  CPU_mean: 99.9717514124294
-  memory_peak: 1742.219
-  total_time: 89.688
+  CPU_max: 101.2
+  CPU_mean: 99.95144508670523
+  memory_peak: 1740.281
+  total_time: 87.711
 npred:
   CPU_max: 101.2
-  CPU_mean: 99.80000000000001
-  memory_peak: 969.586
-  total_time: 5.544
+  CPU_mean: 99.93636363636365
+  memory_peak: 969.824
+  total_time: 6.048
 ring_background_estimator:
-  CPU_max: 103.2
-  CPU_mean: 99.875
-  memory_peak: 1064.523
-  total_time: 12.598
+  CPU_max: 101.2
+  CPU_mean: 99.92
+  memory_peak: 1047.102
+  total_time: 13.104
 spectrum_1d:
   CPU_max: 101.2
-  CPU_mean: 99.79285714285716
-  memory_peak: 912.152
-  total_time: 7.557
+  CPU_mean: 99.92142857142859
+  memory_peak: 911.898
+  total_time: 7.559
 spectrum_1d_joint:
-  CPU_max: 101.3
-  CPU_mean: 99.93636363636364
-  memory_peak: 938.535
-  total_time: 17.132
+  CPU_max: 101.2
+  CPU_mean: 99.90588235294116
+  memory_peak: 938.426
+  total_time: 17.638
 tsmap_estimator:
-  CPU_max: 101.3
-  CPU_mean: 99.96041666666667
-  memory_peak: 992.633
-  total_time: 24.714
+  CPU_max: 101.2
+  CPU_mean: 99.93673469387757
+  memory_peak: 882.539
+  total_time: 25.198
