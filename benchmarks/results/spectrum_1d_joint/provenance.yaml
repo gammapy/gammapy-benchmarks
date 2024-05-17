@@ -3,8 +3,8 @@ env:
   system: Linux
   user: runner
 software:
-  astropy: 6.0.1
-  gammapy: 1.3.dev322+g5b811c21a
+  astropy: 6.1.0
+  gammapy: 1.3.dev370+g12bce6c25
   numpy: 1.26.4
   python_executable: /usr/share/miniconda/envs/gammapy-dev/bin/python
   python_version: 3.11.9
