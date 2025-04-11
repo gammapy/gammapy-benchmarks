@@ -2,16 +2,17 @@
 
 High-level science analysis validation for Gammapy.
 
-Note that we have performance benchmarks separately, see [here](../README.md).
+Note that we have performance benchmarks separately, see [here](../benchmarks/README.md).
 
 ## Analyses
 
-We would like to have the following analyses scripted as soon as possible:
+The following analyses are currently validated:
 
 - [cta-1dc](cta-1dc) - CTA first data challenge tools check
 - [hess-dl3-dr1](hess-dl3-dr1) - H.E.S.S. DR1 & validation paper
 - [joint-crab](joint-crab) - Joint Crab paper
 - [fermi-3fhl](fermi-3fhl) - Fermi 3FHL catalog paper
+- [lst1-dl3-crab](lst1-dl3-crab) - LST-1 Crab data from performance study
 
 Other ideas and contributions are welcome. If you want to contribute, please get in touch. Examples:
 

@@ -48,6 +48,11 @@ AVAILABLE_VALIDATIONS = {
         "command": "make.py",
         "args": ["run-fit", "all"],
     },
+    "lst1-crab-analysis": {
+        "folder": "lst1-dl3-crab",
+        "command": "make.py",
+        "args": ["run-analysis"],
+    },
     "lightcurve": {
         "folder": "lightcurve",
         "command": "make.py",
