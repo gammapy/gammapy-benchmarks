@@ -1,0 +1,5 @@
+|               Parameters | LST-1.spectral.amplitude | LST-1.spectral.reference | LST-1.spectral.alpha |    LST-1.spectral.beta |
+| LST-1.spectral.amplitude |    5.000642403645301e-24 |                      0.0 |                  0.0 |                    0.0 |
+| LST-1.spectral.reference |                      0.0 |                      0.0 |                  0.0 |                    0.0 |
+|     LST-1.spectral.alpha |                      0.0 |                      0.0 | 7.21321604503338e-05 |                    0.0 |
+|      LST-1.spectral.beta |                      0.0 |                      0.0 |                  0.0 | 3.2582969942668935e-05 |
