@@ -123,3 +123,4 @@ validation/cta-1dc/rx_j1713/datasets/*.fits
 validation/cta-1dc/agn_j1224/datasets/*.fits
 validation/cta-1dc/hess_j1702/datasets/*.fits
 
+validation/lst1-dl3-crab/data

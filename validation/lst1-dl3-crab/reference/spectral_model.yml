@@ -1,0 +1,21 @@
+components:
+-   name: LST-1
+    type: SkyModel
+    spectral:
+        type: LogParabolaSpectralModel
+        parameters:
+        -   name: amplitude
+            value: 3.0513751142175557e-10
+            unit: cm-2 s-1 TeV-1
+            error: 2.2362116187081447e-12
+        -   name: reference
+            value: 0.4
+            unit: TeV
+            frozen: true
+        -   name: alpha
+            value: 2.2504154918532038
+            error: 0.008493065433065602
+        -   name: beta
+            value: 0.1144173091480816
+            error: 0.005708149432405299
+covariance: spectral_model_covariance.dat
