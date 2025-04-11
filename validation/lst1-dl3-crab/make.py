@@ -21,14 +21,17 @@ from gammapy.modeling.models import (
     LogParabolaSpectralModel
 )
 from regions import PointSkyRegion
-
 import requests
 
 
 log = logging.getLogger(__name__)
 
-DL3_PATH = Path("data")
-PATH_RESULTS = Path("results")
+LST1_WORKING_DIR = Path(__file__).parent
+DL3_PATH = LST1_WORKING_DIR / "data"
+PATH_RESULTS = LST1_WORKING_DIR / "results"
+REFERENCE_RESULTS = LST1_WORKING_DIR / "reference"
+
+ZENODO_URL_LST1_CRAB = '11445184'
 
 
 @click.group()
@@ -39,7 +42,7 @@ def cli(log_level):
 
 
 def dl3_to_dl4_reduction(dl3_path):
-    """DL3 to DL4 reduction. Returns a stacked Dataset."""
+    """DL3 to DL4 reduction. Returns a Datasets object."""
     datastore = DataStore.from_dir(dl3_path)
     observations = datastore.get_observations(required_irf="point-like")
     target_position = SkyCoord.from_name("Crab Nebula", frame='icrs')
@@ -74,13 +77,16 @@ def dl3_to_dl4_reduction(dl3_path):
         dataset_on_off = bkg_maker.run(dataset, observation)
         datasets.append(dataset_on_off)
     
-    return datasets.stack_reduce()
+    return datasets
 
 
-def spectral_model_fitting(dataset):
-    """Perform spectral model fitting assuming a reference energy of 400 GeV.
+def spectral_model_fitting(datasets):
+    """Perform spectral model fitting.
     
-    Then store the model serialized as YAML file.
+    The analysis settings are the same used in the LST-1 performance
+    study, ApJ 956 80 (2023). It assumes a LogParabola spectral model,
+    with reference energy of 400 GeV, in the energy range from 50 GeV to 30 TeV.
+    The model is finally serialized as YAML file.
     """
     lp_spectral_model = LogParabolaSpectralModel(
         amplitude=1e-12 * u.Unit("cm-2 s-1 TeV-1"),
@@ -94,16 +100,17 @@ def spectral_model_fitting(dataset):
     lp_model = SkyModel(spectral_model=lp_spectral_model, name="crab")
 
     # Energy range for spectral model fitting
-    dataset.mask_fit = dataset.counts.geom.energy_mask(0.05 * u.TeV, 30 * u.TeV)
+    for dataset in datasets:
+        dataset.mask_fit = dataset.counts.geom.energy_mask(0.05 * u.TeV, 30 * u.TeV)
 
-    dataset.models = lp_model
+    datasets.models = lp_model
 
     fit = Fit()
-    fit.run(dataset)
-    dataset.models.write(PATH_RESULTS / "best_fit_model.yml", overwrite=True)
+    fit.run(datasets)
+    datasets.models.write(PATH_RESULTS / "best_fit_model.yml", overwrite=True)
 
 
-def get_flux_points(dataset):
+def get_flux_points(datasets):
     """Calculate flux points for a given datasets and write the results to an ECSV file."""
     # Use the same energy range as for DL3 to DL4 dataset production
     energy_fit_edges = MapAxis.from_energy_bounds(
@@ -118,7 +125,7 @@ def get_flux_points(dataset):
         source="crab",
         selection_optional="all",
     )
-    flux_points = fpe.run(dataset)
+    flux_points = fpe.run(datasets)
 
     log.info(f"Writing flux points file to {PATH_RESULTS}")
     table = flux_points.to_table(sed_type="e2dnde", format="gadf-sed")
@@ -126,63 +133,79 @@ def get_flux_points(dataset):
 
 
 @cli.command("run-analysis", help="Run DL3 analysis validation")
-@click.option("--debug", is_flag=True)
-def run_analysis(debug):
-    """1D analysis of LST-1 Crab observations with energy-dependent directional cuts."""
+def run_analysis():
+    """1D analysis of LST-1 Crab observations with energy-dependent directional cuts.
+    
+    It performs the following steps:
+    1. DL3 to DL4 data reduction.
+    2. Spectral model fitting using a LogParabola model.
+    3. Flux points estimation.
+    """
+
     start_time = time.time()
 
-    log.info("Running 1D analysis for Crab Nebula.")
+    log.info("Running 1D spectral analysis for LST-1 Crab Nebula observations.")
     PATH_RESULTS.mkdir(exist_ok=True, parents=True)
 
     log.info("Running DL3 to DL4 reduction.")
-    stacked_dataset = dl3_to_dl4_reduction(DL3_PATH)
+    datasets = dl3_to_dl4_reduction(DL3_PATH)
 
     log.info("Running spectral model fitting.")
-    spectral_model_fitting(stacked_dataset)
+    spectral_model_fitting(datasets)
 
     log.info("Running flux points estimation.")
-    get_flux_points(stacked_dataset)
+    get_flux_points(datasets)
 
     end_time = time.time()
     duration = end_time - start_time
-    log.info(f"The time taken for the validation is: {duration:.0f} s ({duration/60:.1f} min).")
+    log.info(
+        "Validation completed successfully: "
+        "DL3 to DL4 reduction, spectral model fitting, and flux points estimation. "
+        f"Total time taken: {duration:.0f} s ({duration/60:.1f} min)."
+    )
 
 
-def download_file(url, local_filename):
+def download_file(url, local_filename) -> None:
+    """Download a file from a given URL to a local path."""
     if Path(local_filename).exists():
         log.debug(f"{local_filename} already exists, skipping download.")
         return
-    # Send request to Zenodo
-    with requests.get(url, stream=True) as r:
-        r.raise_for_status()
-        with open(local_filename, 'wb') as f:
-            # In chunks to prevent memory overload for large files
-            for chunk in r.iter_content(chunk_size=8192):
-                if chunk:  # Filter out keep-alive new chunks
-                    f.write(chunk)
-    return local_filename
+    with requests.get(url, stream=True) as request:
+        request.raise_for_status()
+        with open(local_filename, 'wb') as file:
+            file.write(request.content)
 
 
-def get_data_from_zenodo():
-    zenodo_record_id = '11445184'
+def get_data_from_zenodo(zenodo_record_id=ZENODO_URL_LST1_CRAB, dir_path=DL3_PATH) -> None:
+    """Use Zenodo API to download files from a given Zenodo record ID.
+    
+    Parameters
+    ----------
+    zenodo_record_id : str
+        The Zenodo record ID to download files from.
+        Default is LST-1 Crab Zenodo record.
+    dir_path : Path
+        The directory path where files will be downloaded.
+
+    TODO: add checksum validation 
+    """
+    dir_path.mkdir(exist_ok=True, parents=True)
+
+    log.info("Downloading files from Zenodo.")
+
     zenodo_url = f'https://zenodo.org/api/records/{zenodo_record_id}'
-    DL3_PATH.mkdir(exist_ok=True, parents=True)
-
-    log.info("Downloading DL3 files from Zenodo.")
-
     response = requests.get(zenodo_url)
-    if response.status_code == 200:
-        record_data = response.json()
 
-        files = record_data['files']
-        
-        # Download all files in the Zenodo entry
-        for file in files:
-            file_url = file['links']['self']
-            file_name = file['key']
-            file_path = DL3_PATH / file_name
-            log.debug(f"Downloading {file_name}...")
+    if response.status_code == 200:  # OK status
+        record_data = response.json()['files']
+        file_urls = [entry['links']['self'] for entry in record_data]
+        file_names = [entry['key'] for entry in record_data]
+
+        for file_url, file_name in zip(file_urls, file_names):
+            file_path = dir_path / file_name
+            log.debug(f"Downloading {file_name} from {file_url}...")
             download_file(file_url, file_path)
+
     else:
         log.error("Failed to retrieve the Zenodo record.")
 
