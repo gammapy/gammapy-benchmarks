@@ -196,7 +196,7 @@ def get_data_from_zenodo(zenodo_record_id=ZENODO_URL_LST1_CRAB, dir_path=DL3_PAT
     zenodo_url = f'https://zenodo.org/api/records/{zenodo_record_id}'
     response = requests.get(zenodo_url)
 
-    if response.status_code == 200:  # OK status
+    if response.ok:
         record_data = response.json()['files']
         file_urls = [entry['links']['self'] for entry in record_data]
         file_names = [entry['key'] for entry in record_data]
@@ -207,7 +207,7 @@ def get_data_from_zenodo(zenodo_record_id=ZENODO_URL_LST1_CRAB, dir_path=DL3_PAT
             download_file(file_url, file_path)
 
     else:
-        log.error("Failed to retrieve the Zenodo record.")
+        raise RuntimeError(f"Failed to retrieve the Zenodo record. Status code: {response.status_code}")
 
 
 if __name__ == "__main__":
