@@ -1,28 +1,26 @@
+"""Validation for Crab observations from LST-1 performance study."""
+
 import logging
 import time
 from pathlib import Path
-from astropy.coordinates import SkyCoord
 
-import click
 import astropy.units as u
-
+import click
+import requests
+from astropy.coordinates import SkyCoord
 from gammapy.data import DataStore
-from gammapy.datasets import Datasets, SpectrumDataset
+from gammapy.datasets import SpectrumDataset
 from gammapy.estimators import FluxPointsEstimator
 from gammapy.makers import (
+    DatasetsMaker,
+    ReflectedRegionsBackgroundMaker,
     SpectrumDatasetMaker,
     WobbleRegionsFinder,
-    ReflectedRegionsBackgroundMaker,
 )
 from gammapy.maps import MapAxis, RegionGeom
 from gammapy.modeling import Fit
-from gammapy.modeling.models import (
-    SkyModel,
-    LogParabolaSpectralModel
-)
+from gammapy.modeling.models import LogParabolaSpectralModel, SkyModel
 from regions import PointSkyRegion
-import requests
-
 
 log = logging.getLogger(__name__)
 
@@ -37,6 +35,14 @@ ZENODO_URL_LST1_CRAB = '11445184'
 @click.group()
 @click.option("--log-level", default="INFO", type=click.Choice(["DEBUG", "INFO", "WARNING"]))
 def cli(log_level):
+    """Command-line interface for the script.
+
+    Parameters
+    ----------
+    log_level : str
+        Logging level for the script. Options are "DEBUG", "INFO", or "WARNING".
+    
+    """
     logging.basicConfig(level=log_level)
     get_data_from_zenodo()
 
@@ -45,37 +51,38 @@ def dl3_to_dl4_reduction(dl3_path):
     """DL3 to DL4 reduction. Returns a Datasets object."""
     datastore = DataStore.from_dir(dl3_path)
     observations = datastore.get_observations(required_irf="point-like")
-    target_position = SkyCoord.from_name("Crab Nebula", frame='icrs')
+    target_position = SkyCoord(ra=83.6324, dec=22.0174, unit="deg", frame="icrs")
     on_region = PointSkyRegion(target_position)
 
     # True and estimated energy axes
     energy_axis = MapAxis.from_energy_bounds(
-        0.01, 100, nbin=5, per_decade=True, unit="TeV", name="energy"
+        0.01, 100, nbin=5, per_decade=True, unit="TeV", name="energy",
     )
     energy_axis_true = MapAxis.from_energy_bounds(
-        0.005, 200, nbin=10, per_decade=True, unit="TeV", name="energy_true"
+        0.005, 200, nbin=10, per_decade=True, unit="TeV", name="energy_true",
     )
 
     geom = RegionGeom.create(region=on_region, axes=[energy_axis])
 
     dataset_empty = SpectrumDataset.create(
-        geom=geom, energy_axis_true=energy_axis_true
+        geom=geom, energy_axis_true=energy_axis_true,
     )
-    dataset_maker = SpectrumDatasetMaker(
+    spectrum_dataset_maker = SpectrumDatasetMaker(
         containment_correction=False,
-        selection=["counts", "exposure", "edisp"]
+        selection=["counts", "exposure", "edisp"],
     )
     region_finder = WobbleRegionsFinder(n_off_regions=1)
     bkg_maker = ReflectedRegionsBackgroundMaker(region_finder=region_finder)
 
-    datasets = Datasets()
+    makers = [spectrum_dataset_maker, bkg_maker]
 
-    for observation in observations:
-        dataset = dataset_maker.run(
-            dataset_empty.copy(name=str(observation.obs_id)), observation
-        )
-        dataset_on_off = bkg_maker.run(dataset, observation)
-        datasets.append(dataset_on_off)
+    datasets_maker = DatasetsMaker(
+        makers,
+        stack_datasets=False,
+        n_jobs=8,
+        parallel_backend="multiprocessing",
+    )
+    datasets = datasets_maker.run(dataset_empty, observations)
     
     return datasets
 
@@ -117,7 +124,7 @@ def get_flux_points(datasets):
         0.01, 100,
         nbin=5, per_decade=True,
         unit="TeV",
-        name="energy"
+        name="energy",
     ).edges
 
     fpe = FluxPointsEstimator(
@@ -127,7 +134,7 @@ def get_flux_points(datasets):
     )
     flux_points = fpe.run(datasets)
 
-    log.info(f"Writing flux points file to {PATH_RESULTS}")
+    log.info("Writing flux points file to %s", PATH_RESULTS)
     table = flux_points.to_table(sed_type="e2dnde", format="gadf-sed")
     table.write(PATH_RESULTS / "flux-points.ecsv", overwrite=True)
 
@@ -141,7 +148,6 @@ def run_analysis():
     2. Spectral model fitting using a LogParabola model.
     3. Flux points estimation.
     """
-
     start_time = time.time()
 
     log.info("Running 1D spectral analysis for LST-1 Crab Nebula observations.")
@@ -159,16 +165,16 @@ def run_analysis():
     end_time = time.time()
     duration = end_time - start_time
     log.info(
-        "Validation completed successfully: "
-        "DL3 to DL4 reduction, spectral model fitting, and flux points estimation. "
-        f"Total time taken: {duration:.0f} s ({duration/60:.1f} min)."
+        "Validation completed successfully: DL3 to DL4 reduction, "
+        "spectral model fitting, and flux points estimation. "
+        "Total time taken: %.0f s (%.1f min).", duration, duration / 60,
     )
 
 
 def download_file(url, local_filename) -> None:
     """Download a file from a given URL to a local path."""
     if Path(local_filename).exists():
-        log.debug(f"{local_filename} already exists, skipping download.")
+        log.debug("%s already exists, skipping download.", local_filename)
         return
     with requests.get(url, stream=True) as request:
         request.raise_for_status()
@@ -188,6 +194,7 @@ def get_data_from_zenodo(zenodo_record_id=ZENODO_URL_LST1_CRAB, dir_path=DL3_PAT
         The directory path where files will be downloaded.
 
     TODO: add checksum validation 
+
     """
     dir_path.mkdir(exist_ok=True, parents=True)
 
@@ -203,11 +210,14 @@ def get_data_from_zenodo(zenodo_record_id=ZENODO_URL_LST1_CRAB, dir_path=DL3_PAT
 
         for file_url, file_name in zip(file_urls, file_names):
             file_path = dir_path / file_name
-            log.debug(f"Downloading {file_name} from {file_url}...")
+            log.debug("Downloading %s from %s...", file_name, file_url)
             download_file(file_url, file_path)
 
     else:
-        raise RuntimeError(f"Failed to retrieve the Zenodo record. Status code: {response.status_code}")
+        raise RuntimeError(
+            "Failed to retrieve the Zenodo record. "
+            f"Status code: {response.status_code}",
+        )
 
 
 if __name__ == "__main__":
