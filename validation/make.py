@@ -53,6 +53,11 @@ AVAILABLE_VALIDATIONS = {
         "command": "make.py",
         "args": ["run-analysis"],
     },
+    "lst1-crab-plot": {
+        "folder": "lst1-dl3-crab",
+        "command": "plot.py",
+        "args": [],
+    },
     "lightcurve": {
         "folder": "lightcurve",
         "command": "make.py",
