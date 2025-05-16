@@ -27,9 +27,7 @@ from gammapy.modeling.models import (
 )
 from regions import PointSkyRegion
 
-LST1_VALIDATION_DIR = Path(__file__).parent.parent / "validation/lst1-dl3-crab"
-DATA_DIR = LST1_VALIDATION_DIR / "data"
-
+PATH_RESULTS = Path(__file__).parent / "lst1_results"
 
 def data_prep():
     """Prepare the data for analysis.
@@ -43,7 +41,7 @@ def data_prep():
         A collection of datasets ready for analysis.
     
     """
-    data_store = DataStore.from_dir(DATA_DIR)
+    data_store = DataStore.from_dir("$GAMMAPY_DATA/lst1_crab_data")
     observations = data_store.get_observations(required_irf="point-like")
 
     target_position = SkyCoord(ra=83.63, dec=22.01, unit="deg", frame="icrs")
@@ -100,10 +98,9 @@ def write_dataset(datasets, filename):
         The base filename for the output YAML files.
     
     """
-    path = Path.cwd()
     datasets.write(
-        path / f"{filename}_datasets.yaml",
-        filename_models= path / f"{filename}_models.yaml",
+        PATH_RESULTS / f"{filename}_datasets.yaml",
+        filename_models= PATH_RESULTS / f"{filename}_models.yaml",
         overwrite=True,
     )
 
@@ -122,9 +119,9 @@ def read_dataset(filename):
         The datasets read from the YAML files.
     
     """
-    path = Path.cwd()
     return Datasets.read(
-        path / f"{filename}_datasets.yaml", filename_models= path / f"{filename}_models.yaml",
+        PATH_RESULTS / f"{filename}_datasets.yaml",
+        filename_models= PATH_RESULTS / f"{filename}_models.yaml",
     )
 
 
@@ -139,7 +136,7 @@ def spectral_fitting(datasets):
     """
     fit = Fit(optimize_opts={"print_level": 1})
     result = fit.run(datasets)
-    print(result.success)
+    print("Fit success:", result.success)
 
 
 def estimate_flux_points(datasets):
