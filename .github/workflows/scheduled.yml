@@ -29,7 +29,10 @@ jobs:
           conda list
           gammapy info
       - name: download datasets
-        run: gammapy download datasets
+        # Including LST-1 Crab data from Zenodo
+        run: |
+          gammapy download datasets
+          python utils/download_from_zenodo.py 11445184 $GAMMAPY_DATA/lst1_crab_data
       - name: run benchmarks
         run: |
           cd benchmarks
