@@ -6,10 +6,9 @@ from pathlib import Path
 
 import astropy.units as u
 import click
-import requests
 from astropy.coordinates import SkyCoord
 from gammapy.data import DataStore
-from gammapy.datasets import SpectrumDataset
+from gammapy.datasets import Datasets, SpectrumDataset
 from gammapy.estimators import FluxPointsEstimator
 from gammapy.makers import (
     DatasetsMaker,
@@ -24,12 +23,9 @@ from regions import PointSkyRegion
 
 log = logging.getLogger(__name__)
 
-LST1_WORKING_DIR = Path(__file__).parent
-DL3_PATH = LST1_WORKING_DIR / "data"
-PATH_RESULTS = LST1_WORKING_DIR / "results"
-REFERENCE_RESULTS = LST1_WORKING_DIR / "reference"
-
-ZENODO_URL_LST1_CRAB = '11445184'
+LST1_VALIDATION_DIR = Path(__file__).parent
+PATH_RESULTS = LST1_VALIDATION_DIR / "results"
+REFERENCE_RESULTS = LST1_VALIDATION_DIR / "reference"
 
 
 @click.group()
@@ -44,12 +40,11 @@ def cli(log_level):
     
     """
     logging.basicConfig(level=log_level)
-    get_data_from_zenodo()
 
 
-def dl3_to_dl4_reduction(dl3_path):
+def dl3_to_dl4_reduction() -> Datasets:
     """DL3 to DL4 reduction. Returns a Datasets object."""
-    datastore = DataStore.from_dir(dl3_path)
+    datastore = DataStore.from_dir("$GAMMAPY_DATA/lst1_crab_data")
     observations = datastore.get_observations(required_irf="point-like")
     target_position = SkyCoord(ra=83.6324, dec=22.0174, unit="deg", frame="icrs")
     on_region = PointSkyRegion(target_position)
@@ -87,7 +82,7 @@ def dl3_to_dl4_reduction(dl3_path):
     return datasets
 
 
-def spectral_model_fitting(datasets):
+def spectral_model_fitting(datasets) -> None:
     """Perform spectral model fitting.
     
     The analysis settings are the same used in the LST-1 performance
@@ -117,7 +112,7 @@ def spectral_model_fitting(datasets):
     datasets.models.write(PATH_RESULTS / "best_fit_model.yml", overwrite=True)
 
 
-def get_flux_points(datasets):
+def get_flux_points(datasets) -> None:
     """Calculate flux points for a given datasets and write the results to an ECSV file."""
     # Use the same energy range as for DL3 to DL4 dataset production
     energy_fit_edges = MapAxis.from_energy_bounds(
@@ -154,7 +149,7 @@ def run_analysis():
     PATH_RESULTS.mkdir(exist_ok=True, parents=True)
 
     log.info("Running DL3 to DL4 reduction.")
-    datasets = dl3_to_dl4_reduction(DL3_PATH)
+    datasets = dl3_to_dl4_reduction()
 
     log.info("Running spectral model fitting.")
     spectral_model_fitting(datasets)
@@ -169,55 +164,6 @@ def run_analysis():
         "spectral model fitting, and flux points estimation. "
         "Total time taken: %.0f s (%.1f min).", duration, duration / 60,
     )
-
-
-def download_file(url, local_filename) -> None:
-    """Download a file from a given URL to a local path."""
-    if Path(local_filename).exists():
-        log.debug("%s already exists, skipping download.", local_filename)
-        return
-    with requests.get(url, stream=True) as request:
-        request.raise_for_status()
-        with open(local_filename, 'wb') as file:
-            file.write(request.content)
-
-
-def get_data_from_zenodo(zenodo_record_id=ZENODO_URL_LST1_CRAB, dir_path=DL3_PATH) -> None:
-    """Use Zenodo API to download files from a given Zenodo record ID.
-    
-    Parameters
-    ----------
-    zenodo_record_id : str
-        The Zenodo record ID to download files from.
-        Default is LST-1 Crab Zenodo record.
-    dir_path : Path
-        The directory path where files will be downloaded.
-
-    TODO: add checksum validation 
-
-    """
-    dir_path.mkdir(exist_ok=True, parents=True)
-
-    log.info("Downloading files from Zenodo.")
-
-    zenodo_url = f'https://zenodo.org/api/records/{zenodo_record_id}'
-    response = requests.get(zenodo_url)
-
-    if response.ok:
-        record_data = response.json()['files']
-        file_urls = [entry['links']['self'] for entry in record_data]
-        file_names = [entry['key'] for entry in record_data]
-
-        for file_url, file_name in zip(file_urls, file_names):
-            file_path = dir_path / file_name
-            log.debug("Downloading %s from %s...", file_name, file_url)
-            download_file(file_url, file_path)
-
-    else:
-        raise RuntimeError(
-            "Failed to retrieve the Zenodo record. "
-            f"Status code: {response.status_code}",
-        )
 
 
 if __name__ == "__main__":
