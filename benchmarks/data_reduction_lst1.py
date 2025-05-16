@@ -161,6 +161,8 @@ def run_benchmark():
     """
     filename = "lst1"
 
+    PATH_RESULTS.mkdir(exist_ok=True, parents=True)
+
     t = time.time()
 
     datasets = data_prep()
