@@ -2,7 +2,7 @@
 
 Performance benchmarks for Gammapy.
 
-Note that we have validation separately, see [here](../README.md).
+Note that we have validation separately, see [here](../validation/README.md).
 
 ## Analyses
 
@@ -16,6 +16,7 @@ We have the following typical science cases tested:
 - lightcurve_3d / [script](lightcurve_3d.py) / [results](results/lightcurve_3d) - 3d lightcurve analysis
 - io / [script](io.py) / [results](results/io) - Read DL3 events data
 - npred / [script](npred.py) / [results](results/npred) - Compute multiple npred calculations
+- data_reduction_lst1 / [script](data_reduction_lst1.py) / [results](results/data_reduction_lst1) - LST-1 Crab data analysis
 
 ## Execution
 
