@@ -1,50 +1,50 @@
 analysis_3d:
   CPU_max: 101.3
-  CPU_mean: 99.94102564102567
-  memory_peak: 2046.633
-  total_time: 20.144
+  CPU_mean: 99.97906976744187
+  memory_peak: 2040.992
+  total_time: 22.159
 analysis_3d_joint:
-  CPU_max: 103.4
-  CPU_mean: 99.98562499999998
-  memory_peak: 3877.621
-  total_time: 161.556
+  CPU_max: 103.3
+  CPU_mean: 99.98260869565217
+  memory_peak: 3830.77
+  total_time: 174.259
 io:
-  CPU_max: 99.4
-  CPU_mean: 99.33333333333333
-  memory_peak: 1596.203
-  total_time: 2.013
-lightcurve_1d:
-  CPU_max: 102.9
-  CPU_mean: 99.97777777777779
-  memory_peak: 1099.969
-  total_time: 9.595
-lightcurve_3d:
-  CPU_max: 101.4
-  CPU_mean: 99.96488549618319
-  memory_peak: 1872.895
-  total_time: 66.453
-npred:
-  CPU_max: 103.3
-  CPU_mean: 99.99310344827589
-  memory_peak: 1177.047
-  total_time: 15.102
-ring_background_estimator:
   CPU_max: 101.3
-  CPU_mean: 99.85909090909091
-  memory_peak: 1216.922
-  total_time: 11.577
-spectrum_1d:
+  CPU_mean: 99.825
+  memory_peak: 1181.289
+  total_time: 2.517
+lightcurve_1d:
   CPU_max: 101.4
-  CPU_mean: 99.6923076923077
-  memory_peak: 1098.969
-  total_time: 7.044
-spectrum_1d_joint:
+  CPU_mean: 99.87333333333332
+  memory_peak: 1101.082
+  total_time: 8.053
+lightcurve_3d:
   CPU_max: 103.3
-  CPU_mean: 99.99375
-  memory_peak: 1124.988
-  total_time: 16.627
+  CPU_mean: 99.98529411764704
+  memory_peak: 1949.387
+  total_time: 68.981
+npred:
+  CPU_max: 101.3
+  CPU_mean: 99.89655172413796
+  memory_peak: 1177.133
+  total_time: 15.109
+ring_background_estimator:
+  CPU_max: 103.3
+  CPU_mean: 99.90869565217392
+  memory_peak: 1228.578
+  total_time: 12.085
+spectrum_1d:
+  CPU_max: 101.3
+  CPU_mean: 99.9230769230769
+  memory_peak: 1098.801
+  total_time: 7.048
+spectrum_1d_joint:
+  CPU_max: 101.3
+  CPU_mean: 99.93548387096776
+  memory_peak: 1124.824
+  total_time: 16.113
 tsmap_estimator:
-  CPU_max: 101.4
-  CPU_mean: 99.9774193548387
-  memory_peak: 1218.609
-  total_time: 31.707
+  CPU_max: 101.3
+  CPU_mean: 99.96612903225808
+  memory_peak: 1219.555
+  total_time: 31.722
