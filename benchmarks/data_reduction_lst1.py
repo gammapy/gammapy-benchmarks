@@ -1,7 +1,9 @@
+# Licensed under a 3-clause BSD style license - see LICENSE
 """Data reduction, fitting, and flux point estimation for LST-1 Crab sample.
 
-It includes functions for data preparation, writing and reading datasets,
-fitting models, and benchmarking the entire process.
+It includes functions for data preparation, writing and reading 
+datasets, fitting models, and benchmarking the entire process for
+the LST-1 Crab reference dataset
 """
 
 import time

@@ -1,3 +1,5 @@
+# Licensed under a 3-clause BSD style license - see LICENSE
+
 """Validation for Crab observations from LST-1 performance study."""
 
 import logging
