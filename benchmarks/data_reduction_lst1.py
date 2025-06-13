@@ -37,7 +37,7 @@ def data_prep():
 
     Returns
     -------
-    Datasets
+    datasets : `~gammapy.datasets.Datasets`
         A collection of datasets ready for analysis.
     
     """
@@ -92,7 +92,7 @@ def write_dataset(datasets, filename):
 
     Parameters
     ----------
-    datasets : Datasets
+    datasets : `~gammapy.datasets.Datasets`
         The datasets to be written.
     filename : str
         The base filename for the output YAML files.
@@ -115,7 +115,7 @@ def read_dataset(filename):
 
     Returns
     -------
-    Datasets
+    datasets : `~gammapy.datasets.Datasets`
         The datasets read from the YAML files.
     
     """
@@ -130,7 +130,7 @@ def spectral_fitting(datasets):
 
     Parameters
     ----------
-    datasets : Datasets
+    datasets : `~gammapy.datasets.Datasets`
         The datasets to be fitted.
 
     """
@@ -144,7 +144,7 @@ def estimate_flux_points(datasets):
 
     Parameters
     ----------
-    datasets : Datasets
+    datasets : `~gammapy.datasets.Datasets`
         The datasets for which flux points are to be estimated.
     
     """
