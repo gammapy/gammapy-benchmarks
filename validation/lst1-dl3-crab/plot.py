@@ -1,3 +1,5 @@
+# Licensed under a 3-clause BSD style license - see LICENSE
+
 """Plot validation results for LST-1 Crab Nebula analysis.
 
 Plot 1D spectral analysis results (best-fit model and flux points)
