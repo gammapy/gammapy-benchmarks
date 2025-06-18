@@ -36,7 +36,6 @@ The differences seen in the validation results with respect to the results from 
 
   - The DL3 files used here for validation use an updated version of the IRFs with respect to the ones used in the performance study. It was checked that this affected the flux normalisation within systematics, but did not affect the spectral shape.
   - The DL3 subsample used here is about 2 hours from observations taken in a couple of nights, while the one used in the LST-1 paper is about 35-hour observations spanning over 1.5 years.
-  - LST-1 single-telescope data suffers very much from background systematics at low energy.
 
 
 ## References
