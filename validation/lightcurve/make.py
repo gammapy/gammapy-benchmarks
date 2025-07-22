@@ -251,12 +251,11 @@ def make_summary(types):
         model = define_model_1d()
 
         lc = FluxPoints.read(path, format="lightcurve", reference_model=model)
-        lc.plot(ax=ax, label=type, sed_type="flux", markersize=0)
+        lc.plot(ax=ax, label=type, sed_type="flux")
 
     lc_ref = read_ref_lightcurve()
-    lc_ref.plot(ax=ax, label='ref', alpha=0.2, sed_type="flux", markersize=0)
+    lc_ref.plot(ax=ax, label='ref', alpha=0.2, sed_type="flux")
 
-    ax.set_yscale("linear")
     plt.legend()
 
 
