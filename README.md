@@ -10,7 +10,7 @@ The badge below displays the status of last nightly set of checks.
 - [benchmarks](benchmarks) - Gammapy performance checks (time, CPU, RAM)
 - [validation](validation) - Gammapy correctness checks (model fitting, spectra, lightcurves, ...)
 
-![](https://github.com/gammapy/gammapy-benchmarks/workflows/benchmarks%20and%20validation/badge.svg)
+[![benchmarks and validation](https://github.com/gammapy/gammapy-benchmarks/actions/workflows/scheduled.yml/badge.svg)](https://github.com/gammapy/gammapy-benchmarks/actions/workflows/scheduled.yml)
 
 ### Note if you cloned this repository before Oct 7th 2022
 
