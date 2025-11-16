@@ -1,55 +1,55 @@
 analysis_3d:
   CPU_max: 101.4
-  CPU_mean: 99.98139534883721
-  memory_peak: 2106.719
-  total_time: 22.146
+  CPU_mean: 99.95952380952382
+  memory_peak: 2098.523
+  total_time: 21.652
 analysis_3d_joint:
   CPU_max: 103.3
-  CPU_mean: 99.96696696696695
-  memory_peak: 3862.242
-  total_time: 168.191
+  CPU_mean: 99.97129629629627
+  memory_peak: 3889.473
+  total_time: 163.611
 data_reduction_lst1:
-  CPU_max: 103.3
-  CPU_mean: 99.95333333333335
-  memory_peak: 1468.797
-  total_time: 23.166
-io:
-  CPU_max: 103.3
+  CPU_max: 101.3
   CPU_mean: 99.89999999999999
-  memory_peak: 1320.062
-  total_time: 4.026
+  memory_peak: 1446.66
+  total_time: 22.157
+io:
+  CPU_max: 101.4
+  CPU_mean: 99.68571428571428
+  memory_peak: 1663.969
+  total_time: 4.025
 lightcurve_1d:
   CPU_max: 101.3
-  CPU_mean: 99.79411764705881
-  memory_peak: 1119.121
-  total_time: 9.06
+  CPU_mean: 99.71249999999999
+  memory_peak: 1117.957
+  total_time: 8.556
 lightcurve_3d:
   CPU_max: 103.3
-  CPU_mean: 99.97050359712229
-  memory_peak: 2013.066
-  total_time: 70.487
+  CPU_mean: 99.97249999999998
+  memory_peak: 1939.891
+  total_time: 81.076
 npred:
   CPU_max: 101.3
-  CPU_mean: 99.984375
-  memory_peak: 1156.773
-  total_time: 16.618
+  CPU_mean: 99.94516129032262
+  memory_peak: 1183.363
+  total_time: 16.113
 ring_background_estimator:
   CPU_max: 101.3
-  CPU_mean: 99.83846153846154
-  memory_peak: 1290.945
-  total_time: 13.595
+  CPU_mean: 99.94
+  memory_peak: 1277.793
+  total_time: 13.09
 spectrum_1d:
   CPU_max: 101.3
-  CPU_mean: 99.675
-  memory_peak: 1118.855
-  total_time: 8.558
+  CPU_mean: 99.9125
+  memory_peak: 1115.496
+  total_time: 8.56
 spectrum_1d_joint:
   CPU_max: 101.3
-  CPU_mean: 99.83823529411767
-  memory_peak: 1137.508
+  CPU_mean: 99.89117647058823
+  memory_peak: 1135.434
   total_time: 17.619
 tsmap_estimator:
   CPU_max: 101.3
-  CPU_mean: 99.61410256410257
-  memory_peak: 1233.977
-  total_time: 39.775
+  CPU_mean: 99.57922077922078
+  memory_peak: 1233.078
+  total_time: 39.275
