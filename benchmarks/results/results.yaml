@@ -1,55 +1,55 @@
 analysis_3d:
-  CPU_max: 103.2
-  CPU_mean: 99.96279069767441
-  memory_peak: 2108.543
-  total_time: 22.149
-analysis_3d_joint:
-  CPU_max: 101.4
-  CPU_mean: 99.96777108433731
-  memory_peak: 3887.535
-  total_time: 167.648
-data_reduction_lst1:
   CPU_max: 103.3
-  CPU_mean: 99.95333333333335
-  memory_peak: 1442.965
-  total_time: 23.165
+  CPU_mean: 99.98333333333333
+  memory_peak: 2097.82
+  total_time: 21.644
+analysis_3d_joint:
+  CPU_max: 103.3
+  CPU_mean: 99.96930091185409
+  memory_peak: 3939.113
+  total_time: 166.277
+data_reduction_lst1:
+  CPU_max: 101.3
+  CPU_mean: 99.97727272727275
+  memory_peak: 1457.773
+  total_time: 22.66
 io:
-  CPU_max: 101.2
-  CPU_mean: 99.97142857142858
-  memory_peak: 1246.176
-  total_time: 4.036
+  CPU_max: 101.4
+  CPU_mean: 99.67142857142856
+  memory_peak: 1317.906
+  total_time: 4.025
 lightcurve_1d:
   CPU_max: 101.3
-  CPU_mean: 94.95
-  memory_peak: 1117.965
-  total_time: 10.601
+  CPU_mean: 99.84375
+  memory_peak: 1116.969
+  total_time: 8.556
 lightcurve_3d:
   CPU_max: 103.3
-  CPU_mean: 99.9710144927536
-  memory_peak: 2005.965
-  total_time: 69.977
+  CPU_mean: 99.96352201257858
+  memory_peak: 2007.32
+  total_time: 80.555
 npred:
   CPU_max: 101.3
-  CPU_mean: 99.921875
-  memory_peak: 1183.219
-  total_time: 16.615
+  CPU_mean: 99.94516129032262
+  memory_peak: 1183.207
+  total_time: 16.111
 ring_background_estimator:
   CPU_max: 101.3
   CPU_mean: 99.94
-  memory_peak: 1275.887
-  total_time: 13.09
+  memory_peak: 1301.523
+  total_time: 13.091
 spectrum_1d:
   CPU_max: 101.3
   CPU_mean: 99.7875
-  memory_peak: 1115.324
-  total_time: 8.558
+  memory_peak: 1117.594
+  total_time: 8.557
 spectrum_1d_joint:
   CPU_max: 101.3
-  CPU_mean: 99.89117647058823
-  memory_peak: 1135.453
+  CPU_mean: 99.8294117647059
+  memory_peak: 1135.457
   total_time: 17.62
 tsmap_estimator:
-  CPU_max: 101.3
-  CPU_mean: 99.75066666666666
-  memory_peak: 1230.684
+  CPU_max: 103.3
+  CPU_mean: 99.72666666666666
+  memory_peak: 1230.0
   total_time: 38.264
