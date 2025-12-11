@@ -1,55 +1,55 @@
 analysis_3d:
-  CPU_max: 103.3
-  CPU_mean: 99.93809523809526
-  memory_peak: 2100.805
-  total_time: 21.645
+  CPU_max: 101.3
+  CPU_mean: 99.89047619047618
+  memory_peak: 2084.621
+  total_time: 21.684
 analysis_3d_joint:
   CPU_max: 103.3
-  CPU_mean: 99.9688271604938
-  memory_peak: 3909.875
-  total_time: 163.64
+  CPU_mean: 99.96426332288398
+  memory_peak: 3890.527
+  total_time: 161.132
 data_reduction_lst1:
-  CPU_max: 103.3
-  CPU_mean: 99.95714285714287
-  memory_peak: 1457.793
-  total_time: 21.651
+  CPU_max: 101.3
+  CPU_mean: 99.9418604651163
+  memory_peak: 1476.051
+  total_time: 22.156
 io:
   CPU_max: 101.3
-  CPU_mean: 99.64285714285714
-  memory_peak: 1667.156
+  CPU_mean: 99.67142857142858
+  memory_peak: 1667.145
   total_time: 4.025
 lightcurve_1d:
   CPU_max: 101.4
-  CPU_mean: 99.81875
-  memory_peak: 1117.441
-  total_time: 8.556
+  CPU_mean: 99.81764705882352
+  memory_peak: 1117.512
+  total_time: 9.059
 lightcurve_3d:
-  CPU_max: 103.3
-  CPU_mean: 99.95609756097558
-  memory_peak: 2007.082
-  total_time: 83.069
+  CPU_max: 101.4
+  CPU_mean: 99.94511278195486
+  memory_peak: 1941.504
+  total_time: 67.451
 npred:
-  CPU_max: 101.3
+  CPU_max: 103.3
   CPU_mean: 99.90000000000003
-  memory_peak: 1186.383
+  memory_peak: 1186.289
   total_time: 15.607
 ring_background_estimator:
-  CPU_max: 101.3
+  CPU_max: 103.3
   CPU_mean: 99.88333333333333
-  memory_peak: 1326.656
+  memory_peak: 1291.516
   total_time: 12.586
 spectrum_1d:
   CPU_max: 101.4
-  CPU_mean: 99.82666666666664
-  memory_peak: 1120.398
-  total_time: 8.054
+  CPU_mean: 99.85999999999999
+  memory_peak: 1120.582
+  total_time: 8.053
 spectrum_1d_joint:
   CPU_max: 101.3
-  CPU_mean: 99.9090909090909
-  memory_peak: 1138.457
-  total_time: 17.116
+  CPU_mean: 99.92424242424242
+  memory_peak: 1138.461
+  total_time: 17.113
 tsmap_estimator:
-  CPU_max: 101.3
-  CPU_mean: 99.7608108108108
-  memory_peak: 1233.984
-  total_time: 37.757
+  CPU_max: 103.3
+  CPU_mean: 99.79333333333332
+  memory_peak: 1234.0
+  total_time: 38.25
