@@ -226,5 +226,4 @@ def create_coverage_figure(result, filename):
     plt.savefig(filename)
 
 if __name__ == "__main__":
-#    logging.basicConfig(level=logging.INFO)
     cli()
