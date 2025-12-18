@@ -21,11 +21,14 @@ from gammapy.irf import load_irf_dict_from_file
 from gammapy.makers import SpectrumDatasetMaker
 from gammapy.maps import MapAxis, RegionGeom, LabelMapAxis, Map
 from gammapy.modeling.models import SkyModel, create_crab_spectral_model
+from gammapy.utils.parallel import run_multiprocessing, multiprocessing_manager
+from gammapy.utils.pbar import SHOW_PROGRESS_BAR
 from gammapy.analysis import Analysis, AnalysisConfig
 
 AVAILABLE_GEOMS = ["1d", "3d"]
 
 log = logging.getLogger(__name__)
+SHOW_PROGRESS_BAR=True
 
 @click.group()
 @click.option(
@@ -65,16 +68,16 @@ def run(geometries, livetime, percent_crab, n_samples, n_sigma, n_sigma_ul, n_jo
 
         energy_edges = dataset.counts.geom.axes["energy"].downsample(2).edges
 
-        fpe = FluxPointsEstimator(
-            energy_edges=energy_edges,
-            selection_optional=["errn-errp", "ul"],
-            n_sigma=n_sigma,
-            n_sigma_ul=n_sigma_ul,
-            n_jobs=n_jobs
-        )
+        fpe_config = {
+            "energy_edges": energy_edges,
+            "selection_optional": ["errn-errp", "ul"],
+            "n_sigma": n_sigma,
+            "n_sigma_ul": n_sigma_ul,
+        }
 
         log.info(f"Starting simulations.")
-        result = perform_simulation(n_samples, dataset, model, fpe)
+        with multiprocessing_manager(backend="multiprocessing", pool_kwargs=dict(processes=n_jobs)):
+            result = perform_simulation(n_samples, dataset, model, fpe_config)
 
         log.info(f"Compute coverage and plot result.")
         dir = Path("results")
@@ -143,7 +146,8 @@ def build_model(percent_crab=0.1):
 
 def fake_dataset(dataset, model):
     dataset_on_off = SpectrumDatasetOnOff.from_spectrum_dataset(
-        dataset=dataset, acceptance=1, acceptance_off=10
+        dataset=dataset, acceptance=1, acceptance_off=10,
+        name=dataset.name   # keeping the same name is necessary to keep flux points geometries aligned
     )
     dataset_on_off.models = model.copy()
 
@@ -158,14 +162,20 @@ def reduce_dimensionality_flux_points(flux_points):
             flux_points._data[name] = map_obj
     return flux_points
 
-def perform_simulation(nsim, dataset, model, estimator):
-    fps  = []
+def fake_analyze(dataset, model, fpe_config):
+    fpe_config["n_jobs"] = 1
+    fpe = FluxPointsEstimator(**fpe_config)
+    dataset_on_off = fake_dataset(dataset, model)
+    fp = fpe.run([dataset_on_off])
+    return fp
+
+
+def perform_simulation(nsim, dataset, model, fpe_config):
     indices = np.arange(nsim)
 
-    for i in tqdm(indices, total=len(indices)):
-        dataset_on_off = fake_dataset(dataset, model)
-        fp = estimator.run([dataset_on_off])
-        fps.append(reduce_dimensionality_flux_points(fp))
+    inputs = [(dataset, model, fpe_config)  for idx in indices]
+
+    fps = run_multiprocessing(fake_analyze, inputs, task_name="simulation")
 
     axis = LabelMapAxis(indices, name='index')
     result = FluxPoints.from_stack(
