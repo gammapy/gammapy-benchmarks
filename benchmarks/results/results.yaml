@@ -1,55 +1,55 @@
 analysis_3d:
-  CPU_max: 101.4
-  CPU_mean: 99.91428571428571
-  memory_peak: 2108.488
-  total_time: 21.642
+  CPU_max: 101.5
+  CPU_mean: 99.93636363636364
+  memory_peak: 2106.129
+  total_time: 28.134
 analysis_3d_joint:
   CPU_max: 103.3
-  CPU_mean: 99.97694704049843
-  memory_peak: 3893.602
-  total_time: 162.13
+  CPU_mean: 99.96817042606516
+  memory_peak: 3936.289
+  total_time: 201.06
 data_reduction_lst1:
-  CPU_max: 101.3
-  CPU_mean: 99.90000000000002
-  memory_peak: 1476.152
-  total_time: 22.152
+  CPU_max: 101.5
+  CPU_mean: 99.95416666666667
+  memory_peak: 1329.906
+  total_time: 24.626
 io:
-  CPU_max: 101.4
-  CPU_mean: 99.92857142857143
-  memory_peak: 1667.289
-  total_time: 4.026
+  CPU_max: 101.5
+  CPU_mean: 99.8
+  memory_peak: 1121.207
+  total_time: 4.019
 lightcurve_1d:
-  CPU_max: 101.4
-  CPU_mean: 99.71249999999999
-  memory_peak: 1117.535
-  total_time: 8.556
+  CPU_max: 101.5
+  CPU_mean: 99.9
+  memory_peak: 1117.703
+  total_time: 8.038
 lightcurve_3d:
-  CPU_max: 103.3
-  CPU_mean: 99.95031847133755
-  memory_peak: 2015.965
-  total_time: 79.532
+  CPU_max: 101.5
+  CPU_mean: 99.96648936170212
+  memory_peak: 1945.438
+  total_time: 94.964
 npred:
-  CPU_max: 101.3
-  CPU_mean: 99.9666666666667
-  memory_peak: 1186.336
-  total_time: 15.607
+  CPU_max: 101.5
+  CPU_mean: 100.03333333333333
+  memory_peak: 1030.105
+  total_time: 15.578
 ring_background_estimator:
-  CPU_max: 101.3
-  CPU_mean: 99.944
-  memory_peak: 1282.98
-  total_time: 13.089
+  CPU_max: 101.5
+  CPU_mean: 99.98
+  memory_peak: 1298.34
+  total_time: 13.065
 spectrum_1d:
-  CPU_max: 103.3
-  CPU_mean: 99.91874999999999
-  memory_peak: 1118.633
-  total_time: 8.557
+  CPU_max: 101.5
+  CPU_mean: 99.76
+  memory_peak: 1120.387
+  total_time: 8.039
 spectrum_1d_joint:
-  CPU_max: 103.3
-  CPU_mean: 99.92424242424242
-  memory_peak: 1138.574
-  total_time: 17.114
+  CPU_max: 101.5
+  CPU_mean: 99.88064516129033
+  memory_peak: 1138.562
+  total_time: 16.08
 tsmap_estimator:
-  CPU_max: 103.3
-  CPU_mean: 99.61466666666666
-  memory_peak: 1233.238
-  total_time: 38.263
+  CPU_max: 101.5
+  CPU_mean: 99.75846153846153
+  memory_peak: 1234.422
+  total_time: 33.173
