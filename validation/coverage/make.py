@@ -4,30 +4,19 @@ import warnings
 from pathlib import Path
 
 import click
-import yaml
 
 import numpy as np
 import astropy.units as u
-from astropy.coordinates import Angle, SkyCoord
-from regions import CircleSkyRegion
-from scipy.stats import norm
-from tqdm import tqdm
-import matplotlib.pyplot as plt
 
-from gammapy.data import FixedPointingInfo, Observation, observatory_locations
-from gammapy.datasets import Datasets, SpectrumDataset, SpectrumDatasetOnOff
-from gammapy.estimators import FluxPointsEstimator, FluxPoints
-from gammapy.irf import load_irf_dict_from_file
-from gammapy.makers import SpectrumDatasetMaker
-from gammapy.maps import MapAxis, RegionGeom, LabelMapAxis, Map
-from gammapy.modeling.models import SkyModel, create_crab_spectral_model
+from gammapy.estimators import FluxPoints
+from gammapy.maps import LabelMapAxis
 from gammapy.utils.parallel import run_multiprocessing, multiprocessing_manager
-from gammapy.utils.pbar import SHOW_PROGRESS_BAR
-from gammapy.analysis import Analysis, AnalysisConfig
 
+from utils import build_observation, build_dataset_1d, build_model, fake_and_apply_fpe, create_coverage_figure
 AVAILABLE_GEOMS = ["1d", "3d"]
 
 log = logging.getLogger(__name__)
+
 SHOW_PROGRESS_BAR=True
 
 @click.group()
@@ -42,15 +31,16 @@ def cli(log_level, show_warnings):
         warnings.simplefilter("ignore")
 
 
-@cli.command("run", help="Run flux point coverage validation")
+@cli.command("fp_coverage", help="Run flux point coverage validation")
 @click.argument("geometries", type=click.Choice(list(AVAILABLE_GEOMS) + ["all"]))
 @click.option("--livetime", type=str, default="1 h")
-@click.option("--percent_crab", type=float, default=0.1)
+@click.option("--crab_fraction", type=float, default=0.1)
 @click.option("--n_samples", type=int, default=1000)
 @click.option("--n_sigma", type=float, default=1)
 @click.option("--n_sigma_ul", type=float, default=1.6448)
 @click.option("--n_jobs", type=int, default=4)
-def run(geometries, livetime, percent_crab, n_samples, n_sigma, n_sigma_ul, n_jobs):
+@click.option("--save_results", is_flag=True)
+def run_fp_coverage(geometries, livetime, crab_fraction, n_samples, n_sigma, n_sigma_ul, n_jobs, save_results):
     """Run coverage validation."""
     start_time = time.time()
 
@@ -64,7 +54,7 @@ def run(geometries, livetime, percent_crab, n_samples, n_sigma, n_sigma_ul, n_jo
 
         dataset = build_dataset_1d(obs)
 
-        model = build_model(percent_crab=percent_crab)
+        model = build_model(percent_crab=crab_fraction)
 
         energy_edges = dataset.counts.geom.axes["energy"].downsample(2).edges
 
@@ -77,105 +67,74 @@ def run(geometries, livetime, percent_crab, n_samples, n_sigma, n_sigma_ul, n_jo
 
         log.info(f"Starting simulations.")
         with multiprocessing_manager(backend="multiprocessing", pool_kwargs=dict(processes=n_jobs)):
-            result = perform_simulation(n_samples, dataset, model, fpe_config)
+            result = perform_fpe_simulation(n_samples, dataset, model, fpe_config)
 
         log.info(f"Compute coverage and plot result.")
         dir = Path("results")
         dir.mkdir(exist_ok=True)
-        filename = dir / f"test_coverage_crab_{100*percent_crab}percent_{str(livetime.to_value('h'))}h.png"
+        filename = dir / f"test_coverage_crab_{100*crab_fraction}percent_{str(livetime.to_value('h'))}h.png"
         create_coverage_figure(result, filename)
+
+        if save_results:
+            filename = dir / f"flux_points_crab_{100*crab_fraction}percent_{str(livetime.to_value('h'))}h.fits"
+            log.info(f"Write result flux points to {filename}.")
+            super(FluxPoints,result).write(filename)
 
     end_time = time.time()
     duration = end_time - start_time
     log.info(f"The total time taken for the coverage validation is: {duration} s ({duration/60} min)")
 
 
-def build_observation(livetime="1 h"):
-    # Define simulation parameters parameters
+@cli.command("sensitivity", help="Run sensitivity evaluation validation")
+@click.option("--livetime", type=str, default="1 h")
+@click.option("--crab_fractions", type=(float, float, int), default=(1e-3, 1e-1, 10))
+@click.option("--n_samples", type=int, default=1000)
+@click.option("--n_sigma", type=float, default=3)
+@click.option("--n_jobs", type=int, default=4)
+@click.option("--save_results", is_flag=True)
+def run_sensitivity_coverage(livetime, crab_fractions, n_samples, n_sigma, n_jobs, save_results):
+    """Run coverage validation."""
+    start_time = time.time()
+
     livetime = u.Quantity(livetime)
 
-    pointing_position = SkyCoord(0, 0, unit="deg", frame="galactic")
-    # We want to simulate an observation pointing at a fixed position in the sky.
-    # For this, we use the `FixedPointingInfo` class
-    pointing = FixedPointingInfo(
-        fixed_icrs=pointing_position.icrs,
-    )
+    log.info(f"Perform sensitivity validation on 1d dataset.")
 
-    irfs = load_irf_dict_from_file(
-        "$GAMMAPY_DATA/cta-caldb/Prod5-South-20deg-AverageAz-14MSTs37SSTs.180000s-v0.1.fits.gz"
-    )
+    obs = build_observation(livetime=livetime)
 
-    location = observatory_locations["ctao_south"]
-    return Observation.create(
-        pointing=pointing,
-        livetime=livetime,
-        irfs=irfs,
-        location=location,
-    )
+    dataset = build_dataset_1d(obs)
+    dataset.mask_fit = dataset.counts.geom.energy_mask(0.1 * u.TeV, 100 * u.TeV)
 
-def build_dataset_1d(obs, offset="0.5 deg"):
-    offset = u.Quantity(offset)
+    fe_config = {"selection_optional":["sensitivity"], "n_sigma_sensitivity": n_sigma}
 
-    # Reconstructed and true energy axis
-    energy_axis = MapAxis.from_energy_bounds(0.1, 100, 6, per_decade=True, unit="TeV")
-    energy_axis_true = MapAxis.from_energy_bounds(0.05, 200, 12, per_decade=True, unit="TeV", name="energy_true")
+    crab_fractions = np.geomspace(crab_fractions[0], crab_fractions[1], crab_fractions[2])
 
-    on_region_radius = Angle("0.11 deg")
+    log.info(f"Start simulation loop over source flux.")
 
-    pointing_position = obs.get_pointing_icrs(obs.tmid)
-    center = pointing_position.directional_offset_by(
-        position_angle=0 * u.deg, separation=offset
-    )
+    for crab_fraction in crab_fractions:
+        model = build_model(percent_crab=crab_fraction)
 
-    on_region = CircleSkyRegion(center=center, radius=on_region_radius)
+        log.info(f"Starting simulations for {1e3*crab_fraction:.2f} mCrab.")
+        with multiprocessing_manager(backend="multiprocessing", pool_kwargs=dict(processes=n_jobs)):
+            result = perform_sensitivity_simulation(n_samples, dataset, model, fe_config)
 
-    # Make the SpectrumDataset
-    geom = RegionGeom.create(region=on_region, axes=[energy_axis])
+    log.info(f"Compute sensitivity and plot result.")
 
-    dataset_empty = SpectrumDataset.create(
-        geom=geom, energy_axis_true=energy_axis_true, name="obs-0"
-    )
-    maker = SpectrumDatasetMaker(selection=["exposure", "edisp", "background"])
-
-    return maker.run(dataset_empty, obs)
-
-def build_model(percent_crab=0.1):
-    model_simu = create_crab_spectral_model('magic_lp')
-    model_simu.amplitude.value *= percent_crab
-    return SkyModel(spectral_model=model_simu, name="source")
-
-def fake_dataset(dataset, model):
-    dataset_on_off = SpectrumDatasetOnOff.from_spectrum_dataset(
-        dataset=dataset, acceptance=1, acceptance_off=10,
-        name=dataset.name   # keeping the same name is necessary to keep flux points geometries aligned
-    )
-    dataset_on_off.models = model.copy()
-
-    dataset_on_off.fake(npred_background=dataset.npred_background())
-    return dataset_on_off
-
-def reduce_dimensionality_flux_points(flux_points):
-    flux_points = flux_points.copy()
-    for name, quantity in flux_points._data.items():
-        if "dataset" in quantity.geom.axes.names:
-            map_obj = quantity.sum_over_axes(axes_names=["dataset"], keepdims=False)
-            flux_points._data[name] = map_obj
-    return flux_points
-
-def fake_analyze(dataset, model, fpe_config):
-    fpe_config["n_jobs"] = 1
-    fpe = FluxPointsEstimator(**fpe_config)
-    dataset_on_off = fake_dataset(dataset, model)
-    fp = fpe.run([dataset_on_off])
-    return fp
+    end_time = time.time()
+    duration = end_time - start_time
+    log.info(f"The total time taken for the sensitivity validation is: {duration} s ({duration/60} min)")
 
 
-def perform_simulation(nsim, dataset, model, fpe_config):
+
+def perform_fpe_simulation(nsim, dataset, model, fpe_config):
     indices = np.arange(nsim)
 
-    inputs = [(dataset, model, fpe_config)  for idx in indices]
+    # Force n_jobs to one to avoid multiprocessing in subprocess
+    fpe_config["n_jobs"] = 1
 
-    fps = run_multiprocessing(fake_analyze, inputs, task_name="simulation")
+    inputs = [(dataset, model, fpe_config)  for _ in indices]
+
+    fps = run_multiprocessing(fake_and_apply_fpe, inputs, task_name="simulation")
 
     axis = LabelMapAxis(indices, name='index')
     result = FluxPoints.from_stack(
@@ -184,56 +143,16 @@ def perform_simulation(nsim, dataset, model, fpe_config):
             )
     return result
 
+def perform_sensitivity_simulation(nsim, dataset, model, fe_config):
+    indices = np.arange(nsim)
 
-def compute_ci_coverage(result_fp, remove_ul=False):
-    energy_axis = result_fp.geom.axes["energy"]
+    inputs = [(dataset, model, fe_config)  for _ in indices]
 
-    weights = ~result_fp.is_ul * 1.0 if remove_ul else np.ones(result_fp.is_ul.data.shape)
+    result = run_multiprocessing(fake_and_apply_fpe, inputs, task_name="simulation")
 
-    ci_min = result_fp.norm - result_fp.norm_errn
-    ci_max = result_fp.norm + result_fp.norm_errp
-
-    in_ci = (ci_min < 1.0) & (ci_max > 1.0)
-    geom = in_ci.geom.to_image().to_cube([energy_axis])
-
-    return Map.from_geom(geom, data=np.average(in_ci, axis=0, weights=weights))
+    return result
 
 
-def compute_ul_coverage(result_fp):
-    energy_axis = result_fp.geom.axes["energy"]
-    in_ul = result_fp.norm_ul > 1.
-    geom = in_ul.geom.to_image().to_cube([energy_axis])
-    return Map.from_geom(geom, data=np.mean(in_ul, axis=0))
-
-def create_coverage_figure(result, filename):
-    coverage_ci = compute_ci_coverage(result, False)
-    coverage_ul = compute_ul_coverage(result)
-
-    nsim = result.geom.axes['index'].nbin
-
-    fig = plt.figure(figsize=(8, 4))
-    ax1 = fig.add_subplot(121)
-    coverage_ci.plot(ax=ax1, color="k")
-    ax1.set_yscale("linear")
-
-    ref_val = 1 - 2 * norm.sf(result.n_sigma)
-    ref_min = ref_val * (1 - nsim ** -0.5)
-    ref_max = ref_val * (1 + nsim ** -0.5)
-    ax1.axhline(ref_val, color='k')
-    ax1.axhspan(ref_min, ref_max, color='b', alpha=0.2)
-
-    ax2 = fig.add_subplot(122)
-    coverage_ul.plot(ax=ax2)
-    ax2.set_yscale("linear")
-
-    ref_val = norm.cdf(result.n_sigma_ul)
-    ref_min = ref_val * (1 - nsim ** -0.5)
-    ref_max = ref_val * (1 + nsim ** -0.5)
-
-    ax2.axhline(ref_val, color='k')
-    ax2.axhspan(ref_min, ref_max, color='b', alpha=0.2)
-
-    plt.savefig(filename)
 
 if __name__ == "__main__":
     cli()
