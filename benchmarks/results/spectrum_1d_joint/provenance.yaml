@@ -8,4 +8,4 @@ software:
   numpy: 1.26.4
   python_executable: /usr/share/miniconda/envs/gammapy-dev/bin/python
   python_version: 3.11.14
-  scipy: 1.16.3
+  scipy: 1.17.0
