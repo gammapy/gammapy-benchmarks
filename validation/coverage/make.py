@@ -4,15 +4,17 @@ import warnings
 from pathlib import Path
 
 import click
+import matplotlib.pyplot as plt
 
 import numpy as np
 import astropy.units as u
+from astropy.table import Table
 
 from gammapy.estimators import FluxPoints
 from gammapy.maps import LabelMapAxis
 from gammapy.utils.parallel import run_multiprocessing, multiprocessing_manager
 
-from utils import build_observation, build_dataset_1d, build_model, fake_and_apply_fpe, create_coverage_figure
+from utils import build_observation, build_dataset_1d, build_model, fake_and_apply_fpe, create_coverage_figure, fake_and_apply_fe
 AVAILABLE_GEOMS = ["1d", "3d"]
 
 log = logging.getLogger(__name__)
@@ -111,14 +113,31 @@ def run_sensitivity_coverage(livetime, crab_fractions, n_samples, n_sigma, n_job
 
     log.info(f"Start simulation loop over source flux.")
 
+    results = []
     for crab_fraction in crab_fractions:
         model = build_model(percent_crab=crab_fraction)
 
         log.info(f"Starting simulations for {1e3*crab_fraction:.2f} mCrab.")
         with multiprocessing_manager(backend="multiprocessing", pool_kwargs=dict(processes=n_jobs)):
-            result = perform_sensitivity_simulation(n_samples, dataset, model, fe_config)
+            simu = perform_sensitivity_simulation(n_samples, dataset, model, fe_config)
+
+        result = dict()
+        ref_amplitude = model.spectral_model.amplitude.quantity
+        result["ref_amplitude"] = ref_amplitude
+        result["flux"] = np.array([res['norm'] for res in simu]) * ref_amplitude
+        result["sensitivity"] = np.array([res['norm_sensitivity'] for res in simu]) * ref_amplitude
+        result["excess"] = np.array([res['npred_excess'][0] for res in simu])
+        result["sqrt_ts"] = np.sqrt(np.array([res['ts'] for res in simu])) * np.sign(result["excess"])
+
+        results.append(result)
+
+    table = Table(results)
 
     log.info(f"Compute sensitivity and plot result.")
+    widths = 0.4 * table["ref_amplitude"][-1]/len(table)
+    plt.violinplot(dataset=table["sqrt_ts"].data.tolist(), positions=table["ref_amplitude"],
+                   showmedians=True, showextrema=False, widths=widths, quantiles=[[0.16, 0.84],]*len(table))
+    plt.show()
 
     end_time = time.time()
     duration = end_time - start_time
@@ -148,7 +167,7 @@ def perform_sensitivity_simulation(nsim, dataset, model, fe_config):
 
     inputs = [(dataset, model, fe_config)  for _ in indices]
 
-    result = run_multiprocessing(fake_and_apply_fpe, inputs, task_name="simulation")
+    result = run_multiprocessing(fake_and_apply_fe, inputs, task_name="simulation")
 
     return result
 
