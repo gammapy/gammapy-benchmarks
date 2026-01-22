@@ -72,9 +72,9 @@ jobs:
           if [ "${{ steps.cache-lst1.outputs.cache-hit }}" != "true" ]; then
             echo "Cache miss - downloading LST-1 Crab data from Zenodo"
             mkdir -p $GAMMAPY_DATA/lst1_crab_data
-            
-            python utils/download_from_zenodo.py 11445184 $GAMMAPY_DATA/lst1_crab_data
-            echo "LST-1 data download successful"
+            echo "TEMP: skip LST-1 data download."
+#            python utils/download_from_zenodo.py 11445184 $GAMMAPY_DATA/lst1_crab_data
+#            echo "LST-1 data download successful"
           else
             echo "Using cached LST-1 Crab data"
           fi
