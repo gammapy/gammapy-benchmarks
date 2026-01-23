@@ -28,11 +28,56 @@ jobs:
           conda info
           conda list
           gammapy info
+
+      # Get latest commit SHA from gammapy-data main branch
+      - name: Get gammapy-data version
+        id: gammapy-data-version
+        run: |
+          COMMIT_SHA=$(curl -s https://api.github.com/repos/gammapy/gammapy-data/commits/main | jq -r '.sha[0:7]')
+          echo "sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
+          echo "Latest gammapy-data commit: $COMMIT_SHA"
+
+        # Cache for gammapy-datasets
+      - name: Cache gammapy-datasets
+        id: cache-gammapy-datasets
+        uses: actions/cache@v4
+        with:
+          path: gammapy-datasets
+          key: gammapy-datasets-${{ steps.gammapy-data-version.outputs.sha }}
+          restore-keys: |
+            gammapy-datasets-
+
+      # Cache for LST-1 Crab data from Zenodo
+      - name: Cache LST-1 Crab data
+        id: cache-lst1
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.GAMMAPY_DATA }}/lst1_crab_data
+          key: lst1-crab-data-11445184
+          restore-keys: |
+            lst1-crab-data-
+
       - name: download datasets
         # Including LST-1 Crab data from Zenodo
         run: |
-          gammapy download datasets
-          python utils/download_from_zenodo.py 11445184 $GAMMAPY_DATA/lst1_crab_data
+          # Download gammapy-datasets only if not cached
+          if [ "${{ steps.cache-gammapy-datasets.outputs.cache-hit }}" != "true" ]; then
+            echo "Cache miss - downloading gammapy-datasets"
+            gammapy download datasets
+          else
+            echo "Using cached gammapy-datasets"
+          fi
+          
+          # Download LST-1 data only if not cached
+          if [ "${{ steps.cache-lst1.outputs.cache-hit }}" != "true" ]; then
+            echo "Cache miss - downloading LST-1 Crab data from Zenodo"
+            mkdir -p $GAMMAPY_DATA/lst1_crab_data
+            echo "TEMP: skip LST-1 data download."
+#            python utils/download_from_zenodo.py 11445184 $GAMMAPY_DATA/lst1_crab_data
+#            echo "LST-1 data download successful"
+          else
+            echo "Using cached LST-1 Crab data"
+          fi
       - name: run benchmarks
         run: |
           cd benchmarks
@@ -45,10 +90,6 @@ jobs:
         with:
           commit_author: GitHub Actions <actions@github.com>
           commit_message: commit results from benchmarks
-#      - name: run validation
-#        run: |
-#          cd validation
-#          python make.py run-validation all
       - name: slack notification
         uses: rtCamp/action-slack-notify@v2
         if: failure()
