@@ -31,7 +31,7 @@ AVAILABLE_BENCHMARKS = {
     "tsmap_estimator": "tsmap_estimator.py",
     "ring_background_estimator": "ring_background_estimator.py",
     "npred": "npred.py",
-#    "data_reduction_lst1": "data_reduction_lst1.py",
+    "data_reduction_lst1": "data_reduction_lst1.py",
 }
 
 MONITOR_OPTIONS = {"duration": None, "interval": 0.5, "include_children": True}
