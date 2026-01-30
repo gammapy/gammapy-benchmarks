@@ -124,3 +124,7 @@ validation/cta-1dc/agn_j1224/datasets/*.fits
 validation/cta-1dc/hess_j1702/datasets/*.fits
 
 benchmarks/lst1_results/
+
+# Large profiler artifacts
+benchmarks/profilers/*.fits
+benchmarks/profilers/*.bin
