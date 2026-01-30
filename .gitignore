@@ -127,5 +127,4 @@ benchmarks/lst1_results/
 
 # Large profiler artifacts
 benchmarks/profilers/*.fits
-benchmarks/profilers/*.html
-benchmarks/profilers/*.dat
+benchmarks/profilers/*.bin
