@@ -41,7 +41,7 @@ jobs:
         # Cache for gammapy-datasets
       - name: Cache gammapy-datasets
         id: cache-gammapy-datasets
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: gammapy-datasets
           key: gammapy-datasets-${{ steps.gammapy-data-version.outputs.sha }}
@@ -51,7 +51,7 @@ jobs:
       # Cache for LST-1 Crab data from Zenodo
       - name: Cache LST-1 Crab data
         id: cache-lst1
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ env.GAMMAPY_DATA }}/lst1_crab_data
           key: lst1-crab-data-11445184-1
