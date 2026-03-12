@@ -1,0 +1,32 @@
+components:
+-   name: ''
+    type: SkyModel
+    spectral:
+        type: PowerLawSpectralModel
+        parameters:
+        -   name: index
+            value: 2.0
+        -   name: amplitude
+            value: 2.0e-11
+            unit: TeV-1 s-1 cm-2
+        -   name: reference
+            value: 1.0
+            unit: TeV
+    spatial:
+        type: PointSpatialModel
+        frame: icrs
+        parameters:
+        -   name: lon_0
+            value: 83.63
+            unit: deg
+            frozen: true
+        -   name: lat_0
+            value: 22.01
+            unit: deg
+            frozen: true
+covariance: stacked_models_covariance.dat
+metadata:
+    creator: Gammapy 2.0.dev3227+gfb17e5b4a
+    date: '2026-03-12T17:41:09.082131'
+    origin: null
+checksum: ea2f8381f208ea0791f6a3aedcff14b9

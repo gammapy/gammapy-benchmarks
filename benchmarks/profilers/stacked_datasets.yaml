@@ -1,0 +1,9 @@
+datasets:
+-   name: stacked
+    type: SpectrumDatasetOnOff
+    filename: pha_obsstacked.fits
+metadata:
+    creator: Gammapy 2.0.dev3227+gfb17e5b4a
+    date: '2026-03-12T17:41:09.068536'
+    origin: null
+checksum: da1a85bc25b6ffceeeab76bd69563852

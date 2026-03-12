@@ -1,0 +1,36 @@
+datasets:
+-   name: dataset0
+    type: SpectrumDatasetOnOff
+    filename: pha_obsdataset0.fits
+-   name: dataset1
+    type: SpectrumDatasetOnOff
+    filename: pha_obsdataset1.fits
+-   name: dataset2
+    type: SpectrumDatasetOnOff
+    filename: pha_obsdataset2.fits
+-   name: dataset3
+    type: SpectrumDatasetOnOff
+    filename: pha_obsdataset3.fits
+-   name: dataset4
+    type: SpectrumDatasetOnOff
+    filename: pha_obsdataset4.fits
+-   name: dataset5
+    type: SpectrumDatasetOnOff
+    filename: pha_obsdataset5.fits
+-   name: dataset6
+    type: SpectrumDatasetOnOff
+    filename: pha_obsdataset6.fits
+-   name: dataset7
+    type: SpectrumDatasetOnOff
+    filename: pha_obsdataset7.fits
+-   name: dataset8
+    type: SpectrumDatasetOnOff
+    filename: pha_obsdataset8.fits
+-   name: dataset9
+    type: SpectrumDatasetOnOff
+    filename: pha_obsdataset9.fits
+metadata:
+    creator: Gammapy 2.0.dev3227+gfb17e5b4a
+    date: '2026-03-12T17:41:38.053043'
+    origin: null
+checksum: d9ae76bf01d4b6d3a14409bf7d26ac7e
