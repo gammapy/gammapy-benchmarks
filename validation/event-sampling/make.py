@@ -17,7 +17,7 @@ from scipy.stats import norm
 from gammapy.data import GTI, EventList, Observation, Observations
 from gammapy.datasets import MapDataset, MapDatasetEventSampler, SpectrumDataset, Datasets, FluxPointsDataset
 from gammapy.estimators import ExcessMapEstimator, LightCurveEstimator
-from gammapy.irf import EnergyDispersion2D, load_cta_irfs
+from gammapy.irf import EnergyDispersion2D, load_irf_dict_from_file
 from gammapy.makers import MapDatasetMaker, ReflectedRegionsBackgroundMaker, SpectrumDatasetMaker
 from gammapy.maps import Map, MapAxis, WcsGeom, RegionGeom
 from gammapy.modeling import Fit
@@ -25,8 +25,7 @@ from gammapy.modeling.models import (
     Models,
     FoVBackgroundModel,
     SkyModel,
-    )
-from gammapy.utils.table import table_from_row_data
+)
 
 log = logging.getLogger(__name__)
 
@@ -91,13 +90,13 @@ def get_filename_best_fit_model(filename_model, obs_id, livetime):
     model_str = filename_model.name.replace(filename_model.suffix, "")
 
     path = (
-        BASE_PATH
-        / f"results/models/{model_str}/fit_{livetime.value:.0f}{livetime.unit}"
+            BASE_PATH
+            / f"results/models/{model_str}/fit_{livetime.value:.0f}{livetime.unit}"
     )
     path.mkdir(exist_ok=True, parents=True)
     path = (
-        BASE_PATH
-        / f"results/models/{model_str}/plots_{livetime.value:.0f}{livetime.unit}"
+            BASE_PATH
+            / f"results/models/{model_str}/plots_{livetime.value:.0f}{livetime.unit}"
     )
     path.mkdir(exist_ok=True, parents=True)
 
@@ -151,7 +150,7 @@ def all_cmd(model, obs_ids, obs_all, simple, core):
     filename_dataset = get_filename_dataset(LIVETIME)
 
     log.info(f"Preparing datasets")
-    if simple==True:
+    if simple == True:
         filename_dataset = Path(
             str(filename_dataset).replace("dataset", "dataset_simple")
         )
@@ -206,7 +205,7 @@ def prepare_dataset_cmd():
 def prepare_dataset(filename_dataset):
     """Prepare dataset for a given skymodel."""
     log.info(f"Reading {IRF_FILE}")
-    irfs = load_cta_irfs(IRF_FILE)
+    irfs = load_irf_dict_from_file(IRF_FILE)
     observation = Observation.create(
         obs_id=1001, pointing=POINTING, livetime=LIVETIME, irfs=irfs, tstart=TIME_REF
     )
@@ -220,8 +219,8 @@ def prepare_dataset(filename_dataset):
     filename_dataset.parent.mkdir(exist_ok=True, parents=True)
     log.info(f"Writing {filename_dataset}")
     dataset.write(filename_dataset, overwrite=True)
-    
-    filename_observation = Path(str(filename_dataset).replace("dataset","observation"))
+
+    filename_observation = Path(str(filename_dataset).replace("dataset", "observation"))
     log.info(f"Writing {filename_observation}")
     observation.write(filename_observation, overwrite=True)
 
@@ -230,7 +229,7 @@ def prepare_dataset_simple(filename_dataset):
     """Prepare dataset for a given skymodel."""
     log.info(f"Reading {IRF_FILE}")
 
-    irfs = load_cta_irfs(IRF_FILE)
+    irfs = load_irf_dict_from_file(IRF_FILE)
 
     edisp_gauss = EnergyDispersion2D.from_gauss(
         e_true=ENERGY_AXIS_TRUE.edges,
@@ -287,7 +286,7 @@ def simulate_events(filename_model, filename_dataset, nobs):
         Number of obervations to simulate.
     """
     log.info(f"Reading {IRF_FILE}")
-    irfs = load_cta_irfs(IRF_FILE)
+    irfs = load_irf_dict_from_file(IRF_FILE)
 
     log.info(f"Reading {filename_dataset}")
     dataset = MapDataset.read(filename_dataset)
@@ -296,7 +295,7 @@ def simulate_events(filename_model, filename_dataset, nobs):
     models = Models.read(filename_model)
     models.append(FoVBackgroundModel(dataset_name=dataset.name))
     dataset.models = models
-#    dataset.models.extend(models)
+    #    dataset.models.extend(models)
 
     sampler = MapDatasetEventSampler(random_state=0)
 
@@ -392,7 +391,7 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
     model_copy = models.copy()
     dataset.models = models
 
-    if binned==True:
+    if binned == True:
         dataset.fake()
 
     if dataset.background_model:
@@ -407,7 +406,7 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
     path = get_filename_best_fit_model(filename_model, obs_id, LIVETIME)
     path = path.absolute()
 
-    if binned==True:
+    if binned == True:
         path = Path(str(path).replace("/fit", "/fit_fake"))
         print(binned)
 
@@ -418,7 +417,7 @@ def fit_model(filename_model, filename_dataset, obs_id, binned=False, simple=Fal
     if dataset.models[0].temporal_model is not None:
         log.info(f"Fit temporal models")
         fit_temporal_model(filename_dataset, filename_model,
-                            model_copy, obs_id, dataset)
+                           model_copy, obs_id, dataset)
 
 
 def fit_temporal_model(filename_dataset, filename_model, models, obs_id, dataset):
@@ -434,11 +433,11 @@ def fit_temporal_model(filename_dataset, filename_model, models, obs_id, dataset
 
 
 def make_observation(filename_dataset, filename_model, obs_id):
-    irfs = load_cta_irfs(IRF_FILE)
+    irfs = load_irf_dict_from_file(IRF_FILE)
     observation_filled = Observation.create(
-                                obs_id=1001, pointing=POINTING,
-                                livetime=LIVETIME, irfs=irfs, tstart=TIME_REF
-                                )
+        obs_id=1001, pointing=POINTING,
+        livetime=LIVETIME, irfs=irfs, tstart=TIME_REF
+    )
 
     filename_events = get_filename_events(filename_dataset, filename_model, obs_id)
     log.info(f"Reading {filename_events}")
@@ -450,14 +449,14 @@ def make_observation(filename_dataset, filename_model, obs_id):
 
 
 def make_shorter_observations(observation_filled):
-    #HARDCODED
+    # HARDCODED
     duration = 3 * u.min
     n_time_bins = 20
     ###
     times = TIME_REF + np.arange(n_time_bins) * duration
     time_intervals = [
         Time([tstart, tstop]) for tstart, tstop in zip(times[:-1], times[1:])
-                    ]
+    ]
 
     log.info(f"Making shorter observations")
     observations_filled = Observations([observation_filled])
@@ -474,8 +473,8 @@ def make_lc(dataset, models, short_observations, time_intervals, obs_id):
     geom = RegionGeom.create(region=on_region, axes=[ENERGY_AXIS])
     stacked = SpectrumDataset.create(geom, energy_axis_true=ENERGY_AXIS_TRUE)
     maker = SpectrumDatasetMaker(
-                        containment_correction=True,
-                        selection=["counts", "exposure", "edisp"])
+        containment_correction=True,
+        selection=["counts", "exposure", "edisp"])
     bkg_maker = ReflectedRegionsBackgroundMaker()
 
     log.info(f"Making short datasets..")
@@ -486,26 +485,26 @@ def make_lc(dataset, models, short_observations, time_intervals, obs_id):
         datasets.append(dataset_new)
 
     sky_model = SkyModel(
-                        spatial_model=None,
-                        spectral_model=models[0].spectral_model,
-                        name="test_source"
-                        )
+        spatial_model=None,
+        spectral_model=models[0].spectral_model,
+        name="test_source"
+    )
     datasets.models = sky_model
 
     lc_maker_1d = LightCurveEstimator(
-                    energy_edges=[0.1, 10] * u.TeV,
-                    source="test_source",
-                    time_intervals=time_intervals,
-                    selection_optional=None,
-                    n_sigma_ul=3
-                    )
+        energy_edges=[0.1, 10] * u.TeV,
+        source="test_source",
+        time_intervals=time_intervals,
+        selection_optional=None,
+        n_sigma_ul=3
+    )
     lc_1d = lc_maker_1d.run(datasets)
     lc_1d.sqrt_ts_threshold_ul = 3
 
     lc_1d.plot(marker="o")
     path = (
-        BASE_PATH
-        / f"results/models/{dataset.models[0].name}/plots_{LIVETIME.value:.0f}{LIVETIME.unit}/temporal/"
+            BASE_PATH
+            / f"results/models/{dataset.models[0].name}/plots_{LIVETIME.value:.0f}{LIVETIME.unit}/temporal/"
     )
     filename = path / f"lightcurve_{obs_id:04d}.png"
     filename.parent.mkdir(parents=True, exist_ok=True)
@@ -521,12 +520,12 @@ def fit_lc(dataset, models, lc_1d, obs_id):
         datasets.append(dataset_new)
 
     models[0].spectral_model.parameters["index"].frozen = True
-    #temporal_model = ExpDecayTemporalModel(t0="10 min", t_ref=TIME_REF.mjd * u.d)
+    # temporal_model = ExpDecayTemporalModel(t0="10 min", t_ref=TIME_REF.mjd * u.d)
     model = SkyModel(
         spectral_model=models[0].spectral_model,
         temporal_model=models[0].temporal_model,
         name="test_source",
-        )
+    )
     datasets.models = model
 
     log.info(f"Fit the model")
@@ -535,8 +534,8 @@ def fit_lc(dataset, models, lc_1d, obs_id):
 
     log.info(f"Save the model")
     path = (
-        BASE_PATH
-        / f"results/models/{dataset.models[0].name}/fit_{LIVETIME.value:.0f}{LIVETIME.unit}_temporal/"
+            BASE_PATH
+            / f"results/models/{dataset.models[0].name}/fit_{LIVETIME.value:.0f}{LIVETIME.unit}_temporal/"
     )
     filename = path / f"best-fit-model_{obs_id:04d}.yaml"
     filename.parent.mkdir(parents=True, exist_ok=True)
@@ -576,10 +575,10 @@ def fit_gather(model_name, livetime, binned=False):
     rows = []
 
     path = (
-        BASE_PATH
-        / f"results/models/{model_name}/fit_{livetime.value:.0f}{livetime.unit}"
+            BASE_PATH
+            / f"results/models/{model_name}/fit_{livetime.value:.0f}{livetime.unit}"
     )
-    if binned==True:
+    if binned == True:
         path = Path(str(path).replace("/fit", "/fit_fake"))
 
     for filename in path.glob("*.yaml"):
@@ -594,9 +593,9 @@ def fit_gather(model_name, livetime, binned=False):
 
         rows.append(row)
 
-    table = table_from_row_data(rows)
+    table = Table(rows=rows)
     name = f"fit-results-all_{livetime.value:.0f}{livetime.unit}"
-    if binned==True:
+    if binned == True:
         name = "fit_binned-results-all"
     filename = f"results/models/{model_name}/{name}.fits.gz"
     log.info(f"Writing {filename}")
@@ -664,9 +663,8 @@ def plot_residuals(dataset, obs_id, livetime, model_name):
             region = spatial_model.to_region()
 
         dataset.plot_residuals(
-            kwargs_spatial={"method":"diff/sqrt(model)", "vmin":-0.5, "vmax":0.5},
-            kwargs_spectral={"region":region},
-#            figsize=(10, 4),
+            kwargs_spatial={"method": "diff/sqrt(model)", "vmin": -0.5, "vmax": 0.5},
+            kwargs_spectral={"region": region},
         )
         obs_id = int(obs_id)
         filename = f"results/models/{model.name}/plots_{livetime.value:.0f}{livetime.unit}/residuals/residuals_{obs_id:04d}.png"
@@ -793,7 +791,7 @@ def plot_pull_distribution_cmd(model, binned):
 
 def plot_pull_distribution(model_name, livetime, binned=False):
     name = f"fit-results-all_{livetime.value:.0f}{livetime.unit}"
-    if binned==True:
+    if binned == True:
         name = "fit_binned-results-all"
     filename = BASE_PATH / f"results/models/{model_name}/{name}.fits.gz"
     results = Table.read(str(filename))
@@ -803,7 +801,7 @@ def plot_pull_distribution(model_name, livetime, binned=False):
     names = [name for name in results.colnames if "err" not in name]
 
     plots = f"plots_{livetime.value:.0f}{livetime.unit}"
-    if binned==True:
+    if binned == True:
         plots = "plots_fake"
     for name in names:
         # TODO: report mean and stdev here as well
@@ -818,9 +816,9 @@ def plot_pull_distribution(model_name, livetime, binned=False):
         pull = (values - par.value) / values_err
 
         # print("Number of fits beyond 5 sigmas: ",(np.where( (pull<-5) )))
-#        plt.hist(pull, bins=21, density=True, range=(-5, 5))
+        #        plt.hist(pull, bins=21, density=True, range=(-5, 5))
         plt.hist(pull, bins=21, density=True, range=(np.min(pull), np.max(pull)))
-#        plt.xlim(-5, 5)
+        #        plt.xlim(-5, 5)
         plt.xlim(np.min(pull), np.max(pull))
         plt.xlabel("(value - value_true) / error")
         plt.ylabel("PDF")

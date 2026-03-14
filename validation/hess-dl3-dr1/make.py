@@ -6,7 +6,6 @@ from pathlib import Path
 import click
 import yaml
 
-import numpy as np
 from gammapy.analysis import Analysis, AnalysisConfig
 from gammapy.modeling.models import Models
 
