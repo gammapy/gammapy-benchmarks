@@ -85,6 +85,11 @@ jobs:
           python make.py run-benchmark all
           cd results
           python track_evolution.py
+      - name: remove large files produced during benchmarks profiling
+        run: |
+          rm -f benchmarks/profilers/*.fits
+          rm -f benchmarks/profilers/*.html
+          rm -f benchmarks/profilers/*.dat
       - name: commit changes
         uses: stefanzweifel/git-auto-commit-action@v7.1.0
         if: success()
