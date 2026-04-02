@@ -5,22 +5,22 @@ components:
         type: LogParabolaSpectralModel
         parameters:
         -   name: amplitude
-            value: 3.894823347523655e-10
+            value: 3.894688676845368e-10
             unit: TeV-1 s-1 cm-2
-            error: 1.137200631761867e-11
+            error: 1.1371622900163328e-11
         -   name: reference
             value: 0.4
             unit: TeV
         -   name: alpha
-            value: 2.2478091816501773
-            error: 0.04350498697235578
+            value: 2.2478963677038695
+            error: 0.04349992164045598
             min: 0.0
         -   name: beta
-            value: 0.14572330975654943
-            error: 0.02853273628333223
+            value: 0.14568434605609137
+            error: 0.02852964375624235
             min: 0.0
 covariance: best_fit_model_covariance.dat
 metadata:
-    creator: Gammapy 2.0.dev3352+g5df0ae534
-    date: '2026-03-20T11:32:48.178738'
+    creator: Gammapy 2.1rc2.dev3+gf4bf05bdc
+    date: '2026-04-02T10:53:54.335368'
     origin: null
