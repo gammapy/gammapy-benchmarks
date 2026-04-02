@@ -1,11 +1,11 @@
-amplitude: 2.7630429806913213e-12
-amplitude_err: 1.5587623560588896e-13
+amplitude: 2.763042980782005e-12
+amplitude_err: 1.5587623500229337e-13
 e: 0.0
 e_err: 0.0
 edge_width: 0.01
 edge_width_err: 0.0
-index: 2.3976414624942506
-index_err: 0.06142006173633591
+index: 2.397641462405156
+index_err: 0.061420061349591534
 lat_0: -59.16
 lat_0_err: 0.0
 lon_0: 228.53
