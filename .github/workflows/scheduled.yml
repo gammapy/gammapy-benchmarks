@@ -1,4 +1,4 @@
-name: benchmarks and validation
+name: benchmarks
 on:
   schedule:
     - cron:  '0 1 * * *'
@@ -101,4 +101,4 @@ jobs:
         if: failure()
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_MESSAGE: 'Benchmarks and validations checks failed'
+          SLACK_MESSAGE: 'Benchmark checks failed'
