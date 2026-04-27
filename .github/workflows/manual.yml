@@ -24,19 +24,20 @@ jobs:
     steps:
       - name: checkout repo
         uses: actions/checkout@v6
+
       - name: set env vars for GAMMAPY_DATA
         run: |
           BRANCH="${{ github.event.inputs.branch }}"
           if [ "$BRANCH" = "main" ]; then
             DATASET_VERSION="dev"
           else
-            # Only tags for major.minor versions (v2.1, v2.0, v1.3, etc.) are available
             VERSION="${BRANCH#v}"
             MAJOR_MINOR=$(echo "$VERSION" | cut -d. -f1,2)
-            DATASET_VERSION="v${MAJOR_MINOR}"
+            DATASET_VERSION="${MAJOR_MINOR}"
           fi
+          echo "DATASET_VERSION=${DATASET_VERSION}" >> $GITHUB_ENV
           echo "GAMMAPY_DATA=/home/runner/work/gammapy-benchmarks/gammapy-benchmarks/gammapy-datasets/${DATASET_VERSION}" >> $GITHUB_ENV
-      
+
       - name: Get gammapy-data cache key
         id: gammapy-data-version
         run: |
@@ -45,8 +46,8 @@ jobs:
             echo "cache_key=gammapy-datasets-${COMMIT_SHA}" >> $GITHUB_OUTPUT
             echo "Latest gammapy-data commit: $COMMIT_SHA"
           else
-            echo "cache_key=gammapy-datasets-${{ env.DATASET_VERSION }}" >> $GITHUB_OUTPUT
-            echo "Using dataset version: ${{ env.DATASET_VERSION }}"
+            echo "cache_key=gammapy-datasets-${DATASET_VERSION}" >> $GITHUB_OUTPUT
+            echo "Using dataset version: ${{ DATASET_VERSION }}"
           fi
 
       - name: Cache gammapy-datasets
@@ -99,7 +100,7 @@ jobs:
           if [ "${{ steps.cache-lst1.outputs.cache-hit }}" != "true" ]; then
             echo "Cache miss - downloading LST-1 Crab data from Zenodo"
             mkdir -p $GAMMAPY_DATA/lst1_crab_data
-            echo "TEMP: skip LST-1 data download."
+            echo "LST-1 data download from Zenodo"
             python utils/download_from_zenodo.py 11445184 $GAMMAPY_DATA/lst1_crab_data
             echo "LST-1 data download successful"
           else
