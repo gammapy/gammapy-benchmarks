@@ -47,7 +47,7 @@ jobs:
             echo "Latest gammapy-data commit: $COMMIT_SHA"
           else
             echo "cache_key=gammapy-datasets-${DATASET_VERSION}" >> $GITHUB_OUTPUT
-            echo "Using dataset version: ${{ DATASET_VERSION }}"
+            echo "Using dataset version: $DATASET_VERSION"
           fi
 
       - name: Cache gammapy-datasets
