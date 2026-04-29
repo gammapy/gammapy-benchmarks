@@ -89,7 +89,7 @@ jobs:
         # Including LST-1 Crab data from Zenodo
         run: |
           # Download gammapy-datasets only if not cached
-          if [ "${{ steps.cache-gammapy-datasets.outputs.cache-hit }}" != "true" ]; then
+          if [ -z "${{ steps.cache-gammapy-datasets.outputs.cache-matched-key }}" ]; then
             echo "Cache miss - downloading gammapy-datasets"
             gammapy download datasets
           else
@@ -97,7 +97,7 @@ jobs:
           fi
 
           # Download LST-1 data only if not cached
-          if [ "${{ steps.cache-lst1.outputs.cache-hit }}" != "true" ]; then
+          if [ -z "${{ steps.cache-lst1.outputs.cache-matched-key }}" ]; then
             echo "Cache miss - downloading LST-1 Crab data from Zenodo"
             mkdir -p $GAMMAPY_DATA/lst1_crab_data
             echo "LST-1 data download from Zenodo"
