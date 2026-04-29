@@ -18,6 +18,15 @@ Validate gammapy lightcurve extraction for 1D and 3D data reduction.
 - A log parabola model from the reference model is used to compute the light curve in the 10 minutes times bins.
 - Results are plotted and compared to the [reference](https://ui.adsabs.harvard.edu/abs/2009A%26A...502..749A/abstract)
 
+## Results
+
+### Provenance
+
+See [provenance.yml](results/prov_lightcurve.yaml)
+
+### Comparison with reference
+
+![Lightcurves](results/lightcurve_comparison.png)
 
 ## Reference
 
