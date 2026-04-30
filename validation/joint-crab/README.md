@@ -4,7 +4,7 @@
 
 - Perform a 1D data reduction 
 - Perform a spectral fit and compute spectral parameters errors and confidence contours
-- Perform a joint multi-instrument fit
+- Perform a joint multi-instrument forward-folding likelihood fit
 
 ## Methodology
 
