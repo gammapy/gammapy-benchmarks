@@ -54,10 +54,8 @@ jobs:
         id: cache-gammapy-datasets
         uses: actions/cache@v5
         with:
-          path: gammapy-datasets
+          path: ${{ env.GAMMAPY_DATA }}
           key: ${{ steps.gammapy-data-version.outputs.cache_key }}
-          restore-keys: |
-            gammapy-datasets-
 
       - name: Cache LST-1 Crab data
         id: cache-lst1
@@ -89,7 +87,7 @@ jobs:
         # Including LST-1 Crab data from Zenodo
         run: |
           # Download gammapy-datasets only if not cached
-          if [ -z "${{ steps.cache-gammapy-datasets.outputs.cache-matched-key }}" ]; then
+          if [ "${{ steps.cache-gammapy-datasets.outputs.cache-hit }}" != "true" ]; then
             echo "Cache miss - downloading gammapy-datasets"
             gammapy download datasets
           else
@@ -97,7 +95,7 @@ jobs:
           fi
 
           # Download LST-1 data only if not cached
-          if [ -z "${{ steps.cache-lst1.outputs.cache-matched-key }}" ]; then
+          if [ "${{ steps.cache-lst1.outputs.cache-hit }}" != "true" ] || [ ! -f "$GAMMAPY_DATA/lst1_crab_data/obs-index.fits.gz" ]; then
             echo "Cache miss - downloading LST-1 Crab data from Zenodo"
             mkdir -p $GAMMAPY_DATA/lst1_crab_data
             echo "LST-1 data download from Zenodo"
