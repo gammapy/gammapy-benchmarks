@@ -1,6 +1,6 @@
 # Gammapy validation: joint Crab
 
-## Science Use cases covered
+## Science use cases covered
 
 - Perform a 1D data reduction 
 - Perform a spectral fit and compute spectral parameters errors and confidence contours

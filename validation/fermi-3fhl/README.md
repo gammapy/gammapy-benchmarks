@@ -1,17 +1,15 @@
 # Gammapy validation: Fermi-LAT 3FHL
 
-## Task
-
 Reproduce some Fermi-LAT 3FHL results to check Gammapy against the Fermi ST
 
-## References
 
-- Dataset: https://github.com/gammapy/gammapy-fermi-lat-data/tree/master/3fhl
-- Dataset: https://github.com/gammapy/gammapy-extra/tree/master/datasets/fermi_3fhl
-- Tutorial: https://docs.gammapy.org/0.14/notebooks/fermi_lat.html
-- Catalog info as Gammapy objects, could be useful for comparison: https://docs.gammapy.org/dev/api/gammapy.catalog.SourceCatalogObject3FHL.html
+## Science use cases covered
 
-## Method
+- 3D modeling and fitting of Interstellar Emission Models
+- Perform a catalog extraction in serveral ROIs
+
+
+## Methodology
 
 We fit a selection of ROIs defined in the 3FHL catalog (starting by the ones containing the most significant source).  We compare the resulting source parameters and flux points to the catalogued values. The spectrum and flux points comparison is limited to sources with an average significance larger than 8 sigma (Signif_Avg > 8). In addition we show the observed/predicted counts and residuals maps.
 
@@ -181,7 +179,12 @@ Vela X
 
 
 
+## References
 
+- Dataset: https://github.com/gammapy/gammapy-fermi-lat-data/tree/master/3fhl
+- Dataset: https://github.com/gammapy/gammapy-extra/tree/master/datasets/fermi_3fhl
+- Tutorial: https://docs.gammapy.org/0.14/notebooks/fermi_lat.html
+- Catalog info as Gammapy objects, could be useful for comparison: https://docs.gammapy.org/dev/api/gammapy.catalog.SourceCatalogObject3FHL.html
 
 
 

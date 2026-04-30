@@ -2,7 +2,7 @@
 
 Validate gammapy lightcurve extraction for 1D and 3D data reduction.
 
-## Science Use cases covered
+## Science use cases covered
 
 - Perform a 1D data reduction 
 - Perform a 3D data reduction

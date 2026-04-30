@@ -2,7 +2,7 @@
 
 Validation of high-level analysis of HESS DL3 data.
 
-## Science Use cases covered
+## Science use cases covered
 
 - Perform a 1D data reduction 
 - Perform a 3D data reduction
