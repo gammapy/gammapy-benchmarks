@@ -2,6 +2,21 @@
 
 Validation of high-level analysis of HESS DL3 data.
 
+## Science use cases covered
+
+- Perform a 1D data reduction 
+- Perform a 3D data reduction
+- Perform a flux point extraction and upper limit calculation for a set of pointlike and extended sources.
+
+## Methodology
+
+- Data from the HESS-DL3-DR1 are used. 
+- Data reduction is performed with the HLI `Analysis` class.
+- Analysis pipeline is duplicated between 1D spectral and 3D cube data reduction.
+- 1D analysis relies on reflected region background estimation. 3D analysis use field-of-view background estimation. Both rely on stacking the resulting DL4 products (contrary to the reference analysis).
+- Spectral model fitting and flux points estimation are applied to both 1D and 3D datasets.
+- Results are plotted and compared to the [reference](https://ui.adsabs.harvard.edu/abs/2019A%26A...632A..72M/abstract).
+
 ## Analyses
 
 - Implemented analyses: 1d (joint analysis) 3d (stacked analysis) / [script](make.py)
@@ -82,19 +97,10 @@ First of all notice that, for the sake of time (and code lines) saving, the vali
 
 The fit results are generally in acceptable (sometimes even good) agreement with the reference values. 
 
-## TODO
-Some important pieces are still missing in the  gammapy HLI. Therefore there are a few TODOs (to be addressed 
-in gammapy):
- - Implement a more uniform units handling schema between the analysis config and the model config: for now, in the former
- something like `10 deg` works, wherheas in the latter the value and units need to be separated.
- 
- There are also a few TODOs to address here in this folder:
- - Implement the case of RXJ 1713-3946 (postponed, for now)
- - Make plots for the best-fit spectral models (comparing reference models and results)
- - Adapt the scripts, following the improvements in the HLI
 
+ 
 ## References
 
 - Dataset (including background models from HESS validation paper): https://github.com/gammapy/gammapy-extra/tree/master/datasets/hess-dl3-dr1
-- Lars Mohrmann paper: https://ui.adsabs.harvard.edu/abs/2019arXiv191008088M
-  - Results in machine-readable format: https://github.com/lmohrmann/hess_ost_paper_material
+- Validation of open source tools paper: [Mohrmann et al (2019)](https://ui.adsabs.harvard.edu/abs/2019A%26A...632A..72M/abstract)
+  - Paper results in [machine-readable format](https://github.com/lmohrmann/hess_ost_paper_material)
