@@ -6,13 +6,13 @@ from scipy.stats import norm
 import matplotlib.pyplot as plt
 
 from gammapy.data import FixedPointingInfo, Observation, observatory_locations
-from gammapy.datasets import Datasets, SpectrumDataset, SpectrumDatasetOnOff
+from gammapy.datasets import Datasets, SpectrumDataset, SpectrumDatasetOnOff, MapDataset
 from gammapy.estimators import FluxPointsEstimator, FluxPoints
 from gammapy.estimators.flux import FluxEstimator
 from gammapy.irf import load_irf_dict_from_file
-from gammapy.makers import SpectrumDatasetMaker
-from gammapy.maps import MapAxis, RegionGeom, LabelMapAxis, Map
-from gammapy.modeling.models import SkyModel, create_crab_spectral_model
+from gammapy.makers import SpectrumDatasetMaker, MapDatasetMaker, SafeMaskMaker
+from gammapy.maps import MapAxis, RegionGeom, LabelMapAxis, Map, WcsGeom
+from gammapy.modeling.models import SkyModel, Models, create_crab_spectral_model, PointSpatialModel
 
 
 def build_observation(livetime="1 h"):
@@ -47,6 +47,10 @@ def build_observation(livetime="1 h"):
         location=location,
     )
 
+def build_energy_axis():
+    return MapAxis.from_energy_bounds(0.1, 100, 6, per_decade=True, unit="TeV")
+
+
 def build_dataset_1d(obs, offset="0.5 deg"):
     """Build dataset.
 
@@ -55,7 +59,7 @@ def build_dataset_1d(obs, offset="0.5 deg"):
     offset = u.Quantity(offset)
 
     # Reconstructed and true energy axis
-    energy_axis = MapAxis.from_energy_bounds(0.1, 100, 6, per_decade=True, unit="TeV")
+    energy_axis = build_energy_axis()
     energy_axis_true = MapAxis.from_energy_bounds(0.05, 200, 12, per_decade=True, unit="TeV", name="energy_true")
 
     on_region_radius = Angle("0.11 deg")
@@ -77,10 +81,43 @@ def build_dataset_1d(obs, offset="0.5 deg"):
 
     return maker.run(dataset_empty, obs)
 
-def build_model(percent_crab=0.1):
-    model_simu = create_crab_spectral_model('magic_lp')
-    model_simu.amplitude.value *= percent_crab
-    return SkyModel(spectral_model=model_simu, name="source")
+def build_model(percent_crab=0.1, pointing=None):
+    spectral = create_crab_spectral_model('magic_lp')
+    spectral.amplitude.value *= percent_crab
+    if pointing is not None:
+        spatial = PointSpatialModel(
+            lon_0=pointing.ra, lat_0=pointing.dec, frame="icrs"
+        )
+        spatial.freeze()  # only spectral norm floats; position is fixed
+        return SkyModel(spatial_model=spatial, spectral_model=spectral, name="source")
+    return SkyModel(spectral_model=spectral, name="source")
+
+
+def build_dataset_3d(obs):
+    """Build a MapDataset from a single Observation for 3D coverage tests."""
+    energy_axis = build_energy_axis()
+    energy_axis_true = MapAxis.from_energy_bounds(
+        0.05, 100, nbin=30, unit="TeV", name="energy_true"
+    )
+    pointing = obs.get_pointing_icrs(obs.tmid)
+    geom = WcsGeom.create(
+        skydir=pointing,
+        width=3.0 * u.deg,
+        binsz=0.02 * u.deg,
+        frame="icrs",
+        axes=[energy_axis],
+    )
+    geom_true = geom.to_image().to_cube([energy_axis_true])
+    dataset_empty = MapDataset.create(
+        geom=geom,
+        geom_exposure=geom_true,
+        name="obs-3d",
+    )
+    maker = MapDatasetMaker(selection=["background", "exposure", "psf", "edisp"])
+    maker_safe = SafeMaskMaker(methods=["aeff-default", "edisp-bias"], bias_percent=10)
+    dataset = maker.run(dataset_empty, obs)
+    dataset = maker_safe.run(dataset, obs)
+    return dataset
 
 def fake_dataset(dataset, model):
     dataset_on_off = SpectrumDatasetOnOff.from_spectrum_dataset(
@@ -104,6 +141,15 @@ def fake_and_apply_fpe(dataset, model, fpe_config):
     fpe = FluxPointsEstimator(**fpe_config)
     dataset_on_off = fake_dataset(dataset, model)
     fp = fpe.run([dataset_on_off])
+    return fp
+
+def fake_and_apply_fpe_3d(dataset, model, fpe_config):
+    fpe = FluxPointsEstimator(**fpe_config, source="source")
+    fpe.n_jobs = 1
+    dataset = dataset.copy(name="obs-3d")
+    dataset.models = Models([model.copy(name="source")])
+    dataset.fake(random_state="random-seed")
+    fp = fpe.run([dataset])
     return fp
 
 def fake_and_apply_fe(dataset, model, fe_config):
