@@ -28,7 +28,7 @@ def build_observation(livetime="1 h"):
     # Define simulation parameters parameters
     livetime = u.Quantity(livetime)
 
-    pointing_position = SkyCoord(0, 0, unit="deg", frame="galactic")
+    pointing_position = SkyCoord(83.233, 22.214, unit="deg", frame="galactic")
     # We want to simulate an observation pointing at a fixed position in the sky.
     # For this, we use the `FixedPointingInfo` class
     pointing = FixedPointingInfo(
@@ -81,17 +81,13 @@ def build_dataset_1d(obs, offset="0.5 deg"):
 
     return maker.run(dataset_empty, obs)
 
-def build_model(percent_crab=0.1, pointing=None):
+def build_model(percent_crab=0.1):
     spectral = create_crab_spectral_model('magic_lp')
     spectral.amplitude.value *= percent_crab
-    if pointing is not None:
-        spatial = PointSpatialModel(
-            lon_0=pointing.ra, lat_0=pointing.dec, frame="icrs"
-        )
-        spatial.freeze()  # only spectral norm floats; position is fixed
-        return SkyModel(spatial_model=spatial, spectral_model=spectral, name="source")
-    return SkyModel(spectral_model=spectral, name="source")
-
+    spatial = PointSpatialModel(lon_0="83.633 deg", lat_0="22.014 deg", frame="icrs")
+    spatial.freeze()  
+    return SkyModel(spatial_model=spatial, spectral_model=spectral, name="source")
+    
 
 def build_dataset_3d(obs):
     """Build a MapDataset from a single Observation for 3D coverage tests."""

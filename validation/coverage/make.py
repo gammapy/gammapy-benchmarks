@@ -58,11 +58,9 @@ def run_fp_coverage(geometries, livetime, crab_fraction, n_samples, n_sigma, n_s
 
         if geometry == "1d":
             dataset = build_dataset_1d(obs)
-            model = build_model(percent_crab=crab_fraction)
         elif geometry == "3d":
             dataset = build_dataset_3d(obs)
-            pointing = obs.get_pointing_icrs(obs.tmid)
-            model = build_model(percent_crab=crab_fraction, pointing=pointing)
+        model = build_model(percent_crab=crab_fraction)
 
         energy_edges = dataset.counts.geom.axes["energy"].downsample(2).edges
 
@@ -122,16 +120,14 @@ def run_sensitivity_coverage(geometries, livetime, crab_fractions, n_samples, n_
         if geometry == "1d":
             dataset = build_dataset_1d(obs)
             dataset.mask_fit = dataset.counts.geom.energy_mask(0.1 * u.TeV, 100 * u.TeV)
-            pointing = None
         elif geometry == "3d":
             dataset = build_dataset_3d(obs)
-            pointing = obs.get_pointing_icrs(obs.tmid)
 
         log.info(f"Start simulation loop over source flux.")
 
         results = []
         for crab_fraction in crab_fractions:
-            model = build_model(percent_crab=crab_fraction, pointing=pointing)
+            model = build_model(percent_crab=crab_fraction)
 
             log.info(f"Starting simulations for {1e3*crab_fraction:.2f} mCrab.")
             with multiprocessing_manager(backend="multiprocessing", pool_kwargs=dict(processes=n_jobs)):
