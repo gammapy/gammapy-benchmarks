@@ -16,7 +16,7 @@ from gammapy.utils.parallel import run_multiprocessing, multiprocessing_manager
 
 from utils import (build_observation, build_dataset_1d, build_dataset_3d,
                    build_model, fake_and_apply_fpe, fake_and_apply_fpe_3d,
-                   create_coverage_figure, fake_and_apply_fe)
+                   create_coverage_figure, fake_and_apply_fe, fake_and_apply_fe_3d)
 AVAILABLE_GEOMS = ["1d", "3d"]
 
 log = logging.getLogger(__name__)
@@ -97,56 +97,71 @@ def run_fp_coverage(geometries, livetime, crab_fraction, n_samples, n_sigma, n_s
 
 
 @cli.command("sensitivity", help="Run sensitivity evaluation validation")
+@click.argument("geometries", type=click.Choice(list(AVAILABLE_GEOMS) + ["all"]))
 @click.option("--livetime", type=str, default="1 h")
 @click.option("--crab_fractions", type=(float, float, int), default=(1e-3, 1e-1, 10))
 @click.option("--n_samples", type=int, default=1000)
 @click.option("--n_sigma", type=float, default=3)
 @click.option("--n_jobs", type=int, default=4)
 @click.option("--save_results", is_flag=True)
-def run_sensitivity_coverage(livetime, crab_fractions, n_samples, n_sigma, n_jobs, save_results):
+def run_sensitivity_coverage(geometries, livetime, crab_fractions, n_samples, n_sigma, n_jobs, save_results):
     """Run coverage validation."""
     start_time = time.time()
 
     livetime = u.Quantity(livetime)
-
-    log.info(f"Perform sensitivity validation on 1d dataset.")
-
-    obs = build_observation(livetime=livetime)
-
-    dataset = build_dataset_1d(obs)
-    dataset.mask_fit = dataset.counts.geom.energy_mask(0.1 * u.TeV, 100 * u.TeV)
-
-    fe_config = {"selection_optional":["sensitivity"], "n_sigma_sensitivity": n_sigma}
-
+    geometries = list(AVAILABLE_GEOMS) if geometries == "all" else [geometries]
     crab_fractions = np.geomspace(crab_fractions[0], crab_fractions[1], crab_fractions[2])
 
-    log.info(f"Start simulation loop over source flux.")
+    fe_config = {"selection_optional": ["sensitivity"], "n_sigma_sensitivity": n_sigma}
 
-    results = []
-    for crab_fraction in crab_fractions:
-        model = build_model(percent_crab=crab_fraction)
+    for geometry in geometries:
+        log.info(f"Perform sensitivity validation on {geometry} dataset.")
 
-        log.info(f"Starting simulations for {1e3*crab_fraction:.2f} mCrab.")
-        with multiprocessing_manager(backend="multiprocessing", pool_kwargs=dict(processes=n_jobs)):
-            simu = perform_sensitivity_simulation(n_samples, dataset, model, fe_config)
+        obs = build_observation(livetime=livetime)
 
-        result = dict()
-        ref_amplitude = model.spectral_model.amplitude.quantity
-        result["ref_amplitude"] = ref_amplitude
-        result["flux"] = np.array([res['norm'] for res in simu]) * ref_amplitude
-        result["sensitivity"] = np.array([res['norm_sensitivity'] for res in simu]) * ref_amplitude
-        result["excess"] = np.array([res['npred_excess'][0] for res in simu])
-        result["sqrt_ts"] = np.sqrt(np.array([res['ts'] for res in simu])) * np.sign(result["excess"])
+        if geometry == "1d":
+            dataset = build_dataset_1d(obs)
+            dataset.mask_fit = dataset.counts.geom.energy_mask(0.1 * u.TeV, 100 * u.TeV)
+            pointing = None
+        elif geometry == "3d":
+            dataset = build_dataset_3d(obs)
+            pointing = obs.get_pointing_icrs(obs.tmid)
 
-        results.append(result)
+        log.info(f"Start simulation loop over source flux.")
 
-    table = Table(results)
+        results = []
+        for crab_fraction in crab_fractions:
+            model = build_model(percent_crab=crab_fraction, pointing=pointing)
 
-    log.info(f"Compute sensitivity and plot result.")
-    widths = 0.4 * table["ref_amplitude"][-1]/len(table)
-    plt.violinplot(dataset=table["sqrt_ts"].data.tolist(), positions=table["ref_amplitude"],
-                   showmedians=True, showextrema=False, widths=widths, quantiles=[[0.16, 0.84],]*len(table))
-    plt.show()
+            log.info(f"Starting simulations for {1e3*crab_fraction:.2f} mCrab.")
+            with multiprocessing_manager(backend="multiprocessing", pool_kwargs=dict(processes=n_jobs)):
+                if geometry == "1d":
+                    simu = perform_sensitivity_simulation(n_samples, dataset, model, fe_config)
+                elif geometry == "3d":
+                    simu = perform_sensitivity_simulation_3d(n_samples, dataset, model, fe_config)
+
+            result = dict()
+            ref_amplitude = model.spectral_model.amplitude.quantity
+            result["ref_amplitude"] = ref_amplitude
+            result["flux"] = np.array([res['norm'] for res in simu]) * ref_amplitude
+            result["sensitivity"] = np.array([res['norm_sensitivity'] for res in simu]) * ref_amplitude
+            result["excess"] = np.array([res['npred_excess'][0] for res in simu])
+            result["sqrt_ts"] = np.sqrt(np.array([res['ts'] for res in simu])) * np.sign(result["excess"])
+
+            results.append(result)
+
+        table = Table(results)
+
+        log.info(f"Compute sensitivity and plot result.")
+        dir = Path("results")
+        dir.mkdir(exist_ok=True)
+        filename = dir / f"sensitivity_{geometry}_{livetime.to_value('h')}h.png"
+        widths = 0.4 * table["ref_amplitude"][-1]/len(table)
+        plt.violinplot(dataset=table["sqrt_ts"].data.tolist(), positions=table["ref_amplitude"],
+                       showmedians=True, showextrema=False, widths=widths, quantiles=[[0.16, 0.84],]*len(table))
+        plt.savefig(filename)
+        plt.close()
+        log.info(f"Saved sensitivity plot to {filename}.")
 
     end_time = time.time()
     duration = end_time - start_time
@@ -192,6 +207,14 @@ def perform_sensitivity_simulation(nsim, dataset, model, fe_config):
     result = run_multiprocessing(fake_and_apply_fe, inputs, task_name="simulation")
 
     return result
+
+
+def perform_sensitivity_simulation_3d(nsim, dataset, model, fe_config):
+    indices = np.arange(nsim)
+
+    inputs = [(dataset, model, fe_config) for _ in indices]
+
+    return run_multiprocessing(fake_and_apply_fe_3d, inputs, task_name="simulation")
 
 
 

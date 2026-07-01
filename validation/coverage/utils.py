@@ -156,6 +156,23 @@ def fake_and_apply_fe(dataset, model, fe_config):
     dataset_on_off = fake_dataset(dataset, model)
     return FluxEstimator(**fe_config).run([dataset_on_off])
 
+def fake_and_apply_fe_3d(dataset, model, fe_config):
+    # TODO: use public API — FluxEstimator is in gammapy.estimators.flux (private submodule)
+    fe = FluxEstimator(source="source", **fe_config)
+    dataset = dataset.copy(name="obs-3d")
+    dataset.models = Models([model.copy(name="source")])
+    dataset.fake(random_state="random-seed")
+    res = fe.run([dataset])
+    # Project to a spectrum dataset to compute npred_excess as a 1-element array,
+    # matching the 1D worker's output shape (used only for sign of sqrt_ts).
+    on_region = CircleSkyRegion(
+        center=model.spatial_model.position, radius=Angle("0.11 deg")
+    )
+    dataset_spec = dataset.to_spectrum_dataset(on_region=on_region, name="obs-3d-spec")
+    excess = (dataset_spec.counts.data - dataset_spec.npred_background().data).sum()
+    res["npred_excess"] = np.array([excess])
+    return res
+
 def compute_ci_coverage(result_fp, use_covar=False, remove_ul=False):
     energy_axis = result_fp.geom.axes["energy"]
 
