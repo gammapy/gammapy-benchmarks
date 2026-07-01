@@ -15,7 +15,7 @@ from gammapy.maps import MapAxis, RegionGeom, LabelMapAxis, Map, WcsGeom
 from gammapy.modeling.models import SkyModel, Models, create_crab_spectral_model, PointSpatialModel
 
 
-def build_observation(livetime="1 h"):
+def build_observation(livetime="1 h", offset="0.5 deg"):
     """Build an observation using CTAO south Prod 5 IRFs.
 
     Pointing is assumed to be fixed on the GC direction.
@@ -27,8 +27,13 @@ def build_observation(livetime="1 h"):
     """
     # Define simulation parameters parameters
     livetime = u.Quantity(livetime)
+    offset = u.Quantity(offset)
 
-    pointing_position = SkyCoord(83.233, 22.214, unit="deg", frame="galactic")
+    crab_position = SkyCoord(83.233, 22.214, unit="deg", frame="galactic")
+    pointing_position = crab_position.directional_offset_by(
+        position_angle=0 * u.deg, separation=offset
+    )
+    
     # We want to simulate an observation pointing at a fixed position in the sky.
     # For this, we use the `FixedPointingInfo` class
     pointing = FixedPointingInfo(
@@ -51,25 +56,20 @@ def build_energy_axis():
     return MapAxis.from_energy_bounds(0.1, 100, 6, per_decade=True, unit="TeV")
 
 
-def build_dataset_1d(obs, offset="0.5 deg"):
+def build_dataset_1d(obs):
     """Build dataset.
 
     TODO: use configuration to build dataset
     """
-    offset = u.Quantity(offset)
-
     # Reconstructed and true energy axis
     energy_axis = build_energy_axis()
     energy_axis_true = MapAxis.from_energy_bounds(0.05, 200, 12, per_decade=True, unit="TeV", name="energy_true")
 
     on_region_radius = Angle("0.11 deg")
 
-    pointing_position = obs.get_pointing_icrs(obs.tmid)
-    center = pointing_position.directional_offset_by(
-        position_angle=0 * u.deg, separation=offset
-    )
-
-    on_region = CircleSkyRegion(center=center, radius=on_region_radius)
+    position = SkyCoord(83.233, 22.214, unit="deg", frame="galactic")
+    
+    on_region = CircleSkyRegion(center=position, radius=on_region_radius)
 
     # Make the SpectrumDataset
     geom = RegionGeom.create(region=on_region, axes=[energy_axis])
@@ -95,9 +95,9 @@ def build_dataset_3d(obs):
     energy_axis_true = MapAxis.from_energy_bounds(
         0.05, 100, nbin=30, unit="TeV", name="energy_true"
     )
-    pointing = obs.get_pointing_icrs(obs.tmid)
+    center = SkyCoord(83.233, 22.214, unit="deg", frame="galactic")
     geom = WcsGeom.create(
-        skydir=pointing,
+        skydir=center,
         width=3.0 * u.deg,
         binsz=0.02 * u.deg,
         frame="icrs",
