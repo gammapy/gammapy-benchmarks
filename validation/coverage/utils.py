@@ -116,6 +116,12 @@ def build_dataset_3d(obs):
     return dataset
 
 def fake_dataset(dataset, model):
+    dataset = dataset.copy(name=dataset.name)
+    dataset.models = Models([model.copy(name="source")])
+    dataset.fake()
+    return dataset
+
+def fake_dataset_on_off(dataset, model):
     dataset_on_off = SpectrumDatasetOnOff.from_spectrum_dataset(
         dataset=dataset, acceptance=1, acceptance_off=10,
         name=dataset.name   # keeping the same name is necessary to keep flux points geometries aligned
@@ -135,18 +141,18 @@ def reduce_dimensionality_flux_points(flux_points):
 
 def fake_and_apply_fpe(dataset, model, fpe_config):
     fpe = FluxPointsEstimator(**fpe_config)
-    dataset_on_off = fake_dataset(dataset, model)
-    fp = fpe.run([dataset_on_off])
+    if isinstance(dataset, SpectrumDataset):
+        faked_dataset = fake_dataset_on_off(dataset, model)
+    else:
+        faked_dataset = faked_dataset(dataset, model)
+    fp = fpe.run([faked_dataset])
     return fp
 
-def fake_and_apply_fpe_3d(dataset, model, fpe_config):
-    fpe = FluxPointsEstimator(**fpe_config, source="source")
-    fpe.n_jobs = 1
-    dataset = dataset.copy(name="obs-3d")
-    dataset.models = Models([model.copy(name="source")])
-    dataset.fake(random_state="random-seed")
-    fp = fpe.run([dataset])
-    return fp
+#def fake_and_apply_fpe_3d(dataset, model, fpe_config):
+#    fpe = FluxPointsEstimator(**fpe_config, source="source")
+#    fpe.n_jobs = 1   
+#    fp = fpe.run([dataset])
+#    return fp
 
 def fake_and_apply_fe(dataset, model, fe_config):
     dataset_on_off = fake_dataset(dataset, model)

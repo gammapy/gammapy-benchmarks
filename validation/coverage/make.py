@@ -76,7 +76,7 @@ def run_fp_coverage(geometries, livetime, crab_fraction, n_samples, n_sigma, n_s
             if geometry == "1d":
                 result = perform_fpe_simulation(n_samples, dataset, model, fpe_config)
             elif geometry == "3d":
-                result = perform_fpe_simulation_3d(n_samples, dataset, model, fpe_config)
+                result = perform_fpe_simulation(n_samples, dataset, model, fpe_config)
 
         log.info(f"Compute coverage and plot result.")
         dir = Path("results")
@@ -131,11 +131,8 @@ def run_sensitivity_coverage(geometries, livetime, crab_fractions, n_samples, n_
 
             log.info(f"Starting simulations for {1e3*crab_fraction:.2f} mCrab.")
             with multiprocessing_manager(backend="multiprocessing", pool_kwargs=dict(processes=n_jobs)):
-                if geometry == "1d":
-                    simu = perform_sensitivity_simulation(n_samples, dataset, model, fe_config)
-                elif geometry == "3d":
-                    simu = perform_sensitivity_simulation_3d(n_samples, dataset, model, fe_config)
-
+                simu = perform_sensitivity_simulation(n_samples, dataset, model, fe_config)
+  
             result = dict()
             ref_amplitude = model.spectral_model.amplitude.quantity
             result["ref_amplitude"] = ref_amplitude
