@@ -4,7 +4,6 @@ import warnings
 from pathlib import Path
 
 import click
-import matplotlib.pyplot as plt
 
 import numpy as np
 import astropy.units as u
@@ -15,7 +14,8 @@ from gammapy.maps import LabelMapAxis
 from gammapy.utils.parallel import run_multiprocessing, multiprocessing_manager
 
 from utils import (build_observation, build_dataset_1d, build_dataset_3d,
-                   build_model, fake_and_apply_fpe, create_coverage_figure, fake_and_apply_fe)
+                   build_model, fake_and_apply_fpe, create_coverage_figure, fake_and_apply_fe,
+                   create_sensitivity_figure)
 AVAILABLE_GEOMS = ["1d", "3d"]
 
 log = logging.getLogger(__name__)
@@ -127,8 +127,9 @@ def run_sensitivity_coverage(geometries, livetime, scan_range, n_samples, n_sigm
         fe = FluxEstimator(**fe_config)
         dataset.models = model
         res = fe.run([dataset])
-        sensitivity_asimov = res['norm_sensitivity']*ref_fraction 
+        sensitivity_asimov = res['norm_sensitivity']*ref_fraction
         log.info(f"Asimov sensitivity for observation is {sensitivity_asimov:.3f} crab.")
+        sensitivity_amplitude = build_model(percent_crab=sensitivity_asimov).spectral_model.amplitude.quantity
 
         crab_fractions = np.geomspace(scan_range[0]*sensitivity_asimov, 
                                       scan_range[1]*sensitivity_asimov, 
@@ -161,12 +162,7 @@ def run_sensitivity_coverage(geometries, livetime, scan_range, n_samples, n_sigm
         dir = Path("results")
         dir.mkdir(exist_ok=True)
         filename = dir / f"sensitivity_{geometry}_{livetime.to_value('h')}h.png"
-#        widths = 0.2 * table["ref_amplitude"][-1]/len(table)
-#        plt.violinplot(dataset=table["sqrt_ts"].data.tolist(), positions=table["ref_amplitude"],
-#                       showmedians=True, showextrema=False, widths=widths, quantiles=[[0.16, 0.84],]*len(table))
-        
-        plt.savefig(filename)
-        plt.close()
+        create_sensitivity_figure(table, n_sigma, sensitivity_amplitude, filename)
         log.info(f"Saved sensitivity plot to {filename}.")
 
     end_time = time.time()

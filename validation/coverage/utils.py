@@ -189,6 +189,36 @@ def compute_ul_coverage(result_fp):
     geom = in_ul.geom.to_image().to_cube([energy_axis])
     return Map.from_geom(geom, data=np.mean(in_ul, axis=0))
 
+def create_sensitivity_figure(table, n_sigma, sensitivity_amplitude, filename):
+    x = table["ref_amplitude"].quantity
+    sqrt_ts = np.asarray(table["sqrt_ts"])
+    n_samples = sqrt_ts.shape[1]
+    p16, median, p84 = np.percentile(sqrt_ts, [16, 50, 84], axis=1)
+    # Approximate the standard error on the median from the 16-84% half-width,
+    # scaled by sqrt(n_samples), as already done for coverage bands elsewhere.
+    median_err = (p84 - p16) / 2 * n_samples ** -0.5
+
+    fig, ax = plt.subplots()
+    ax.fill_between(x.value, p16, p84, alpha=0.3, color="C0", label="16%-84% containment")
+    ax.fill_between(
+        x.value, median - median_err, median + median_err, alpha=0.6, color="C1",
+        label="median uncertainty"
+    )
+    ax.plot(x.value, median, color="C0", marker="o", label="median")
+    ax.axhline(n_sigma, color="k", linestyle="--", label=f"{n_sigma}"+r"$\sigma$")
+    ax.axvline(
+        sensitivity_amplitude.to_value(x.unit), color="r", linestyle="--", label=f"Asimov sensitivity ({n_sigma}"+r"$\sigma$)"
+    )
+
+    ax.set_xscale("log")
+    ax.set_xlabel(f"Reference amplitude ({x.unit})")
+    ax.set_ylabel(r"$\sqrt{TS}$")
+    ax.legend()
+
+    fig.savefig(filename)
+    plt.close(fig)
+
+
 def create_coverage_figure(result, filename):
     coverage_ci = compute_ci_coverage(result, False, False)
     coverage_covar_ci = compute_ci_coverage(result, True, False)
