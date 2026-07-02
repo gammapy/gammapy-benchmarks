@@ -153,7 +153,7 @@ def fake_and_apply_fe(dataset, model, fe_config):
         faked_dataset = fake_dataset_on_off(dataset, model)
     else:
         faked_dataset = fake_dataset_3d(dataset, model)
-    print(faked_dataset.models["source"])
+    
     result = fe.run([faked_dataset])
 
     if dataset.tag == "MapDataset":

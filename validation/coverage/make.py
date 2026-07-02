@@ -95,18 +95,17 @@ def run_fp_coverage(geometries, livetime, crab_fraction, n_samples, n_sigma, n_s
 @cli.command("sensitivity", help="Run sensitivity evaluation validation")
 @click.argument("geometries", type=click.Choice(list(AVAILABLE_GEOMS) + ["all"]))
 @click.option("--livetime", type=str, default="1 h")
-@click.option("--crab_fractions", type=(float, float, int), default=(1e-3, 1e-1, 10))
+@click.option("--scan_range", type=(float, float, int), default=(0.5, 2., 10))
 @click.option("--n_samples", type=int, default=1000)
 @click.option("--n_sigma", type=float, default=3)
 @click.option("--n_jobs", type=int, default=4)
 @click.option("--save_results", is_flag=True)
-def run_sensitivity_coverage(geometries, livetime, crab_fractions, n_samples, n_sigma, n_jobs, save_results):
+def run_sensitivity_coverage(geometries, livetime, scan_range, n_samples, n_sigma, n_jobs, save_results):
     """Run coverage validation."""
     start_time = time.time()
 
     livetime = u.Quantity(livetime)
     geometries = list(AVAILABLE_GEOMS) if geometries == "all" else [geometries]
-    crab_fractions = np.geomspace(crab_fractions[0], crab_fractions[1], crab_fractions[2])
 
     fe_config = {"source": 0, "selection_optional": ["sensitivity"], "n_sigma_sensitivity": n_sigma}
 
@@ -121,6 +120,21 @@ def run_sensitivity_coverage(geometries, livetime, crab_fractions, n_samples, n_
         elif geometry == "3d":
             dataset = build_dataset_3d(obs)
 
+        log.info(f"Compute expected sensitivity with Asimov dataset.")
+        from gammapy.estimators.flux import FluxEstimator
+        ref_fraction = 0.1
+        model = build_model(percent_crab=ref_fraction)
+        fe = FluxEstimator(**fe_config)
+        dataset.models = model
+        res = fe.run([dataset])
+        sensitivity_asimov = res['norm_sensitivity']*ref_fraction 
+        log.info(f"Asimov sensitivity for observation is {sensitivity_asimov:.3f} crab.")
+
+        crab_fractions = np.geomspace(scan_range[0]*sensitivity_asimov, 
+                                      scan_range[1]*sensitivity_asimov, 
+                                      scan_range[2]
+                                      )
+        
         log.info(f"Start simulation loop over source flux.")
 
         results = []
@@ -147,9 +161,10 @@ def run_sensitivity_coverage(geometries, livetime, crab_fractions, n_samples, n_
         dir = Path("results")
         dir.mkdir(exist_ok=True)
         filename = dir / f"sensitivity_{geometry}_{livetime.to_value('h')}h.png"
-        widths = 0.4 * table["ref_amplitude"][-1]/len(table)
-        plt.violinplot(dataset=table["sqrt_ts"].data.tolist(), positions=table["ref_amplitude"],
-                       showmedians=True, showextrema=False, widths=widths, quantiles=[[0.16, 0.84],]*len(table))
+#        widths = 0.2 * table["ref_amplitude"][-1]/len(table)
+#        plt.violinplot(dataset=table["sqrt_ts"].data.tolist(), positions=table["ref_amplitude"],
+#                       showmedians=True, showextrema=False, widths=widths, quantiles=[[0.16, 0.84],]*len(table))
+        
         plt.savefig(filename)
         plt.close()
         log.info(f"Saved sensitivity plot to {filename}.")
