@@ -95,16 +95,18 @@ def run_fp_coverage(geometries, livetime, crab_fraction, n_samples, n_sigma, n_s
 @cli.command("sensitivity", help="Run sensitivity evaluation validation")
 @click.argument("geometries", type=click.Choice(list(AVAILABLE_GEOMS) + ["all"]))
 @click.option("--livetime", type=str, default="1 h")
+@click.option("--threshold", type=str, default="0.1 TeV")
 @click.option("--scan_range", type=(float, float, int), default=(0.5, 2., 10))
 @click.option("--n_samples", type=int, default=1000)
 @click.option("--n_sigma", type=float, default=3)
 @click.option("--n_jobs", type=int, default=4)
 @click.option("--save_results", is_flag=True)
-def run_sensitivity_coverage(geometries, livetime, scan_range, n_samples, n_sigma, n_jobs, save_results):
+def run_sensitivity_coverage(geometries, livetime, threshold, scan_range, n_samples, n_sigma, n_jobs, save_results):
     """Run coverage validation."""
     start_time = time.time()
 
     livetime = u.Quantity(livetime)
+    threshold = u.Quantity(threshold).to("TeV")
     geometries = list(AVAILABLE_GEOMS) if geometries == "all" else [geometries]
 
     fe_config = {"source": 0, "selection_optional": ["sensitivity"], "n_sigma_sensitivity": n_sigma}
@@ -116,9 +118,11 @@ def run_sensitivity_coverage(geometries, livetime, scan_range, n_samples, n_sigm
 
         if geometry == "1d":
             dataset = build_dataset_1d(obs)
-            dataset.mask_fit = dataset.counts.geom.energy_mask(0.1 * u.TeV, 100 * u.TeV)
         elif geometry == "3d":
             dataset = build_dataset_3d(obs)
+
+        log.info(f"Set lower fit range to {threshold}")
+        dataset.mask_fit = dataset.counts.geom.energy_mask(threshold, 100 * u.TeV)
 
         log.info(f"Compute expected sensitivity with Asimov dataset.")
         from gammapy.estimators.flux import FluxEstimator
