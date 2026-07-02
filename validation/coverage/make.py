@@ -15,8 +15,7 @@ from gammapy.maps import LabelMapAxis
 from gammapy.utils.parallel import run_multiprocessing, multiprocessing_manager
 
 from utils import (build_observation, build_dataset_1d, build_dataset_3d,
-                   build_model, fake_and_apply_fpe, fake_and_apply_fpe_3d,
-                   create_coverage_figure, fake_and_apply_fe, fake_and_apply_fe_3d)
+                   build_model, fake_and_apply_fpe, create_coverage_figure, fake_and_apply_fe)
 AVAILABLE_GEOMS = ["1d", "3d"]
 
 log = logging.getLogger(__name__)
@@ -60,11 +59,13 @@ def run_fp_coverage(geometries, livetime, crab_fraction, n_samples, n_sigma, n_s
             dataset = build_dataset_1d(obs)
         elif geometry == "3d":
             dataset = build_dataset_3d(obs)
+
         model = build_model(percent_crab=crab_fraction)
 
         energy_edges = dataset.counts.geom.axes["energy"].downsample(2).edges
 
         fpe_config = {
+            "source" : "source",
             "energy_edges": energy_edges,
             "selection_optional": ["errn-errp", "ul"],
             "n_sigma": n_sigma,
@@ -73,11 +74,8 @@ def run_fp_coverage(geometries, livetime, crab_fraction, n_samples, n_sigma, n_s
 
         log.info(f"Starting simulations.")
         with multiprocessing_manager(backend="multiprocessing", pool_kwargs=dict(processes=n_jobs)):
-            if geometry == "1d":
-                result = perform_fpe_simulation(n_samples, dataset, model, fpe_config)
-            elif geometry == "3d":
-                result = perform_fpe_simulation(n_samples, dataset, model, fpe_config)
-
+            result = perform_fpe_simulation(n_samples, dataset, model, fpe_config)
+            
         log.info(f"Compute coverage and plot result.")
         dir = Path("results")
         dir.mkdir(exist_ok=True)
@@ -110,7 +108,7 @@ def run_sensitivity_coverage(geometries, livetime, crab_fractions, n_samples, n_
     geometries = list(AVAILABLE_GEOMS) if geometries == "all" else [geometries]
     crab_fractions = np.geomspace(crab_fractions[0], crab_fractions[1], crab_fractions[2])
 
-    fe_config = {"selection_optional": ["sensitivity"], "n_sigma_sensitivity": n_sigma}
+    fe_config = {"source": 0, "selection_optional": ["sensitivity"], "n_sigma_sensitivity": n_sigma}
 
     for geometry in geometries:
         log.info(f"Perform sensitivity validation on {geometry} dataset.")
@@ -161,7 +159,6 @@ def run_sensitivity_coverage(geometries, livetime, crab_fractions, n_samples, n_
     log.info(f"The total time taken for the sensitivity validation is: {duration} s ({duration/60} min)")
 
 
-
 def perform_fpe_simulation(nsim, dataset, model, fpe_config):
     indices = np.arange(nsim)
 
@@ -179,35 +176,14 @@ def perform_fpe_simulation(nsim, dataset, model, fpe_config):
             )
     return result
 
-
-def perform_fpe_simulation_3d(nsim, dataset, model, fpe_config):
-    indices = np.arange(nsim)
-
-    fpe_config["n_jobs"] = 1
-
-    inputs = [(dataset, model, fpe_config) for _ in indices]
-
-    fps = run_multiprocessing(fake_and_apply_fpe_3d, inputs, task_name="simulation")
-
-    axis = LabelMapAxis(indices, name='index')
-    return FluxPoints.from_stack(maps=fps, axis=axis)
-
 def perform_sensitivity_simulation(nsim, dataset, model, fe_config):
+    #fe_config["n_jobs"] = 1
+
     indices = np.arange(nsim)
 
     inputs = [(dataset, model, fe_config)  for _ in indices]
 
-    result = run_multiprocessing(fake_and_apply_fe, inputs, task_name="simulation")
-
-    return result
-
-
-def perform_sensitivity_simulation_3d(nsim, dataset, model, fe_config):
-    indices = np.arange(nsim)
-
-    inputs = [(dataset, model, fe_config) for _ in indices]
-
-    return run_multiprocessing(fake_and_apply_fe_3d, inputs, task_name="simulation")
+    return run_multiprocessing(fake_and_apply_fe, inputs, task_name="simulation")
 
 
 

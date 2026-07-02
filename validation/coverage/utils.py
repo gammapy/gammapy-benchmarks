@@ -14,6 +14,7 @@ from gammapy.makers import SpectrumDatasetMaker, MapDatasetMaker, SafeMaskMaker
 from gammapy.maps import MapAxis, RegionGeom, LabelMapAxis, Map, WcsGeom
 from gammapy.modeling.models import SkyModel, Models, create_crab_spectral_model, PointSpatialModel
 
+CRAB_POSITION = SkyCoord(83.233, 22.214, unit="deg", frame="icrs")
 
 def build_observation(livetime="1 h", offset="0.5 deg"):
     """Build an observation using CTAO south Prod 5 IRFs.
@@ -29,8 +30,7 @@ def build_observation(livetime="1 h", offset="0.5 deg"):
     livetime = u.Quantity(livetime)
     offset = u.Quantity(offset)
 
-    crab_position = SkyCoord(83.233, 22.214, unit="deg", frame="galactic")
-    pointing_position = crab_position.directional_offset_by(
+    pointing_position = CRAB_POSITION.directional_offset_by(
         position_angle=0 * u.deg, separation=offset
     )
     
@@ -66,10 +66,8 @@ def build_dataset_1d(obs):
     energy_axis_true = MapAxis.from_energy_bounds(0.05, 200, 12, per_decade=True, unit="TeV", name="energy_true")
 
     on_region_radius = Angle("0.11 deg")
-
-    position = SkyCoord(83.233, 22.214, unit="deg", frame="galactic")
-    
-    on_region = CircleSkyRegion(center=position, radius=on_region_radius)
+ 
+    on_region = CircleSkyRegion(center=CRAB_POSITION, radius=on_region_radius)
 
     # Make the SpectrumDataset
     geom = RegionGeom.create(region=on_region, axes=[energy_axis])
@@ -84,7 +82,7 @@ def build_dataset_1d(obs):
 def build_model(percent_crab=0.1):
     spectral = create_crab_spectral_model('magic_lp')
     spectral.amplitude.value *= percent_crab
-    spatial = PointSpatialModel(lon_0="83.633 deg", lat_0="22.014 deg", frame="icrs")
+    spatial = PointSpatialModel(lon_0=CRAB_POSITION.ra, lat_0=CRAB_POSITION.dec, frame="icrs")
     spatial.freeze()  
     return SkyModel(spatial_model=spatial, spectral_model=spectral, name="source")
     
@@ -95,9 +93,9 @@ def build_dataset_3d(obs):
     energy_axis_true = MapAxis.from_energy_bounds(
         0.05, 100, nbin=30, unit="TeV", name="energy_true"
     )
-    center = SkyCoord(83.233, 22.214, unit="deg", frame="galactic")
+
     geom = WcsGeom.create(
-        skydir=center,
+        skydir=CRAB_POSITION,
         width=3.0 * u.deg,
         binsz=0.02 * u.deg,
         frame="icrs",
@@ -115,7 +113,7 @@ def build_dataset_3d(obs):
     dataset = maker_safe.run(dataset, obs)
     return dataset
 
-def fake_dataset(dataset, model):
+def fake_dataset_3d(dataset, model):
     dataset = dataset.copy(name=dataset.name)
     dataset.models = Models([model.copy(name="source")])
     dataset.fake()
@@ -126,7 +124,7 @@ def fake_dataset_on_off(dataset, model):
         dataset=dataset, acceptance=1, acceptance_off=10,
         name=dataset.name   # keeping the same name is necessary to keep flux points geometries aligned
     )
-    dataset_on_off.models = model.copy()
+    dataset_on_off.models = model.copy(name="source")
 
     dataset_on_off.fake(npred_background=dataset.npred_background())
     return dataset_on_off
@@ -144,36 +142,28 @@ def fake_and_apply_fpe(dataset, model, fpe_config):
     if isinstance(dataset, SpectrumDataset):
         faked_dataset = fake_dataset_on_off(dataset, model)
     else:
-        faked_dataset = faked_dataset(dataset, model)
+        faked_dataset = fake_dataset_3d(dataset, model)
     fp = fpe.run([faked_dataset])
     return fp
 
-#def fake_and_apply_fpe_3d(dataset, model, fpe_config):
-#    fpe = FluxPointsEstimator(**fpe_config, source="source")
-#    fpe.n_jobs = 1   
-#    fp = fpe.run([dataset])
-#    return fp
 
 def fake_and_apply_fe(dataset, model, fe_config):
-    dataset_on_off = fake_dataset(dataset, model)
-    return FluxEstimator(**fe_config).run([dataset_on_off])
+    fe = FluxEstimator(**fe_config)
+    if isinstance(dataset, SpectrumDataset):
+        faked_dataset = fake_dataset_on_off(dataset, model)
+    else:
+        faked_dataset = fake_dataset_3d(dataset, model)
+    print(faked_dataset.models["source"])
+    result = fe.run([faked_dataset])
 
-def fake_and_apply_fe_3d(dataset, model, fe_config):
-    # TODO: use public API — FluxEstimator is in gammapy.estimators.flux (private submodule)
-    fe = FluxEstimator(source="source", **fe_config)
-    dataset = dataset.copy(name="obs-3d")
-    dataset.models = Models([model.copy(name="source")])
-    dataset.fake(random_state="random-seed")
-    res = fe.run([dataset])
-    # Project to a spectrum dataset to compute npred_excess as a 1-element array,
-    # matching the 1D worker's output shape (used only for sign of sqrt_ts).
-    on_region = CircleSkyRegion(
-        center=model.spatial_model.position, radius=Angle("0.11 deg")
-    )
-    dataset_spec = dataset.to_spectrum_dataset(on_region=on_region, name="obs-3d-spec")
-    excess = (dataset_spec.counts.data - dataset_spec.npred_background().data).sum()
-    res["npred_excess"] = np.array([excess])
-    return res
+    if dataset.tag == "MapDataset":
+        # Project to a spectrum dataset to compute npred_excess as a 1-element array,
+        on_region = CircleSkyRegion(center=model.spatial_model.position, radius=Angle("0.11 deg"))
+        dataset_spec = dataset.to_spectrum_dataset(on_region=on_region, name="obs-3d-spec")
+        excess = (dataset_spec.counts.data - dataset_spec.npred_background().data).sum()
+        # TODO: Add info on result
+    
+    return result
 
 def compute_ci_coverage(result_fp, use_covar=False, remove_ul=False):
     energy_axis = result_fp.geom.axes["energy"]
