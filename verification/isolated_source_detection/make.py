@@ -38,10 +38,18 @@ def cli(log_level, show_warnings):
 @click.option("--sigma", type=str, default="0.1 deg")
 @click.option("--correlation_radius", type=str, default="0.2 deg")
 @click.option("--detection_threshold", type=float, default=5.0)
+@click.option("--dataset_width", type=str, default="3 deg")
+@click.option(
+    "--exclusion_radius", type=str, default=None,
+    help="Region around the fitted source excluded from the residual mean/std "
+         "(default: 3x correlation_radius). The fit consumes degrees of freedom "
+         "concentrated there, which suppresses the local residual variance.",
+)
 @click.option("--n_samples", type=int, default=100)
 @click.option("--n_jobs", type=int, default=4)
 def run_isd(
-    livetime, crab_fraction, sigma, correlation_radius, detection_threshold, n_samples, n_jobs
+    livetime, crab_fraction, sigma, correlation_radius, detection_threshold,
+    dataset_width, exclusion_radius, n_samples, n_jobs
 ):
     """Run isolated source detection validation."""
     start_time = time.time()
@@ -50,7 +58,7 @@ def run_isd(
 
     log.info("Building observation and dataset.")
     obs = build_observation(livetime=livetime)
-    dataset = build_dataset_3d(obs)
+    dataset = build_dataset_3d(obs, width=dataset_width)
     model = build_extended_model(percent_crab=crab_fraction, sigma=sigma)
 
     config = {
@@ -59,6 +67,8 @@ def run_isd(
         "min_distance": correlation_radius,
         "sigma_init": sigma,
     }
+    if exclusion_radius is not None:
+        config["exclusion_radius"] = exclusion_radius
 
     log.info(f"Starting simulations.")
     with multiprocessing_manager(backend="multiprocessing", pool_kwargs=dict(processes=n_jobs)):
@@ -74,6 +84,8 @@ def run_isd(
         "livetime_h": livetime.to_value("h"),
         "sigma_deg": u.Quantity(sigma).to_value("deg"),
         "correlation_radius_deg": u.Quantity(correlation_radius).to_value("deg"),
+        "dataset_width_deg": u.Quantity(dataset_width).to_value("deg"),
+        "exclusion_radius_deg": u.Quantity(config.get("exclusion_radius") or 3 * u.Quantity(correlation_radius)).to_value("deg"),
     })
 
     filename = dir / f"isolated_source_detection_{crab_fraction}crab_{livetime.to_value('h')}h.png"

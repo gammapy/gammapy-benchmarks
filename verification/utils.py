@@ -90,7 +90,7 @@ def build_dataset_1d(obs, position=CRAB_POSITION):
     return maker.run(dataset_empty, obs)
 
 
-def build_dataset_3d(obs, position=CRAB_POSITION):
+def build_dataset_3d(obs, position=CRAB_POSITION, width="3 deg"):
     """Build a MapDataset from a single Observation for 3D coverage tests."""
     energy_axis = build_energy_axis()
     energy_axis_true = MapAxis.from_energy_bounds(
@@ -99,7 +99,7 @@ def build_dataset_3d(obs, position=CRAB_POSITION):
 
     geom = WcsGeom.create(
         skydir=position,
-        width=3.0 * u.deg,
+        width=u.Quantity(width),
         binsz=0.02 * u.deg,
         frame="icrs",
         axes=[energy_axis],

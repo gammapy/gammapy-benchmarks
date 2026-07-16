@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from astropy.coordinates import SkyCoord
+from astropy.coordinates import Angle, SkyCoord
 
 from gammapy.estimators import ExcessMapEstimator
 from gammapy.estimators.utils import find_peaks
@@ -12,7 +12,7 @@ from utils import fake_dataset_3d
 
 def detect_peak(dataset, correlation_radius, detection_threshold, min_distance):
     """Run the ExcessMapEstimator on a source-free dataset and return the brightest peak, or None."""
-    estimator = ExcessMapEstimator(correlation_radius=correlation_radius, sum_over_energy_groups=True)
+    estimator = ExcessMapEstimator(correlation_radius=correlation_radius)
     result = estimator.run(dataset)
     peaks = find_peaks(result["sqrt_ts"], threshold=detection_threshold, min_distance=min_distance)
     if len(peaks) == 0:
@@ -21,12 +21,30 @@ def detect_peak(dataset, correlation_radius, detection_threshold, min_distance):
 
 
 def build_candidate_model(peak, sigma_init="0.1 deg"):
-    """Build a free-parameter source model seeded at a detected peak position."""
+    """Build a free-parameter source model seeded at a detected peak position.
+
+    Amplitude and index are bounded to the physical region (positive flux,
+    reasonable spectral index), and every free parameter gets an explicit
+    initial step (`error`) -- without it MIGRAD's default step-size guess is
+    badly scaled across parameters as different as amplitude (~1e-12) and
+    lon_0 (~1e2 deg), which derails the Hessian estimate and reliably fails
+    to converge on datasets wider than ~3 deg.
+    """
     position = SkyCoord(peak["ra"], peak["dec"], unit="deg", frame="icrs")
     spatial = GaussianSpatialModel(
         lon_0=position.ra, lat_0=position.dec, sigma=sigma_init, frame="icrs"
     )
+    spatial.lon_0.error = 0.01
+    spatial.lat_0.error = 0.01
+    spatial.sigma.error = 0.01
+
     spectral = PowerLawSpectralModel(index=2, amplitude="1e-12 cm-2 s-1 TeV-1")
+    spectral.amplitude.min = 0
+    spectral.amplitude.error = 1e-13
+    spectral.index.min = 1
+    spectral.index.max = 5
+    spectral.index.error = 0.1
+
     return SkyModel(spatial_model=spatial, spectral_model=spectral, name="candidate")
 
 
@@ -39,12 +57,26 @@ def fit_candidate(dataset, candidate_model):
     return dataset, result.success
 
 
-def residual_stats(dataset, correlation_radius):
-    """Mean/std of the residual significance map, over unmasked pixels."""
-    estimator = ExcessMapEstimator(correlation_radius=correlation_radius, sum_over_energy_groups=True)
+def residual_stats(dataset, correlation_radius, exclusion_position=None, exclusion_radius=None):
+    """Mean/std of the residual significance map, over unmasked pixels.
+
+    If `exclusion_position`/`exclusion_radius` are given, pixels within
+    `exclusion_radius` of `exclusion_position` are dropped first. The fit
+    consumes a handful of degrees of freedom concentrated in the correlated
+    region around the fitted source, which measurably suppresses the local
+    residual variance there (the map only has a few dozen independent
+    correlated regions, so losing ~5 to the fit is not negligible) --
+    excluding that region keeps the check limited to genuinely source-free,
+    white-noise pixels.
+    """
+    estimator = ExcessMapEstimator(correlation_radius=correlation_radius)
     result = estimator.run(dataset)
-    sqrt_ts = result["sqrt_ts"].data
-    return float(np.nanmean(sqrt_ts)), float(np.nanstd(sqrt_ts))
+    sqrt_ts = result["sqrt_ts"]
+    data = sqrt_ts.data.copy()
+    if exclusion_position is not None and exclusion_radius is not None:
+        separation = sqrt_ts.geom.to_image().separation(exclusion_position)
+        data[:, separation < Angle(exclusion_radius)] = np.nan
+    return float(np.nanmean(data)), float(np.nanstd(data))
 
 
 def fake_detect_fit_recompute(dataset, model, config):
@@ -58,7 +90,9 @@ def fake_detect_fit_recompute(dataset, model, config):
         True source model to inject.
     config : dict
         `correlation_radius`, and optionally `detection_threshold` (default 5),
-        `min_distance` (default `correlation_radius`), `sigma_init` (default "0.1 deg").
+        `min_distance` (default `correlation_radius`), `sigma_init` (default "0.1 deg"),
+        `exclusion_radius` (default `3 * correlation_radius`) -- the region
+        around the fitted source excluded from the residual mean/std.
 
     Returns
     -------
@@ -85,7 +119,13 @@ def fake_detect_fit_recompute(dataset, model, config):
     if not fit_success:
         return {"detected": True, "fit_success": False, "mean": None, "std": None}
 
-    mean, std = residual_stats(fitted_dataset, correlation_radius)
+    exclusion_radius = config.get("exclusion_radius", 3 * Angle(correlation_radius))
+    mean, std = residual_stats(
+        fitted_dataset,
+        correlation_radius,
+        exclusion_position=fitted_dataset.models[0].position,
+        exclusion_radius=exclusion_radius,
+    )
     return {"detected": True, "fit_success": True, "mean": mean, "std": std}
 
 

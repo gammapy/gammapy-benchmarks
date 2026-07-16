@@ -26,6 +26,11 @@ AVAILABLE_USE_CASES = {
         "command": "make.py",
         "args": ["fp_coverage", "3d", "--livetime", "5h", "--n_samples", "100"],
     },
+    "isolated-source-detection": {
+        "folder": "isolated_source_detection",
+        "command": "make.py",
+        "args": ["isd", "--livetime", "5h", "--n_samples", "100"],
+    },
 }
 
 
