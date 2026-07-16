@@ -7,7 +7,9 @@ from gammapy.datasets import SpectrumDataset, SpectrumDatasetOnOff, MapDataset
 from gammapy.irf import load_irf_dict_from_file
 from gammapy.makers import SpectrumDatasetMaker, MapDatasetMaker, SafeMaskMaker
 from gammapy.maps import MapAxis, RegionGeom, WcsGeom
-from gammapy.modeling.models import SkyModel, Models, create_crab_spectral_model, PointSpatialModel
+from gammapy.modeling.models import (
+    SkyModel, Models, create_crab_spectral_model, PointSpatialModel, GaussianSpatialModel,
+)
 
 CRAB_POSITION = SkyCoord(83.233, 22.214, unit="deg", frame="icrs")
 
@@ -119,6 +121,21 @@ def build_model(percent_crab=0.1, position=CRAB_POSITION):
     spectral = create_crab_spectral_model('magic_lp')
     spectral.amplitude.value *= percent_crab
     spatial = PointSpatialModel(lon_0=position.ra, lat_0=position.dec, frame="icrs")
+    spatial.freeze()
+    return SkyModel(spatial_model=spatial, spectral_model=spectral, name="source")
+
+
+def build_extended_model(percent_crab=0.1, sigma="0.1 deg", position=CRAB_POSITION):
+    """Build a moderately extended source model with a power-law spectrum.
+
+    Uses the same Crab-normalization convention as `build_model`: amplitude is
+    scaled from a reference Crab power-law spectrum by `percent_crab`.
+    """
+    spectral = create_crab_spectral_model('hess_pl')
+    spectral.amplitude.value *= percent_crab
+    spatial = GaussianSpatialModel(
+        lon_0=position.ra, lat_0=position.dec, sigma=Angle(sigma), frame="icrs"
+    )
     spatial.freeze()
     return SkyModel(spatial_model=spatial, spectral_model=spectral, name="source")
 

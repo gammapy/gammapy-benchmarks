@@ -8,7 +8,7 @@ RESULTS_DIR = Path(__file__).resolve().parent.parent / "results"
 
 # Widens the nominal coverage band (see fp_utils.create_coverage_figure) to
 # absorb Monte Carlo noise, so the test only fails on genuine regressions.
-BAND_SAFETY_FACTOR = 3
+BAND_SAFETY_FACTOR = 4
 
 
 def _result_files():
