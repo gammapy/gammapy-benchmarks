@@ -1,133 +1,16 @@
 import numpy as np
-import astropy.units as u
-from astropy.coordinates import SkyCoord, Angle
+import matplotlib.pyplot as plt
+from astropy.coordinates import Angle
 from regions import CircleSkyRegion
 from scipy.stats import norm
-import matplotlib.pyplot as plt
 
-from gammapy.data import FixedPointingInfo, Observation, observatory_locations
-from gammapy.datasets import Datasets, SpectrumDataset, SpectrumDatasetOnOff, MapDataset
-from gammapy.estimators import FluxPointsEstimator, FluxPoints
+from gammapy.datasets import SpectrumDataset
+from gammapy.estimators import FluxPointsEstimator
 from gammapy.estimators.flux import FluxEstimator
-from gammapy.irf import load_irf_dict_from_file
-from gammapy.makers import SpectrumDatasetMaker, MapDatasetMaker, SafeMaskMaker
-from gammapy.maps import MapAxis, RegionGeom, LabelMapAxis, Map, WcsGeom
-from gammapy.modeling.models import SkyModel, Models, create_crab_spectral_model, PointSpatialModel
+from gammapy.maps import Map
 
-CRAB_POSITION = SkyCoord(83.233, 22.214, unit="deg", frame="icrs")
+from utils import fake_dataset_3d, fake_dataset_on_off
 
-def build_observation(livetime="1 h", offset="0.5 deg"):
-    """Build an observation using CTAO south Prod 5 IRFs.
-
-    Pointing is assumed to be fixed on the GC direction.
-
-    Parameters
-    ----------
-    livetime : `~astropy.quantity`, optional
-        The observation livetime. Default is 1h.
-    """
-    # Define simulation parameters parameters
-    livetime = u.Quantity(livetime)
-    offset = u.Quantity(offset)
-
-    pointing_position = CRAB_POSITION.directional_offset_by(
-        position_angle=0 * u.deg, separation=offset
-    )
-    
-    # We want to simulate an observation pointing at a fixed position in the sky.
-    # For this, we use the `FixedPointingInfo` class
-    pointing = FixedPointingInfo(
-        fixed_icrs=pointing_position.icrs,
-    )
-
-    irfs = load_irf_dict_from_file(
-        "$GAMMAPY_DATA/cta-caldb/Prod5-South-20deg-AverageAz-14MSTs37SSTs.180000s-v0.1.fits.gz"
-    )
-
-    location = observatory_locations["ctao_south"]
-    return Observation.create(
-        pointing=pointing,
-        livetime=livetime,
-        irfs=irfs,
-        location=location,
-    )
-
-def build_energy_axis():
-    return MapAxis.from_energy_bounds(0.1, 100, 6, per_decade=True, unit="TeV")
-
-
-def build_dataset_1d(obs):
-    """Build dataset.
-
-    TODO: use configuration to build dataset
-    """
-    # Reconstructed and true energy axis
-    energy_axis = build_energy_axis()
-    energy_axis_true = MapAxis.from_energy_bounds(0.05, 200, 12, per_decade=True, unit="TeV", name="energy_true")
-
-    on_region_radius = Angle("0.11 deg")
- 
-    on_region = CircleSkyRegion(center=CRAB_POSITION, radius=on_region_radius)
-
-    # Make the SpectrumDataset
-    geom = RegionGeom.create(region=on_region, axes=[energy_axis])
-
-    dataset_empty = SpectrumDataset.create(
-        geom=geom, energy_axis_true=energy_axis_true, name="obs-0"
-    )
-    maker = SpectrumDatasetMaker(selection=["exposure", "edisp", "background"])
-
-    return maker.run(dataset_empty, obs)
-
-def build_model(percent_crab=0.1):
-    spectral = create_crab_spectral_model('magic_lp')
-    spectral.amplitude.value *= percent_crab
-    spatial = PointSpatialModel(lon_0=CRAB_POSITION.ra, lat_0=CRAB_POSITION.dec, frame="icrs")
-    spatial.freeze()  
-    return SkyModel(spatial_model=spatial, spectral_model=spectral, name="source")
-    
-
-def build_dataset_3d(obs):
-    """Build a MapDataset from a single Observation for 3D coverage tests."""
-    energy_axis = build_energy_axis()
-    energy_axis_true = MapAxis.from_energy_bounds(
-        0.05, 100, nbin=30, unit="TeV", name="energy_true"
-    )
-
-    geom = WcsGeom.create(
-        skydir=CRAB_POSITION,
-        width=3.0 * u.deg,
-        binsz=0.02 * u.deg,
-        frame="icrs",
-        axes=[energy_axis],
-    )
-    geom_true = geom.to_image().to_cube([energy_axis_true])
-    dataset_empty = MapDataset.create(
-        geom=geom,
-        geom_exposure=geom_true,
-        name="obs-3d",
-    )
-    maker = MapDatasetMaker(selection=["background", "exposure", "psf", "edisp"])
-    maker_safe = SafeMaskMaker(methods=["aeff-default", "edisp-bias"], bias_percent=10)
-    dataset = maker.run(dataset_empty, obs)
-    dataset = maker_safe.run(dataset, obs)
-    return dataset
-
-def fake_dataset_3d(dataset, model):
-    dataset = dataset.copy(name=dataset.name)
-    dataset.models = Models([model.copy(name="source")])
-    dataset.fake()
-    return dataset
-
-def fake_dataset_on_off(dataset, model):
-    dataset_on_off = SpectrumDatasetOnOff.from_spectrum_dataset(
-        dataset=dataset, acceptance=1, acceptance_off=10,
-        name=dataset.name   # keeping the same name is necessary to keep flux points geometries aligned
-    )
-    dataset_on_off.models = model.copy(name="source")
-
-    dataset_on_off.fake(npred_background=dataset.npred_background())
-    return dataset_on_off
 
 def reduce_dimensionality_flux_points(flux_points):
     flux_points = flux_points.copy()
@@ -153,7 +36,7 @@ def fake_and_apply_fe(dataset, model, fe_config):
         faked_dataset = fake_dataset_on_off(dataset, model)
     else:
         faked_dataset = fake_dataset_3d(dataset, model)
-    
+
     result = fe.run([faked_dataset])
 
     if dataset.tag == "MapDataset":
@@ -162,7 +45,7 @@ def fake_and_apply_fe(dataset, model, fe_config):
         dataset_spec = dataset.to_spectrum_dataset(on_region=on_region, name="obs-3d-spec")
         excess = (dataset_spec.counts.data - dataset_spec.npred_background().data).sum()
         # TODO: Add info on result
-    
+
     return result
 
 def compute_ci_coverage(result_fp, use_covar=False, remove_ul=False):
@@ -188,6 +71,45 @@ def compute_ul_coverage(result_fp):
     in_ul = result_fp.norm_ul > 1.
     geom = in_ul.geom.to_image().to_cube([energy_axis])
     return Map.from_geom(geom, data=np.mean(in_ul, axis=0))
+
+
+def _coverage_per_energy_bin(coverage_map):
+    """Reduce a coverage map to one fraction per energy bin.
+
+    For 1d results the map already holds a single spatial pixel; for 3d
+    results this additionally averages over the sky positions in the map,
+    since the coverage test cares about overall statistical coverage rather
+    than per-pixel differences.
+    """
+    data = coverage_map.data
+    return np.nanmean(data.reshape(data.shape[0], -1), axis=1)
+
+
+def summarize_coverage(result, n_sigma, n_sigma_ul):
+    """Build a JSON-serializable summary of a coverage simulation result.
+
+    Used to persist coverage fractions per energy bin, together with their
+    nominal reference value, so they can be checked by an automated test
+    without needing to re-run the Monte Carlo simulation.
+    """
+    energy_axis = result.geom.axes["energy"]
+    nsim = result.geom.axes["index"].nbin
+
+    coverage_ci = _coverage_per_energy_bin(compute_ci_coverage(result, use_covar=False, remove_ul=False))
+    coverage_ci_covar = _coverage_per_energy_bin(compute_ci_coverage(result, use_covar=True, remove_ul=False))
+    coverage_ul = _coverage_per_energy_bin(compute_ul_coverage(result))
+
+    return {
+        "nsim": int(nsim),
+        "n_sigma": float(n_sigma),
+        "n_sigma_ul": float(n_sigma_ul),
+        "energy_edges_tev": energy_axis.edges.to_value("TeV").tolist(),
+        "coverage_ci": coverage_ci.tolist(),
+        "coverage_ci_covar": coverage_ci_covar.tolist(),
+        "coverage_ul": coverage_ul.tolist(),
+        "ref_ci": float(1 - 2 * norm.sf(n_sigma)),
+        "ref_ul": float(norm.cdf(n_sigma_ul)),
+    }
 
 def create_sensitivity_figure(table, n_sigma, sensitivity_amplitude, filename):
     x = table["ref_amplitude"].quantity

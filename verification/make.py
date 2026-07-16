@@ -16,10 +16,15 @@ log = logging.getLogger(__name__)
 THIS_REPO = Path(__file__).parent
 
 AVAILABLE_USE_CASES = {
-    "flux-points-coverage": {
+    "flux-points-coverage-1d": {
         "folder": "flux_points_coverage",
         "command": "make.py",
-        "args": ["run-analyses", "all"],
+        "args": ["fp_coverage", "1d", "--livetime", "5h", "--n_samples", "100"],
+    },
+     "flux-points-coverage-3d": {
+        "folder": "flux_points_coverage",
+        "command": "make.py",
+        "args": ["fp_coverage", "3d", "--livetime", "5h", "--n_samples", "100"],
     },
 }
 
@@ -75,7 +80,7 @@ def cli(log_level, show_warnings):
 def run_validations(use_cases):
     info = get_provenance()
 
-    if uses_cases == "all":
+    if use_cases == "all":
         use_cases = list(AVAILABLE_USE_CASES)
     else:
         use_cases = [use_cases]

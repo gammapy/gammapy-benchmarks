@@ -1,4 +1,6 @@
+import json
 import logging
+import sys
 import time
 import warnings
 from pathlib import Path
@@ -13,9 +15,11 @@ from gammapy.estimators import FluxPoints
 from gammapy.maps import LabelMapAxis
 from gammapy.utils.parallel import run_multiprocessing, multiprocessing_manager
 
-from utils import (build_observation, build_dataset_1d, build_dataset_3d,
-                   build_model, fake_and_apply_fpe, create_coverage_figure, fake_and_apply_fe,
-                   create_sensitivity_figure)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from utils import build_observation, build_dataset_1d, build_dataset_3d, build_model
+from fp_utils import (fake_and_apply_fpe, create_coverage_figure, fake_and_apply_fe,
+                      create_sensitivity_figure, summarize_coverage)
 AVAILABLE_GEOMS = ["1d", "3d"]
 
 log = logging.getLogger(__name__)
@@ -79,11 +83,22 @@ def run_fp_coverage(geometries, livetime, crab_fraction, n_samples, n_sigma, n_s
         log.info(f"Compute coverage and plot result.")
         dir = Path("results")
         dir.mkdir(exist_ok=True)
-        filename = dir / f"test_coverage_crab_{100*crab_fraction}percent_{str(livetime.to_value('h'))}h.png"
+        filename = dir / f"test_coverage_{geometry}_crab_{100*crab_fraction}percent_{str(livetime.to_value('h'))}h.png"
         create_coverage_figure(result, filename)
 
+        summary = summarize_coverage(result, n_sigma, n_sigma_ul)
+        summary.update({
+            "geometry": geometry,
+            "crab_fraction": crab_fraction,
+            "livetime_h": livetime.to_value("h"),
+        })
+        json_filename = dir / f"flux_points_coverage_{geometry}_{100*crab_fraction}crab_{livetime.to_value('h')}h.json"
+        log.info(f"Write coverage summary to {json_filename}.")
+        with json_filename.open("w") as fh:
+            json.dump(summary, fh, indent=2)
+
         if save_results:
-            filename = dir / f"flux_points_crab_{100*crab_fraction}percent_{str(livetime.to_value('h'))}h.fits"
+            filename = dir / f"flux_points_{geometry}_crab_{100*crab_fraction}percent_{str(livetime.to_value('h'))}h.fits"
             log.info(f"Write result flux points to {filename}.")
             super(FluxPoints,result).write(filename)
 
