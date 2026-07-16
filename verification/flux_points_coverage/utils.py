@@ -1,0 +1,264 @@
+import numpy as np
+import astropy.units as u
+from astropy.coordinates import SkyCoord, Angle
+from regions import CircleSkyRegion
+from scipy.stats import norm
+import matplotlib.pyplot as plt
+
+from gammapy.data import FixedPointingInfo, Observation, observatory_locations
+from gammapy.datasets import Datasets, SpectrumDataset, SpectrumDatasetOnOff, MapDataset
+from gammapy.estimators import FluxPointsEstimator, FluxPoints
+from gammapy.estimators.flux import FluxEstimator
+from gammapy.irf import load_irf_dict_from_file
+from gammapy.makers import SpectrumDatasetMaker, MapDatasetMaker, SafeMaskMaker
+from gammapy.maps import MapAxis, RegionGeom, LabelMapAxis, Map, WcsGeom
+from gammapy.modeling.models import SkyModel, Models, create_crab_spectral_model, PointSpatialModel
+
+CRAB_POSITION = SkyCoord(83.233, 22.214, unit="deg", frame="icrs")
+
+def build_observation(livetime="1 h", offset="0.5 deg"):
+    """Build an observation using CTAO south Prod 5 IRFs.
+
+    Pointing is assumed to be fixed on the GC direction.
+
+    Parameters
+    ----------
+    livetime : `~astropy.quantity`, optional
+        The observation livetime. Default is 1h.
+    """
+    # Define simulation parameters parameters
+    livetime = u.Quantity(livetime)
+    offset = u.Quantity(offset)
+
+    pointing_position = CRAB_POSITION.directional_offset_by(
+        position_angle=0 * u.deg, separation=offset
+    )
+    
+    # We want to simulate an observation pointing at a fixed position in the sky.
+    # For this, we use the `FixedPointingInfo` class
+    pointing = FixedPointingInfo(
+        fixed_icrs=pointing_position.icrs,
+    )
+
+    irfs = load_irf_dict_from_file(
+        "$GAMMAPY_DATA/cta-caldb/Prod5-South-20deg-AverageAz-14MSTs37SSTs.180000s-v0.1.fits.gz"
+    )
+
+    location = observatory_locations["ctao_south"]
+    return Observation.create(
+        pointing=pointing,
+        livetime=livetime,
+        irfs=irfs,
+        location=location,
+    )
+
+def build_energy_axis():
+    return MapAxis.from_energy_bounds(0.1, 100, 6, per_decade=True, unit="TeV")
+
+
+def build_dataset_1d(obs):
+    """Build dataset.
+
+    TODO: use configuration to build dataset
+    """
+    # Reconstructed and true energy axis
+    energy_axis = build_energy_axis()
+    energy_axis_true = MapAxis.from_energy_bounds(0.05, 200, 12, per_decade=True, unit="TeV", name="energy_true")
+
+    on_region_radius = Angle("0.11 deg")
+ 
+    on_region = CircleSkyRegion(center=CRAB_POSITION, radius=on_region_radius)
+
+    # Make the SpectrumDataset
+    geom = RegionGeom.create(region=on_region, axes=[energy_axis])
+
+    dataset_empty = SpectrumDataset.create(
+        geom=geom, energy_axis_true=energy_axis_true, name="obs-0"
+    )
+    maker = SpectrumDatasetMaker(selection=["exposure", "edisp", "background"])
+
+    return maker.run(dataset_empty, obs)
+
+def build_model(percent_crab=0.1):
+    spectral = create_crab_spectral_model('magic_lp')
+    spectral.amplitude.value *= percent_crab
+    spatial = PointSpatialModel(lon_0=CRAB_POSITION.ra, lat_0=CRAB_POSITION.dec, frame="icrs")
+    spatial.freeze()  
+    return SkyModel(spatial_model=spatial, spectral_model=spectral, name="source")
+    
+
+def build_dataset_3d(obs):
+    """Build a MapDataset from a single Observation for 3D coverage tests."""
+    energy_axis = build_energy_axis()
+    energy_axis_true = MapAxis.from_energy_bounds(
+        0.05, 100, nbin=30, unit="TeV", name="energy_true"
+    )
+
+    geom = WcsGeom.create(
+        skydir=CRAB_POSITION,
+        width=3.0 * u.deg,
+        binsz=0.02 * u.deg,
+        frame="icrs",
+        axes=[energy_axis],
+    )
+    geom_true = geom.to_image().to_cube([energy_axis_true])
+    dataset_empty = MapDataset.create(
+        geom=geom,
+        geom_exposure=geom_true,
+        name="obs-3d",
+    )
+    maker = MapDatasetMaker(selection=["background", "exposure", "psf", "edisp"])
+    maker_safe = SafeMaskMaker(methods=["aeff-default", "edisp-bias"], bias_percent=10)
+    dataset = maker.run(dataset_empty, obs)
+    dataset = maker_safe.run(dataset, obs)
+    return dataset
+
+def fake_dataset_3d(dataset, model):
+    dataset = dataset.copy(name=dataset.name)
+    dataset.models = Models([model.copy(name="source")])
+    dataset.fake()
+    return dataset
+
+def fake_dataset_on_off(dataset, model):
+    dataset_on_off = SpectrumDatasetOnOff.from_spectrum_dataset(
+        dataset=dataset, acceptance=1, acceptance_off=10,
+        name=dataset.name   # keeping the same name is necessary to keep flux points geometries aligned
+    )
+    dataset_on_off.models = model.copy(name="source")
+
+    dataset_on_off.fake(npred_background=dataset.npred_background())
+    return dataset_on_off
+
+def reduce_dimensionality_flux_points(flux_points):
+    flux_points = flux_points.copy()
+    for name, quantity in flux_points._data.items():
+        if "dataset" in quantity.geom.axes.names:
+            map_obj = quantity.sum_over_axes(axes_names=["dataset"], keepdims=False)
+            flux_points._data[name] = map_obj
+    return flux_points
+
+def fake_and_apply_fpe(dataset, model, fpe_config):
+    fpe = FluxPointsEstimator(**fpe_config)
+    if isinstance(dataset, SpectrumDataset):
+        faked_dataset = fake_dataset_on_off(dataset, model)
+    else:
+        faked_dataset = fake_dataset_3d(dataset, model)
+    fp = fpe.run([faked_dataset])
+    return fp
+
+
+def fake_and_apply_fe(dataset, model, fe_config):
+    fe = FluxEstimator(**fe_config)
+    if isinstance(dataset, SpectrumDataset):
+        faked_dataset = fake_dataset_on_off(dataset, model)
+    else:
+        faked_dataset = fake_dataset_3d(dataset, model)
+    
+    result = fe.run([faked_dataset])
+
+    if dataset.tag == "MapDataset":
+        # Project to a spectrum dataset to compute npred_excess as a 1-element array,
+        on_region = CircleSkyRegion(center=model.spatial_model.position, radius=Angle("0.11 deg"))
+        dataset_spec = dataset.to_spectrum_dataset(on_region=on_region, name="obs-3d-spec")
+        excess = (dataset_spec.counts.data - dataset_spec.npred_background().data).sum()
+        # TODO: Add info on result
+    
+    return result
+
+def compute_ci_coverage(result_fp, use_covar=False, remove_ul=False):
+    energy_axis = result_fp.geom.axes["energy"]
+
+    weights = ~result_fp.is_ul * 1.0 if remove_ul else np.ones(result_fp.is_ul.data.shape)
+
+    if use_covar:
+        ci_min = result_fp.norm - result_fp.norm_err
+        ci_max = result_fp.norm + result_fp.norm_err
+    else:
+        ci_min = result_fp.norm - result_fp.norm_errn
+        ci_max = result_fp.norm + result_fp.norm_errp
+
+    in_ci = (ci_min < 1.0) & (ci_max > 1.0)
+    geom = in_ci.geom.to_image().to_cube([energy_axis])
+
+    return Map.from_geom(geom, data=np.average(in_ci, axis=0, weights=weights))
+
+
+def compute_ul_coverage(result_fp):
+    energy_axis = result_fp.geom.axes["energy"]
+    in_ul = result_fp.norm_ul > 1.
+    geom = in_ul.geom.to_image().to_cube([energy_axis])
+    return Map.from_geom(geom, data=np.mean(in_ul, axis=0))
+
+def create_sensitivity_figure(table, n_sigma, sensitivity_amplitude, filename):
+    x = table["ref_amplitude"].quantity
+    sqrt_ts = np.asarray(table["sqrt_ts"])
+    n_samples = sqrt_ts.shape[1]
+    p16, median, p84 = np.percentile(sqrt_ts, [16, 50, 84], axis=1)
+    # Approximate the standard error on the median from the 16-84% half-width,
+    # scaled by sqrt(n_samples), as already done for coverage bands elsewhere.
+    median_err = (p84 - p16) / 2 * n_samples ** -0.5
+
+    fig, ax = plt.subplots()
+    ax.fill_between(x.value, p16, p84, alpha=0.3, color="C0", label="16%-84% containment")
+    ax.fill_between(
+        x.value, median - median_err, median + median_err, alpha=0.6, color="C1",
+        label="median uncertainty"
+    )
+    ax.plot(x.value, median, color="C0", marker="o", label="median")
+    ax.axhline(n_sigma, color="k", linestyle="--", label=f"{n_sigma}"+r"$\sigma$")
+    ax.axvline(
+        sensitivity_amplitude.to_value(x.unit), color="r", linestyle="--", label=f"Asimov sensitivity ({n_sigma}"+r"$\sigma$)"
+    )
+
+    ax.set_xscale("log")
+    ax.set_xlabel(f"Reference amplitude ({x.unit})")
+    ax.set_ylabel(r"$\sqrt{TS}$")
+    ax.legend()
+
+    fig.savefig(filename)
+    plt.close(fig)
+
+
+def create_coverage_figure(result, filename):
+    coverage_ci = compute_ci_coverage(result, False, False)
+    coverage_covar_ci = compute_ci_coverage(result, True, False)
+    coverage_ul = compute_ul_coverage(result)
+
+    nsim = result.geom.axes['index'].nbin
+
+    fig = plt.figure(figsize=(12, 4))
+    ax0 = fig.add_subplot(131)
+    ax0.set_title("err")
+    coverage_covar_ci.plot(ax=ax0, color="k")
+    ax0.set_yscale("linear")
+
+    ref_val = 1 - 2 * norm.sf(result.n_sigma)
+    ref_min = ref_val * (1 - nsim ** -0.5)
+    ref_max = ref_val * (1 + nsim ** -0.5)
+    ax0.axhline(ref_val, color='k')
+    ax0.axhspan(ref_min, ref_max, color='b', alpha=0.2)
+
+    ax1 = fig.add_subplot(132)
+    ax1.set_title("errn-errp")
+    coverage_ci.plot(ax=ax1, color="k")
+    ax1.set_yscale("linear")
+
+    ref_val = 1 - 2 * norm.sf(result.n_sigma)
+    ref_min = ref_val * (1 - nsim ** -0.5)
+    ref_max = ref_val * (1 + nsim ** -0.5)
+    ax1.axhline(ref_val, color='k')
+    ax1.axhspan(ref_min, ref_max, color='b', alpha=0.2)
+
+    ax2 = fig.add_subplot(133)
+    ax2.set_title("UL")
+    coverage_ul.plot(ax=ax2)
+    ax2.set_yscale("linear")
+
+    ref_val = norm.cdf(result.n_sigma_ul)
+    ref_min = ref_val * (1 - nsim ** -0.5)
+    ref_max = ref_val * (1 + nsim ** -0.5)
+
+    ax2.axhline(ref_val, color='k')
+    ax2.axhspan(ref_min, ref_max, color='b', alpha=0.2)
+
+    plt.savefig(filename)

@@ -8,7 +8,11 @@ This module covers science use case coverage while checking for result robustnes
 
 The following science use cases are currently covered:
 
-- [coverage-fp](coverage-fp) - 1D and 3D spectral flux points (SED) calculations
+- [flux_points_coverage](flux_points_coverage) - 1D and 3D spectral flux points (SED) calculations
   - coverage of measurement errors and upper limits is checked
 - [sensitivity](sensitivity) - 1D and 3D sensitivity calculation is validated agaisnt MC simulations
+
+## Implementation and usage
+
+Each science use case has its own directory and `make.py` file. 
 
