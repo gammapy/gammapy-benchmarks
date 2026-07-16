@@ -9,6 +9,8 @@ from gammapy.modeling.models import GaussianSpatialModel, Models, PowerLawSpectr
 
 from utils import fake_dataset_3d
 
+PULL_PARAMETERS = ["lon_0", "lat_0", "sigma", "index", "amplitude"]
+
 
 def detect_peak(dataset, correlation_radius, detection_threshold, min_distance):
     """Run the ExcessMapEstimator on a source-free dataset and return the brightest peak, or None."""
@@ -79,6 +81,16 @@ def residual_stats(dataset, correlation_radius, exclusion_position=None, exclusi
     return float(np.nanmean(data)), float(np.nanstd(data))
 
 
+def compute_pulls(fitted_model, true_model):
+    """Pull, (fitted - true) / fitted_error, for each parameter in `PULL_PARAMETERS`."""
+    pulls = {}
+    for name in PULL_PARAMETERS:
+        fitted = fitted_model.parameters[name]
+        true_value = true_model.parameters[name].value
+        pulls[name] = (fitted.value - true_value) / fitted.error
+    return pulls
+
+
 def fake_detect_fit_recompute(dataset, model, config):
     """Run one Monte Carlo realization of the detect -> fit -> residual workflow.
 
@@ -97,8 +109,10 @@ def fake_detect_fit_recompute(dataset, model, config):
     Returns
     -------
     result : dict
-        `detected` and `fit_success` (bool), and `mean`/`std` of the residual
-        sqrt_ts map -- `None` if detection or the fit did not succeed.
+        `detected` and `fit_success` (bool), `mean`/`std` of the residual
+        sqrt_ts map, and `pulls` (dict of `(fitted - true) / fitted_error`
+        per `PULL_PARAMETERS`) -- `None` if detection or the fit did not
+        succeed.
     """
     correlation_radius = config["correlation_radius"]
     detection_threshold = config.get("detection_threshold", 5)
@@ -111,13 +125,13 @@ def fake_detect_fit_recompute(dataset, model, config):
     peak = detect_peak(detection_dataset, correlation_radius, detection_threshold, min_distance)
 
     if peak is None:
-        return {"detected": False, "fit_success": False, "mean": None, "std": None}
+        return {"detected": False, "fit_success": False, "mean": None, "std": None, "pulls": None}
 
     candidate_model = build_candidate_model(peak, sigma_init=config.get("sigma_init", "0.1 deg"))
     fitted_dataset, fit_success = fit_candidate(faked_dataset, candidate_model)
 
     if not fit_success:
-        return {"detected": True, "fit_success": False, "mean": None, "std": None}
+        return {"detected": True, "fit_success": False, "mean": None, "std": None, "pulls": None}
 
     exclusion_radius = config.get("exclusion_radius", 3 * Angle(correlation_radius))
     mean, std = residual_stats(
@@ -126,17 +140,19 @@ def fake_detect_fit_recompute(dataset, model, config):
         exclusion_position=fitted_dataset.models[0].position,
         exclusion_radius=exclusion_radius,
     )
-    return {"detected": True, "fit_success": True, "mean": mean, "std": std}
+    pulls = compute_pulls(fitted_dataset.models[0], model)
+    return {"detected": True, "fit_success": True, "mean": mean, "std": std, "pulls": pulls}
 
 
 def summarize_isd(results):
     """Build a JSON-serializable summary of an isolated-source-detection Monte Carlo run.
 
-    Aggregates the per-realization residual mean/std (only over realizations
-    where the source was detected and the fit converged), together with the
-    spread across realizations, so a test can check the aggregate is
-    consistent with white noise (mean 0, std 1) within a `n_valid**-0.5`
-    scaled tolerance, without needing to re-run the Monte Carlo.
+    Aggregates the per-realization residual mean/std and parameter pulls
+    (only over realizations where the source was detected and the fit
+    converged), together with their spread across realizations, so a test
+    can check the aggregates are consistent with white noise (mean 0, std 1)
+    and well-calibrated pulls (mean 0, std 1) within `n_valid**-0.5`-scaled
+    tolerances, without needing to re-run the Monte Carlo.
     """
     nsim = len(results)
     detected = [r["detected"] for r in results]
@@ -144,6 +160,16 @@ def summarize_isd(results):
     means = [r["mean"] for r in results if r["mean"] is not None]
     stds = [r["std"] for r in results if r["std"] is not None]
     n_valid = len(means)
+
+    pulls_list = [r["pulls"] for r in results if r.get("pulls") is not None]
+    pulls = {}
+    for name in PULL_PARAMETERS:
+        values = [p[name] for p in pulls_list]
+        pulls[name] = {
+            "values": values,
+            "mean": float(np.mean(values)) if values else None,
+            "std": float(np.std(values)) if values else None,
+        }
 
     return {
         "nsim": nsim,
@@ -156,6 +182,7 @@ def summarize_isd(results):
         "std_of_means": float(np.std(means)) if n_valid else None,
         "mean_of_stds": float(np.mean(stds)) if n_valid else None,
         "std_of_stds": float(np.std(stds)) if n_valid else None,
+        "pulls": pulls,
     }
 
 
@@ -173,6 +200,24 @@ def create_residual_figure(summary, filename):
     ax1.hist(stds, bins=20, color="C1")
     ax1.axvline(1, color="k", linestyle="--")
     ax1.set_title("Residual std(sqrt_ts)")
+
+    fig.tight_layout()
+    fig.savefig(filename)
+    plt.close(fig)
+
+
+def create_pull_figure(summary, filename):
+    """Plot each fitted parameter's pull distribution against the standard normal reference."""
+    from scipy.stats import norm
+
+    x = np.linspace(-4, 4, 200)
+    fig, axes = plt.subplots(1, len(PULL_PARAMETERS), figsize=(3 * len(PULL_PARAMETERS), 3.5))
+
+    for ax, name in zip(axes, PULL_PARAMETERS):
+        values = np.array(summary["pulls"][name]["values"])
+        ax.hist(values, bins=20, density=True, color="C0", alpha=0.7)
+        ax.plot(x, norm.pdf(x), color="k", linestyle="--")
+        ax.set_title(f"pull({name})")
 
     fig.tight_layout()
     fig.savefig(filename)

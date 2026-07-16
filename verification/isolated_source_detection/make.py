@@ -15,7 +15,9 @@ from gammapy.utils.parallel import run_multiprocessing, multiprocessing_manager
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from utils import build_observation, build_dataset_3d, build_extended_model
-from isd_utils import fake_detect_fit_recompute, summarize_isd, create_residual_figure
+from isd_utils import (
+    fake_detect_fit_recompute, summarize_isd, create_residual_figure, create_pull_figure,
+)
 
 log = logging.getLogger(__name__)
 
@@ -90,6 +92,9 @@ def run_isd(
 
     filename = dir / f"isolated_source_detection_{crab_fraction}crab_{livetime.to_value('h')}h.png"
     create_residual_figure(summary, filename)
+
+    pulls_filename = dir / f"isolated_source_detection_pulls_{crab_fraction}crab_{livetime.to_value('h')}h.png"
+    create_pull_figure(summary, pulls_filename)
 
     json_filename = dir / f"isolated_source_detection_{crab_fraction}crab_{livetime.to_value('h')}h.json"
     log.info(f"Write summary to {json_filename}.")
