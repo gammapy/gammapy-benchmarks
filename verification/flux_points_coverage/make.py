@@ -64,7 +64,7 @@ def run_fp_coverage(geometries, livetime, crab_fraction, n_samples, n_sigma, n_s
         elif geometry == "3d":
             dataset = build_dataset_3d(obs)
 
-        model = build_model(percent_crab=crab_fraction)
+        model = build_model(crab_fraction=crab_fraction)
 
         energy_edges = dataset.counts.geom.axes["energy"].downsample(2).edges
 
@@ -142,13 +142,13 @@ def run_sensitivity_coverage(geometries, livetime, threshold, scan_range, n_samp
         log.info(f"Compute expected sensitivity with Asimov dataset.")
         from gammapy.estimators.flux import FluxEstimator
         ref_fraction = 0.1
-        model = build_model(percent_crab=ref_fraction)
+        model = build_model(crab_fraction=ref_fraction)
         fe = FluxEstimator(**fe_config)
         dataset.models = model
         res = fe.run([dataset])
         sensitivity_asimov = res['norm_sensitivity']*ref_fraction
         log.info(f"Asimov sensitivity for observation is {sensitivity_asimov:.3f} crab.")
-        sensitivity_amplitude = build_model(percent_crab=sensitivity_asimov).spectral_model.amplitude.quantity
+        sensitivity_amplitude = build_model(crab_fraction=sensitivity_asimov).spectral_model.amplitude.quantity
 
         crab_fractions = np.geomspace(scan_range[0]*sensitivity_asimov, 
                                       scan_range[1]*sensitivity_asimov, 
@@ -159,7 +159,7 @@ def run_sensitivity_coverage(geometries, livetime, threshold, scan_range, n_samp
 
         results = []
         for crab_fraction in crab_fractions:
-            model = build_model(percent_crab=crab_fraction)
+            model = build_model(crab_fraction=crab_fraction)
 
             log.info(f"Starting simulations for {1e3*crab_fraction:.2f} mCrab.")
             with multiprocessing_manager(backend="multiprocessing", pool_kwargs=dict(processes=n_jobs)):

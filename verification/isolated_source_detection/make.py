@@ -61,7 +61,7 @@ def run_isd(
     log.info("Building observation and dataset.")
     obs = build_observation(livetime=livetime)
     dataset = build_dataset_3d(obs, width=dataset_width)
-    model = build_extended_model(percent_crab=crab_fraction, sigma=sigma)
+    model = build_extended_model(crab_fraction=crab_fraction, sigma=sigma)
 
     config = {
         "correlation_radius": correlation_radius,
