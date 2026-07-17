@@ -31,6 +31,11 @@ AVAILABLE_USE_CASES = {
         "command": "make.py",
         "args": ["isd", "--livetime", "5h", "--n_samples", "100"],
     },
+    "transient-characterization": {
+        "folder": "transient_characterization",
+        "command": "make.py",
+        "args": ["tc", "--livetime", "30min", "--n_samples", "20"],
+    },
 }
 
 
@@ -110,6 +115,38 @@ def run_single_use_case(cfg, **kwargs):
         cmd.append(arg)
     log.info(f"Executing command: {cmd}")
     subprocess.run(cmd, cwd=cfg["folder"], check=True)
+
+
+@cli.command("run-tests", help="Run the pytest test suite for one or all use cases")
+@click.argument("use_cases", type=click.Choice(list(AVAILABLE_USE_CASES) + ["all"]))
+def run_tests(use_cases):
+    """Run each use case's `tests/` folder with pytest.
+
+    Tests are optional/self-skipping (see CLAUDE.md): a use case whose
+    `make.py` hasn't been run yet simply reports 0 collected tests, not a
+    failure.
+    """
+    if use_cases == "all":
+        use_cases = list(AVAILABLE_USE_CASES)
+    else:
+        use_cases = [use_cases]
+
+    # Some use cases share a folder (e.g. flux-points-coverage-1d/3d both
+    # live in flux_points_coverage/) -- run each folder's tests only once.
+    folders = sorted({AVAILABLE_USE_CASES[use_case]["folder"] for use_case in use_cases})
+
+    failures = []
+    for folder in folders:
+        log.info(f"Running tests in {folder}/tests")
+        cmd = [sys.executable, "-m", "pytest", "tests/"]
+        result = subprocess.run(cmd, cwd=folder)
+        if result.returncode != 0:
+            failures.append(folder)
+
+    if failures:
+        raise click.ClickException(f"Tests failed in: {', '.join(failures)}")
+
+    log.info("All tests passed.")
 
 
 if __name__ == "__main__":
