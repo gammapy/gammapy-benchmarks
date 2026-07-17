@@ -13,7 +13,7 @@ PULL_PARAMETERS = ["lon_0", "lat_0", "sigma", "index", "amplitude"]
 
 
 def detect_peak(dataset, correlation_radius, detection_threshold, min_distance):
-    """Run the ExcessMapEstimator on a source-free dataset and return the brightest peak, or None."""
+    """Run the ExcessMapEstimator and return the brightest peak, or None."""
     estimator = ExcessMapEstimator(correlation_radius=correlation_radius)
     result = estimator.run(dataset)
     peaks = find_peaks(result["sqrt_ts"], threshold=detection_threshold, min_distance=min_distance)
