@@ -36,6 +36,11 @@ AVAILABLE_USE_CASES = {
         "command": "make.py",
         "args": ["tc", "--livetime", "30min", "--n_samples", "20"],
     },
+    "component-separation": {
+        "folder": "component_separation",
+        "command": "make.py",
+        "args": ["cs", "--livetime", "5h", "--n_samples", "100"],
+    },
 }
 
 
