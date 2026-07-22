@@ -25,30 +25,25 @@ jobs:
     steps:
       - name: checkout repo
         uses: actions/checkout@v7
-      - name: get env file
-        run: curl -O https://raw.githubusercontent.com/gammapy/gammapy/main/environment-dev.yml
-      - name: create and activate env
-        uses: conda-incubator/setup-miniconda@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
         with:
-          activate-environment: gammapy-dev
-          environment-file: environment-dev.yml
-          auto-update-conda: true
-      - name: install gammapy
+          python-version: '3.x'
+          enable-cache: true
+      - name: Install Gammapy and dependencies
         run: |
-          pip install git+${{ github.event.inputs.urlrepo }}@${{ github.event.inputs.branch }}
-          pip install psrecord
-          conda info
-          conda list
-          gammapy info
+          uv pip install git+${{ github.event.inputs.urlrepo }}@${{ github.event.inputs.branch }}
+          uv pip install psrecord
+          uv run gammapy info
       - name: download datasets
         # Including LST-1 Crab data from Zenodo
         run: |
-          gammapy download datasets
-          python utils/download_from_zenodo.py 11445184 $GAMMAPY_DATA/lst1_crab_data
+          uv run gammapy download datasets
+          uv run python utils/download_from_zenodo.py 11445184 $GAMMAPY_DATA/lst1_crab_data
       - name: run validation
         run: |
           cd validation
-          python make.py run-validation all
+          uv run python make.py run-validation all
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
         with:
