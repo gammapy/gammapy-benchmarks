@@ -32,6 +32,7 @@ jobs:
           enable-cache: true
       - name: Install Gammapy and dependencies
         run: |
+          uv venv
           uv pip install git+${{ github.event.inputs.urlrepo }}@${{ github.event.inputs.branch }}
           uv pip install psrecord
           uv run gammapy info
