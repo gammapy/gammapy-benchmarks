@@ -14,21 +14,17 @@ jobs:
     steps:
       - name: checkout repo
         uses: actions/checkout@v7
-      - name: get env file
-        run: curl -O https://raw.githubusercontent.com/gammapy/gammapy/main/environment-dev.yml
-      - name: create and activate env
-        uses: conda-incubator/setup-miniconda@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
         with:
-          activate-environment: gammapy-dev
-          environment-file: environment-dev.yml
-          auto-update-conda: true
-      - name: install gammapy
+          python-version: '3.13'
+          enable-cache: true
+      - name: Install Gammapy and dependencies
         run: |
-          pip install git+https://github.com/gammapy/gammapy.git#egg=gammapy
-          pip install psrecord
-          conda info
-          conda list
-          gammapy info
+          uv venv
+          uv pip install git+https://github.com/gammapy/gammapy.git@main
+          uv pip install psrecord
+          uv run gammapy info
 
       # Get latest commit SHA from gammapy-data main branch
       - name: Get gammapy-data version
