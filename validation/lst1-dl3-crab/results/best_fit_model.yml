@@ -21,6 +21,6 @@ components:
             min: 0.0
 covariance: best_fit_model_covariance.dat
 metadata:
-    creator: Gammapy 2.1rc2.dev3+gf4bf05bdc
-    date: '2026-04-02T10:53:54.335368'
+    creator: Gammapy 2.0.dev4007+gc13b8f6c3
+    date: '2026-07-23T13:18:08.077924'
     origin: null
