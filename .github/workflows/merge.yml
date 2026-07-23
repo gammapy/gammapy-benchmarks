@@ -23,7 +23,7 @@ jobs:
         run: |
           uv venv
           uv pip install git+https://github.com/gammapy/gammapy.git@main
-          uv pip install psrecord
+          uv pip install psrecord healpy
           uv run gammapy info
       - name: download datasets
         # Including LST-1 Crab data from Zenodo

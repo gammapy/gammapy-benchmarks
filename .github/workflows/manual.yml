@@ -14,6 +14,11 @@ on:
         description: 'Branch name to install Gammapy'
         required: true
         default: 'main'
+      extra-deps: 
+        description: 'Python extra dependencies (space separated string)'
+        required: false
+        default: 'psrecord healpy'
+
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -34,7 +39,9 @@ jobs:
         run: |
           uv venv
           uv pip install git+${{ github.event.inputs.urlrepo }}@${{ github.event.inputs.branch }}
-          uv pip install psrecord
+          if [ -n "${{ github.event.inputs.extra-deps }}" ]; then
+            uv pip install ${{ github.event.inputs.extra-deps }}
+          fi
           uv run gammapy info
       - name: download datasets
         # Including LST-1 Crab data from Zenodo

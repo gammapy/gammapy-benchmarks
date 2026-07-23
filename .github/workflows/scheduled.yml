@@ -23,7 +23,7 @@ jobs:
         run: |
           uv venv
           uv pip install git+https://github.com/gammapy/gammapy.git@main
-          uv pip install psrecord
+          uv pip install psrecord healpy
           uv run gammapy info
 
       # Get latest commit SHA from gammapy-data main branch
