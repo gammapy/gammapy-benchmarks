@@ -145,14 +145,11 @@ def fake_detect_fit_recompute(dataset, model, config):
 
 
 def summarize_isd(results):
-    """Build a JSON-serializable summary of an isolated-source-detection Monte Carlo run.
+    """Build a summary of an isolated-source-detection Monte Carlo run.
 
     Aggregates the per-realization residual mean/std and parameter pulls
     (only over realizations where the source was detected and the fit
-    converged), together with their spread across realizations, so a test
-    can check the aggregates are consistent with white noise (mean 0, std 1)
-    and well-calibrated pulls (mean 0, std 1) within `n_valid**-0.5`-scaled
-    tolerances, without needing to re-run the Monte Carlo.
+    converged).
     """
     nsim = len(results)
     detected = [r["detected"] for r in results]

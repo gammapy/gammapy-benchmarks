@@ -44,8 +44,7 @@ def cli(log_level, show_warnings):
 @click.option(
     "--exclusion_radius", type=str, default=None,
     help="Region around the fitted source excluded from the residual mean/std "
-         "(default: 3x correlation_radius). The fit consumes degrees of freedom "
-         "concentrated there, which suppresses the local residual variance.",
+         "(default: 3x correlation_radius).",
 )
 @click.option("--n_samples", type=int, default=100)
 @click.option("--n_jobs", type=int, default=4)
