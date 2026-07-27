@@ -60,7 +60,7 @@ jobs:
           # Download gammapy-datasets only if not cached
           if [ "${{ steps.cache-gammapy-datasets.outputs.cache-hit }}" != "true" ]; then
             echo "Cache miss - downloading gammapy-datasets"
-            gammapy download datasets
+            uv run gammapy download datasets
           else
             echo "Using cached gammapy-datasets"
           fi
@@ -70,7 +70,7 @@ jobs:
             echo "Cache miss - downloading LST-1 Crab data from Zenodo"
             mkdir -p $GAMMAPY_DATA/lst1_crab_data
             echo "TEMP: skip LST-1 data download."
-            python utils/download_from_zenodo.py 11445184 $GAMMAPY_DATA/lst1_crab_data
+            uv run python utils/download_from_zenodo.py 11445184 $GAMMAPY_DATA/lst1_crab_data
             echo "LST-1 data download successful"
           else
             echo "Using cached LST-1 Crab data"
@@ -78,9 +78,9 @@ jobs:
       - name: run benchmarks
         run: |
           cd benchmarks
-          python make.py run-benchmark all
+          uv run python make.py run-benchmark all
           cd results
-          python track_evolution.py
+          uv run python track_evolution.py
       - name: remove large files produced during benchmarks profiling
         run: |
           rm -f benchmarks/profilers/*.fits
