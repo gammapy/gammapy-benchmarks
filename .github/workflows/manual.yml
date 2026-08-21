@@ -34,8 +34,7 @@ jobs:
       - name: Install Gammapy and dependencies
         run: |
           uv venv
-          uv pip install git+${{ github.event.inputs.urlrepo }}@${{ github.event.inputs.branch }}
-          uv pip install psrecord healpy
+          uv pip install git+${{ github.event.inputs.urlrepo }}@${{ github.event.inputs.branch }}#egg=gammapy[validation]
           uv run gammapy info
       - name: download datasets
         # Including LST-1 Crab data from Zenodo
