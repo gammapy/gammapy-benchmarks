@@ -34,7 +34,7 @@ jobs:
       - name: Install Gammapy and dependencies
         run: |
           uv venv
-          uv pip install git+${{ github.event.inputs.urlrepo }}@${{ github.event.inputs.branch }}#egg=gammapy[validation]
+          uv pip install "gammapy[validation] @ git+${{ github.event.inputs.urlrepo }}@${{ github.event.inputs.branch }}"
           uv run gammapy info
       - name: download datasets
         # Including LST-1 Crab data from Zenodo
