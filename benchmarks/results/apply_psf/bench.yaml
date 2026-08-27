@@ -1,0 +1,23 @@
+# execution control
+runs: 50
+warmup: 5
+
+# cube / geometry
+width_deg: 10.0
+binsz_deg: 0.01
+n_energy: 32
+energy_kernel: 32
+
+# PSF
+psf_sigma_deg: 0.05
+
+# sweep
+kernel_sizes: [11, 21, 31, 41, 51, 61, 71, 81, 91, 101, 111]
+runs_sweep: 10
+warmup_sweep: 2
+
+# precision / compare
+compare_dtype: float64
+rtol: 1e-5
+atol: 1e-6
+rel_threshold: 1e-4
