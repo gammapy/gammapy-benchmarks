@@ -4,8 +4,8 @@ env:
   user: runner
 software:
   astropy: 8.0.2
-  gammapy: 2.0.dev4498+g3f7233ce6
+  gammapy: 2.0.dev4502+g5cba0451e
   numpy: 2.5.4
   python_executable: /home/runner/work/gammapy-benchmarks/gammapy-benchmarks/.venv/bin/python
-  python_version: 3.13.17
+  python_version: 3.13.18
   scipy: 1.17.1
