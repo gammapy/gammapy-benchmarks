@@ -1,1 +1,0 @@
-This folder contains the 2D maps of astrophysical factors for DM annihilation generated with CLUMPY in FITS format for the analyzed dSphs according to the Burkert profile (Burkert 1995). Each file contains a 10°-wide square map divided into $1024 \times 1024$ square pixels.

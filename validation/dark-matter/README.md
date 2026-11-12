@@ -32,7 +32,7 @@ paper), as in the paper. The median is computed on an Asimov dataset
 [data](data) holds the inputs, so that the validation does not depend on
 downloads: a subset of the paper supplementary material (2D J maps, reference
 limits), the prod5-v0.1 IRFs and `inputs_combined_analysis.csv` (IRF, tidal radius
-and J factor of each target). See [data/README.md](data/README.md).
+and J factor of each target).
 
 ## Execution
 
