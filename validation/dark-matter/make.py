@@ -1,9 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE
 """Run the dark matter dSph validation: spectra, annihilation and decay limits.
 
-python make.py                      # all steps
-python make.py spectra decay        # some steps
-python make.py --n-realizations 100 # median over realizations instead of Asimov
 """
 
 import logging
@@ -20,27 +17,26 @@ log = logging.getLogger(__name__)
 FOLDER = Path(__file__).parent
 
 STEPS = {
-    "spectra": {"script": "make_spectra.py", "results": "spectra.ecsv"},
-    "annihilation": {"script": "make_annihilation.py", "results": "limits_annihilation.ecsv"},
-    "decay": {"script": "make_decay.py", "results": "limits_decay.ecsv"},
+    "spectra": {"cmd": ["make_spectra.py"], "results": "spectra.ecsv"},
+    "annihilation": {
+        "cmd": ["make_limits.py", "--mode", "annihilation"],
+        "results": "limits_annihilation.ecsv",
+    }
 }
-
 
 @click.command()
 @click.argument("steps", nargs=-1, type=click.Choice([*STEPS, "all"]))
 @click.option("--n-realizations", default=0, help="Limits: 0 means Asimov dataset")
-@click.option("--binsz", default=None, type=float, help="Limits: spatial bin size in deg")
-def main(steps, n_realizations, binsz):
+def main(steps, n_realizations):
     logging.basicConfig(level="INFO")
     steps = list(STEPS) if not steps or "all" in steps else list(steps)
 
     crashed = []
     for step in steps:
-        cmd = [sys.executable, str(FOLDER / STEPS[step]["script"])]
+        script, *args = STEPS[step]["cmd"]
+        cmd = [sys.executable, str(FOLDER / script), *args]
         if step != "spectra":
             cmd += ["--n-realizations", str(n_realizations)]
-            if binsz is not None:
-                cmd += ["--binsz", str(binsz)]
         log.info(f"Running {step}: {' '.join(cmd[1:])}")
         if subprocess.run(cmd, cwd=FOLDER).returncode != 0:
             log.error(f"{step} did not finish")

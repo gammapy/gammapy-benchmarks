@@ -1,6 +1,7 @@
 # Gammapy validation: dark matter in dSphs (CTAO prospects paper)
 
-Reproduces with Gammapy the dark matter spectra and the median expected limits of
+Reproduces with Gammapy the dark matter continuum spectra and the median expected
+annihilation limits of
 [CTAO Consortium (2025), MNRAS 544, 2946](https://doi.org/10.1093/mnras/staf1798)
 ([arXiv:2508.19120](https://arxiv.org/abs/2508.19120)), using the astrophysical
 factors, 2D maps and reference limits of its
@@ -8,60 +9,45 @@ factors, 2D maps and reference limits of its
 
 The paper itself was produced with Gammapy v1.2: this checks that the current
 Gammapy reproduces a published result, not a comparison with an independent code.
+Requires Gammapy >= 2.2 (`DarkMatterSpectralModel`, `ContinuumPrimaryFlux`).
 
 ## Analysis
 
-Three scripts, each writing one table to `results/`:
-- [make.py](make.py):  Main script that calls all the subsequent ones.
-- [make_spectra.py](make_spectra.py): PPPC4 and CosmiXs tables vs `PrimaryFlux`
-  (b, tau, mu, W). Check: at the mass nodes Gammapy reproduces the table, read
-  independently of Gammapy, to better than 1e-6. Between nodes, the difference
-  with a cubic spline in log10(mass) is reported as an estimate of the
-  interpolation uncertainty (no check). Uses `$GAMMAPY_DATA` only.
-- [make_annihilation.py](make_annihilation.py): median upper limit on <sigma v>.
-- [make_decay.py](make_decay.py): median lower limit on the lifetime.
+- [make.py](make.py): runs the two scripts below and prints a summary of the checks.
+- [make_spectra.py](make_spectra.py): PPPC4 and CosmiXs tables vs
+  `ContinuumPrimaryFlux` (channels b, tau, mu, W). For every mass and x = E / m_DM
+  in the tables, the Gammapy dN/dE must equal dN/dlog10(x) / (E ln 10), with the
+  tables read independently of Gammapy.
+- [make_limits.py](make_limits.py): median expected upper limit on <sigma v>,
+  compared with the median of the paper. Check: ratio within [1/1.15, 1.15].
 
-Limits: continuum, DraI and Scl (classical), CBe and RetII (ultra-faint), b (soft)
-and tau (hard) channels, 1, 10 and 50 TeV, Einasto, 100 h, without the
-astrophysical factor as nuisance (`wosj` in the paper). The median is computed on
-an Asimov dataset, or over `--n-realizations` Poisson realizations. Check:
-Gammapy median / paper median within [0.8, 1.25].
+Limits: simulated 100 h observations of the classical dSphs Draco I and Sculptor
+(prod5-v0.1 IRFs), Einasto profile, PPPC4 spectra, channels b (soft) and tau
+(hard), masses 1, 10 and 50 TeV, without the J factor as nuisance (`wosj` in the
+paper), as in the paper. The median is computed on an Asimov dataset
+(`--n-realizations N` gives the median over N Poisson realizations instead).
 
 ## Data
-The input data are in [data](data). They are a subset of the supplementary material 
-of the CTAO dSph paper (https://zenodo.org/records/17079907) and of the prod5-v0.1 IRFs,
- kept here so that the validation does not depend on downloads. 
+
+[data](data) holds the inputs, so that the validation does not depend on
+downloads: a subset of the paper supplementary material (2D J maps, reference
+limits), the prod5-v0.1 IRFs and `inputs_combined_analysis.csv` (IRF, tidal radius
+and J factor of each target). See [data/README.md](data/README.md).
 
 ## Execution
 
 ```
-python make.py
+python make.py                       # spectra + annihilation limits, with summary
 python make_spectra.py
-python make_annihilation.py
-python make_decay.py
+python make_limits.py --mode annihilation [--targets DraI] [--n-realizations 100]
 ```
-
-With the Asimov dataset each limits script takes a few minutes. With
-`--n-realizations 100` it takes hours; it can be split with `--targets`
-(e.g. one job per target), which writes one table per subset.
 
 ## Results
 
-### Spectra
+- [results/spectra.ecsv](results/spectra.ecsv): Gammapy reproduces both tables to
+  numerical precision (relative differences < 1e-13).
+- [results/limits_annihilation.ecsv](results/limits_annihilation.ecsv): TODO
 
-[results/spectra.ecsv](results/spectra.ecsv). At the nodes Gammapy reproduces
-the tables to numerical precision (< 1e-13). Between nodes, for masses above
-100 GeV, the median difference with a cubic interpolation is below 2% for b, tau
-and W and a few % for mu, with maxima of 20-50% close to the kinematic endpoint.
-
-### Limits
-
-TODO: results/limits_annihilation.ecsv, results/limits_decay.ecsv
-
-## Results discussion
-
-TODO
-
-
-
-
+Decay is not validated: the paper used Gammapy v1.2, where the decay spectrum was
+evaluated at m_DM instead of m_DM / 2. This was corrected in later versions, so
+current Gammapy gives lifetime limits weaker than the paper by a factor ~0.3-0.6.

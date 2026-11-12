@@ -26,7 +26,6 @@ PATH_RESULTS = Path(__file__).parent / "results"
 
 CHANNELS = ["b", "tau", "mu", "W"]
 TOLERANCE = 1e-6
-REL_THRESHOLD = 1e-2 
 
 TABLES = {
     "pppc4": {
