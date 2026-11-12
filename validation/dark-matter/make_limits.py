@@ -2,7 +2,8 @@
 """Validation of DM continuum limits (annihilation and decay) against the CTAO dSph paper.
 
 Reference: CTAO Consortium (2025), MNRAS 544, 2946, arXiv:2508.19120, and its
-supplementary material https://zenodo.org/records/17079907 (see data/README.md).
+supplementary material https://zenodo.org/records/17079907, downloaded at each
+execution into a temporary folder.
 
 Median expected limit for single dSphs, 100 h, Einasto, without the J/D factor as
 nuisance ("wosj" in the paper), compared with the median of the paper:
@@ -11,17 +12,24 @@ By default the median is computed on an Asimov dataset; with --n-realizations it
 is the median over Poisson realizations.
 
 python make_limits.py --mode annihilation
-python make_limits.py --mode decay
+python make_limits.py --mode decay   # not validated, see README
 """
 
+import atexit
+import functools
+import io
 import logging
+import shutil
+import tempfile
 import time
 import warnings
+import tarfile
 from pathlib import Path
 
 import click
 import numpy as np
 import pandas as pd
+import requests
 import astropy.units as u
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
@@ -40,15 +48,24 @@ from gammapy.modeling.models import (
     SkyModel,
     TemplateSpatialModel,
 )
+from gammapy.utils.scripts import make_path
 
 log = logging.getLogger(__name__)
 
 VALIDATION_DIR = Path(__file__).parent
-PATH_DATA = VALIDATION_DIR / "data"
 PATH_RESULTS = VALIDATION_DIR / "results"
-
-TARGETS = ["DraI", "Scl"]
-TARGETS_FILE = PATH_DATA / "inputs_combined_analysis.csv"
+ZENODO_RECORD = "17079907"
+ZENODO_FILE = "ctao_ksp_dsph_suppmat.tar.xz"
+TARGETS = {
+    "DraI": {
+        "irf": "$GAMMAPY_DATA/cta-caldb/Prod5-North-20deg-AverageAz-4LSTs09MSTs.180000s-v0.1.fits.gz",
+        "r_tidal": 3.68,
+    },
+    "Scl": {
+        "irf": "$GAMMAPY_DATA/cta-caldb/Prod5-South-20deg-AverageAz-14MSTs37SSTs.180000s-v0.1.fits.gz",
+        "r_tidal": 2.01,
+    },
+}
 
 MASSES = [1, 10, 50] * u.TeV
 CHANNELS = ["b", "tau"]  # soft and hard continuum
@@ -67,6 +84,7 @@ MODES = {
     "annihilation": {
         "factor_unit": "GeV2 cm-5",
         "limit_unit": "cm3 s-1",
+        "profile_file": "clumpy/Jfactors/profile/{profile}/rvir_{target}_MCMC.dat.Jalphaint_cls.output",
         "map_file": (
             "clumpy/Jfactors/2Dmaps/{profile}/"
             "annihil_{target}2D_FOVdiameter10.0deg_nside1024-JFACTOR-Jtot-image.fits"
@@ -79,6 +97,7 @@ MODES = {
     "decay": {
         "factor_unit": "GeV cm-2",
         "limit_unit": "s",
+        "profile_file": "clumpy/Dfactors/profile/{profile}/rvir_{target}_MCMC.dat.Dalphaint_cls.output",
         "map_file": (
             "clumpy/Dfactors/2Dmaps/{profile}/"
             "decay_{target}2D_FOVdiameter10.0deg_nside1024-DFACTOR-Dtot-image.fits"
@@ -89,40 +108,52 @@ MODES = {
     },
 }
 
+@functools.lru_cache(maxsize=None)
+def zenodo_dir():
+    """Root of the Zenodo record (the folder containing `clumpy/`).
 
-def read_targets(targets, mode):
-    """IRF, integration radius (tidal radius) and J or D factor of each target.
-
-    As in the paper pipeline, the J/D factor is integrated up to the tidal
-    radius, which is also the maximum offset of the safe mask.
+    The record (~5 MB) is downloaded once per execution into a temporary folder,
+    which is removed when the script ends.
     """
-    df = pd.read_csv(TARGETS_FILE).set_index("src")
-    missing = set(targets) - set(df.index)
-    if missing:
-        raise click.ClickException(f"{sorted(missing)} not in {TARGETS_FILE.name}")
-    column = "jfactor" if mode == "annihilation" else "dfactor"
-    unit = u.Unit(MODES[mode]["factor_unit"])
-    return {
-        t: {
-            "irf": df.loc[t, "irf"],
-            "alpha_int": float(df.loc[t, "r_tidal"]),
-            "factor": float(df.loc[t, column]) * unit,
-        }
-        for t in targets
-    }
+    tmp = Path(tempfile.mkdtemp(prefix="dsph_zenodo_"))
+    atexit.register(shutil.rmtree, tmp, ignore_errors=True)
+
+    url = f"https://zenodo.org/records/{ZENODO_RECORD}/files/{ZENODO_FILE}?download=1"
+    log.info(f"Downloading {ZENODO_FILE} from Zenodo record {ZENODO_RECORD}")
+    response = requests.get(url, timeout=300)
+    response.raise_for_status()
+
+    with tarfile.open(fileobj=io.BytesIO(response.content), mode="r:*") as tar:
+        if hasattr(tarfile, "data_filter"):  # safe extraction, Python >= 3.11.4
+            tar.extractall(tmp, filter="data")
+        else:
+            tar.extractall(tmp)
+
+    roots = [p.parent for p in tmp.rglob("clumpy") if p.is_dir()]
+    if not roots:
+        raise click.ClickException(f"No clumpy/ folder in {ZENODO_FILE}")
+    return roots[0]
+
+def read_factor(mode, target, r_tidal):
+    """J or D factor up to r_tidal (median of the CLUMPY profile, log-log interpolation)."""
+    cfg = MODES[mode]
+    filename = zenodo_dir() / cfg["profile_file"].format(profile=PROFILE, target=target)
+    data = np.loadtxt(filename, comments="#")
+    log_factor = np.interp(np.log10(r_tidal), np.log10(data[:, 0]), np.log10(data[:, 1]))
+    return 10**log_factor * u.Unit(cfg["factor_unit"])
 
 
 def read_spatial_model(mode, target):
     """Normalized spatial template from the CLUMPY 2D map and target position."""
-    filename = PATH_DATA / MODES[mode]["map_file"].format(profile=PROFILE, target=target)
+    filename = zenodo_dir() / MODES[mode]["map_file"].format(profile=PROFILE, target=target)
     header = fits.getheader(filename)
     position = SkyCoord(header["PSI_0"], header["THETA_0"], unit="deg", frame="galactic")
     return TemplateSpatialModel.read(filename, normalize=True), position
 
 
 def read_paper_median(mode, target, channel):
-    """Paper median at MASSES (log-log interpolation in mass) and the paper J/D factor."""
-    filename = PATH_DATA / MODES[mode]["reference_file"].format(
+    """Paper median at MASSES (log-log interpolation in mass)."""
+    filename = zenodo_dir() / MODES[mode]["reference_file"].format(
         target=target, profile=PROFILE.lower()
     )
     df = pd.read_csv(filename)
@@ -142,8 +173,7 @@ def read_paper_median(mode, target, channel):
     df = df[is_median]
 
     value_columns = [c for c in df.columns
-                    if c not in ["name", "jfactor", "profile", "ch", "mass", "quantile"]]
-    
+                     if c not in ["name", "jfactor", "profile", "ch", "mass", "quantile"]]
     median = df.groupby("mass")[value_columns[0]].median()
 
     mass = (median.index.values * u.GeV).to_value("TeV")
@@ -159,19 +189,19 @@ def read_paper_median(mode, target, channel):
     )
     return 10**log_median
 
-def build_dataset(target, irf, alpha_int, position):
-    irf_file = PATH_DATA / "IRFs/cta/prod5-v0.1/bcf" / irf / "irf_file.fits.gz"
+def build_dataset(target, position):
+    cfg = TARGETS[target]
     obs = Observation.create(
         pointing=FixedPointingInfo(fixed_icrs=position.icrs),
         livetime=LIVETIME,
-        irfs=load_irf_dict_from_file(irf_file),
+        irfs=load_irf_dict_from_file(make_path(cfg["irf"])),
     )
     geom = WcsGeom.create(
-        skydir=position, binsz=0.02*u.deg, width=2 * u.deg, frame="galactic", axes=[ENERGY_AXIS]
+        skydir=position, binsz=0.02 * u.deg, width=2 * u.deg, frame="galactic", axes=[ENERGY_AXIS]
     )
     empty = MapDataset.create(geom, energy_axis_true=ENERGY_AXIS_TRUE, name=target)
     maker = MapDatasetMaker(selection=["exposure", "background", "psf", "edisp"])
-    safe_mask = SafeMaskMaker(methods=["offset-max"], offset_max=alpha_int * u.deg)
+    safe_mask = SafeMaskMaker(methods=["offset-max"], offset_max=cfg["r_tidal"] * u.deg)
     return safe_mask.run(maker.run(empty, obs), obs)
 
 
@@ -186,7 +216,6 @@ def set_models(mode, dataset, mass, channel, factor, spatial_model, unit=1.0):
         annihilation=(mode == "annihilation"),
     )
     spectral.scale.min = 0
-
     spectral.scale.scale_method = None
     dm = SkyModel(spatial_model=spatial_model.copy(), spectral_model=spectral, name="dm")
 
@@ -222,8 +251,6 @@ def median_limit(mode, dataset, mass, channel, factor, spatial_model, n_realizat
     ds.models["dm"].spectral_model.scale.value = 1
     signal = ds.npred_signal().data[ds.mask].sum()
     unit = 2 * np.sqrt(ds.npred_background().data[ds.mask].sum()) / signal
-    limits = []
-
     for _ in range(3):
         asimov = set_models(mode, dataset.copy(name=dataset.name), *model_args, unit)
         asimov.counts = asimov.npred()
@@ -251,14 +278,15 @@ def median_limit(mode, dataset, mass, channel, factor, spatial_model, n_realizat
 def main(mode, targets, n_realizations, log_level):
     logging.basicConfig(level=log_level)
     warnings.simplefilter("ignore")
+    logging.getLogger("gammapy.modeling.models.spectral").setLevel(logging.ERROR)
     start = time.time()
     rows = []
 
-    for target, cfg in read_targets(targets.split(","), mode).items():
-        factor = cfg["factor"]
+    for target in targets.split(","):
+        factor = read_factor(mode, target, TARGETS[target]["r_tidal"])
         spatial_model, position = read_spatial_model(mode, target)
-        dataset = build_dataset(target, cfg["irf"], cfg["alpha_int"], position)
-        log.info(f"{target} ({cfg['irf']}): factor({cfg['alpha_int']} deg) = {factor:.3e}")
+        dataset = build_dataset(target, position)
+        log.info(f"{target}: factor({TARGETS[target]['r_tidal']} deg) = {factor:.3e}")
 
         for channel in CHANNELS:
             paper = read_paper_median(mode, target, channel)
@@ -283,8 +311,8 @@ def main(mode, targets, n_realizations, log_level):
     table["gammapy_median"].unit = table["paper_median"].unit = MODES[mode]["limit_unit"]
     table.meta.update({
         "mode": mode, "profile": PROFILE, "livetime": str(LIVETIME), "spectra": SPECTRA,
-        "delta_ts": DELTA_TS, "n_realizations": n_realizations,
-        "tolerance": TOLERANCE,
+        "delta_ts": DELTA_TS, "n_realizations": n_realizations, "tolerance": TOLERANCE,
+        "zenodo_record": ZENODO_RECORD,
     })
     PATH_RESULTS.mkdir(exist_ok=True)
     suffix = "" if targets == ",".join(TARGETS) else "_" + targets.replace(",", "_")
