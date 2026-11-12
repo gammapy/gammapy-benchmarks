@@ -110,11 +110,7 @@ MODES = {
 
 @functools.lru_cache(maxsize=None)
 def zenodo_dir():
-    """Root of the Zenodo record (the folder containing `clumpy/`).
-
-    The record (~5 MB) is downloaded once per execution into a temporary folder,
-    which is removed when the script ends.
-    """
+    """Root of the Zenodo record."""
     tmp = Path(tempfile.mkdtemp(prefix="dsph_zenodo_"))
     atexit.register(shutil.rmtree, tmp, ignore_errors=True)
 
@@ -124,7 +120,7 @@ def zenodo_dir():
     response.raise_for_status()
 
     with tarfile.open(fileobj=io.BytesIO(response.content), mode="r:*") as tar:
-        if hasattr(tarfile, "data_filter"):  # safe extraction, Python >= 3.11.4
+        if hasattr(tarfile, "data_filter"):
             tar.extractall(tmp, filter="data")
         else:
             tar.extractall(tmp)
