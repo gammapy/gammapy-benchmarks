@@ -1,0 +1,74 @@
+# %ECSV 0.9
+# %Part of https://github.com/moritzhuetten/DMbounds under the 
+# %Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License, see LICENSE.rst 
+# ---
+# datatype:
+# - {name: mass      , unit: GeV     , datatype: float32 , description: DM mass              }
+# - {name: sigmav    , unit: cm3s-1  , datatype: float32 , description: <sigmav>             }
+# meta: !!omap
+# - {reference:        "CTA KSP Perseus"}
+# - {doi:              ""}
+# - {arxiv:            ""}
+# - {instrument:       "cta"}
+# - {year:             "2023"}
+# - {source:           "perseus"}
+# - {channel:          "bb"}
+# - {confidence        "0.95" }
+# - {dmfraction:       "1"}
+# - {obs_time:         "300h"}
+# - {figure:           ""}
+# - {comment:          ""}
+# - {status:           ""}
+# schema : astropy −2.0
+
+mass sigmav
+0.0499  1.04e-22
+0.0568  9.04e-23
+0.0643  7.30e-23
+0.0743  5.67e-23
+0.0823  4.73e-23
+0.0913  3.90e-23
+0.106  3.32e-23
+0.120  3.15e-23
+0.136  2.97e-23
+0.151  2.83e-23
+0.171  2.69e-23
+0.188  2.57e-23
+0.219  2.42e-23
+0.264  2.26e-23
+0.299  2.19e-23
+0.342  2.13e-23
+0.397  2.07e-23
+0.480  2.04e-23
+0.543  2.02e-23
+0.606  2.11e-23
+0.735  2.16e-23
+0.867  2.25e-23
+0.999  2.33e-23
+1.13  2.48e-23
+1.25  2.58e-23
+1.41  2.72e-23
+1.62  2.89e-23
+1.82  3.06e-23
+2.02  3.18e-23
+2.27  3.34e-23
+2.52  3.51e-23
+2.85  3.74e-23
+3.38  4.31e-23
+3.90  4.66e-23
+5.23  5.63e-23
+6.85  6.89e-23
+8.67  7.89e-23
+10.5  8.63e-23
+15.3  1.44e-22
+21.8  2.13e-22
+25.1  2.41e-22
+28.0  2.72e-22
+32.9  3.13e-22
+36.2  3.66e-22
+40.4  4.03e-22
+52.8  5.06e-22
+60.1  5.82e-22
+71.7  8.33e-22
+81.7  8.38e-22
+94.0  7.60e-22

@@ -1,0 +1,71 @@
+# %ECSV 0.9
+# %Part of https://github.com/moritzhuetten/DMbounds under the
+# %Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License, see LICENSE.rst
+# ---
+# datatype:
+# - {name: mass   , unit: GeV , datatype: float32 , description: DM mass      }
+# - {name: tau    , unit: s   , datatype: float32 , description: DM lifetime  }
+# meta: !!omap
+# - {reference:        "Cirelli+ "Gamma ray constraints on decaying dark matter" PHYSICAL REVIEW D 86, 083506 (2012)"}
+# - {doi:              "10.1103/PhysRevD.86.083506"}
+# - {arxiv:            "1205.5283"}
+# - {instrument:       "cta"}
+# - {year:             "2012"}
+# - {source:           "Fornax"}
+# - {channel:          "tautau"}
+# - {confidence        "0.95" }
+# - {dmfraction:       "1"}
+# - {obs_time:         "50 h"}
+# - {figure:           "Fig 3"}
+# - {comment:          "Projected limits casted from HESS limits"}
+# - {status:           ""}
+# schema : astropy −2.0
+
+
+  mass      tau
+2.516e+2   6.163e+26
+3.038e+2   9.558e+26
+3.295e+2   1.122e+27
+3.798e+2   1.421e+27
+4.299e+2   1.698e+27
+4.547e+2   1.828e+27
+5.208e+2   2.214e+27
+5.508e+2   2.387e+27
+6.259e+2   2.870e+27
+6.619e+2   3.096e+27
+7.583e+2   3.745e+27
+8.019e+2   3.965e+27
+9.185e+2   4.478e+27
+9.752e+2   4.715e+27
+1.130e+3   5.243e+27
+1.200e+3   5.462e+27
+1.391e+3   6.010e+27
+1.477e+3   6.236e+27
+1.712e+3   6.806e+27
+1.825e+3   7.000e+27
+2.124e+3   7.230e+27
+2.264e+3   7.331e+27
+2.635e+3   7.561e+27
+2.808e+3   7.678e+27
+3.268e+3   7.708e+27
+3.484e+3   7.723e+27
+4.054e+3   7.708e+27
+4.321e+3   7.649e+27
+5.028e+3   7.488e+27
+5.359e+3   7.402e+27
+6.236e+3   7.117e+27
+6.621e+3   7.000e+27
+7.735e+3   6.671e+27
+8.212e+3   6.543e+27
+9.517e+3   6.192e+27
+1.014e+4   6.035e+27
+1.180e+4   5.668e+27
+1.253e+4   5.501e+27
+1.464e+4   5.067e+27
+1.554e+4   4.924e+27
+1.801e+4   4.521e+27
+1.912e+4   4.366e+27
+2.216e+4   3.996e+27
+2.353e+4   3.852e+27
+2.726e+4   3.456e+27
+

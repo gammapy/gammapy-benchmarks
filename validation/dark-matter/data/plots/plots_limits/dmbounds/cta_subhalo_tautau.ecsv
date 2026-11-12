@@ -1,0 +1,81 @@
+# %ECSV 0.9
+# %Part of https://github.com/moritzhuetten/DMbounds under the
+# %Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License, see LICENSE.rst
+# ---
+# datatype:
+# - {name: mass      , unit: TeV     , datatype: float32 , description: DM mass              }
+# - {name: sigmav    , unit: cm3s-1  , datatype: float32 , description: <sigmav>             }
+# meta: !!omap
+# - {reference:        "CTA LMC paper"}
+# - {doi:              ""}
+# - {arxiv:            ""}
+# - {instrument:       "cta"}
+# - {year:             "2023"}
+# - {source:           "lmc"}
+# - {channel:          "tautau"}
+# - {confidence        "0.95" }
+# - {dmfraction:       "1"}
+# - {obs_time:         "300h"}
+# - {figure:           ""}
+# - {comment:          ""}
+# - {status:           ""}
+# schema : astropy −2.0
+
+mass sigmav
+5.41e+1 1.50e-24
+6.19e+1 1.19e-24
+7.08e+1 9.70e-25
+8.10e+1 8.37e-25
+9.26e+1 7.61e-25
+1.06e+2 7.11e-25
+1.21e+2 6.70e-25
+1.39e+2 6.34e-25
+1.58e+2 6.11e-25
+1.81e+2 6.02e-25
+2.07e+2 6.00e-25
+2.37e+2 5.91e-25
+2.71e+2 5.73e-25
+3.10e+2 5.53e-25
+3.55e+2 5.42e-25
+4.06e+2 5.46e-25
+4.64e+2 5.50e-25
+5.30e+2 5.54e-25
+6.07e+2 5.48e-25
+6.94e+2 5.54e-25
+7.93e+2 5.76e-25
+9.07e+2 5.97e-25
+1.04e+3 6.18e-25
+1.19e+3 6.38e-25
+1.36e+3 6.65e-25
+1.55e+3 6.94e-25
+1.78e+3 7.42e-25
+2.03e+3 8.06e-25
+2.32e+3 8.74e-25
+2.66e+3 9.47e-25
+3.04e+3 1.02e-24
+3.47e+3 1.12e-24
+3.97e+3 1.23e-24
+4.54e+3 1.40e-24
+5.20e+3 1.59e-24
+5.94e+3 1.77e-24
+6.80e+3 1.96e-24
+7.77e+3 2.26e-24
+8.89e+3 2.58e-24
+1.02e+4 3.06e-24
+1.16e+4 3.51e-24
+1.33e+4 3.98e-24
+1.52e+4 4.62e-24
+1.74e+4 5.46e-24
+1.99e+4 6.53e-24
+2.27e+4 7.78e-24
+2.60e+4 9.23e-24
+2.97e+4 1.10e-23
+3.40e+4 1.30e-23
+3.89e+4 1.56e-23
+4.45e+4 1.89e-23
+5.09e+4 2.28e-23
+5.82e+4 2.75e-23
+6.66e+4 3.30e-23
+7.61e+4 3.94e-23
+8.71e+4 4.72e-23
+9.42e+4 5.23e-23

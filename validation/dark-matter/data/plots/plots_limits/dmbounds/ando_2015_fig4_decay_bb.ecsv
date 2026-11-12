@@ -1,0 +1,69 @@
+# %ECSV 0.9
+# %Part of https://github.com/moritzhuetten/DMbounds under the
+# %Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License, see LICENSE.rst
+# ---
+# datatype:
+# - {name: mass   , unit: GeV, datatype: float32 , description: DM mass      }
+# - {name: tau    , unit: s  , datatype: float32 , description: DM lifetime  }
+# meta: !!omap
+# - {reference:        "Ando & Ishiwata Constraints on decaying dark matter from the extragalactic gamma-ray background JCAP05(2015)024"}
+# - {doi:              "10.1088/1475-7516/2015/05/024"}
+# - {arxiv:            "1502.02007"}
+# - {instrument:       "lat"}
+# - {year:             "2015"}
+# - {source:           "diffuse"}
+# - {channel:          "bb"}
+# - {confidence        "0.95" }
+# - {dmfraction:       "1"}
+# - {obs_time:         "50 months"}
+# - {figure:           "Fig 4"}
+# - {comment:          "Solid blue line"}
+# - {status:           ""}
+# schema : astropy −2.0
+
+mass      tau
+2.623e+1  1.652e+26
+3.083e+1  1.793e+26
+3.417e+1  1.907e+26
+3.928e+1  2.138e+26
+4.206e+1  2.411e+26
+4.694e+1  2.722e+26
+5.411e+1  3.307e+26
+5.721e+1  3.865e+26
+6.388e+1  4.447e+26
+6.849e+1  5.066e+26
+7.608e+1  5.822e+26
+8.308e+1  6.554e+26
+9.694e+1  7.283e+26
+1.139e+2  7.944e+26
+1.339e+2  8.438e+26
+1.574e+2  8.884e+26
+1.850e+2  9.340e+26
+2.174e+2  9.581e+26
+2.555e+2  9.790e+26
+3.003e+2  9.868e+26
+3.530e+2  9.897e+26
+4.149e+2  9.771e+26
+4.876e+2  9.497e+26
+5.731e+2  9.150e+26
+6.736e+2  8.699e+26
+7.917e+2  8.070e+26
+9.237e+2  7.345e+26
+1.062e+3  6.543e+26
+1.203e+3  5.818e+26
+1.295e+3  5.336e+26
+1.415e+3  4.547e+26
+1.515e+3  3.978e+26
+1.639e+3  3.390e+26
+1.871e+3  2.729e+26
+2.087e+3  2.428e+26
+2.453e+3  2.362e+26
+2.883e+3  2.375e+26
+3.389e+3  2.425e+26
+3.983e+3  2.448e+26
+4.681e+3  2.583e+26
+6.053e+3  2.861e+26
+7.569e+3  3.167e+26
+8.362e+3  3.248e+26
+9.002e+3  3.496e+26
+9.685e+3  3.871e+26
