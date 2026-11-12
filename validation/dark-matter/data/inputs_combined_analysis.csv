@@ -1,0 +1,9 @@
+src,prod,irf,r_tidal,jfac_sigma
+CBe,prod5-v0.1,North_z20_50h,8.53,0.64
+DraI,prod5-v0.1,North_z20_50h,3.68,0.08
+RetII,prod5-v0.1,South_z20_50h,3.04,0.64
+Scl,prod5-v0.1,South_z20_50h,2.01,0.07
+SgrII,prod5-v0.1,South_z20_50h,3.16,1.14
+UMaII,prod5-v0.1,North_z40_50h,3.16,0.29
+UMi,prod5-v0.1,North_z40_50h,10,0.14
+Wil1,prod5-v0.1,North_z20_50h,1.59,0.75

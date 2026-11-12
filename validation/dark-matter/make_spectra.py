@@ -67,8 +67,8 @@ def main(log_level):
                 log10x = sub[cfg["log10x"]].values
                 dndlog10x = sub[cfg["channels"][channel]].values
 
-                # x < 1 and non-negligible values (e.g. no photons for W below threshold)
-                sel = (log10x < 0) & (dndlog10x > REL_THRESHOLD * dndlog10x.max())
+                # Compare only where the table predicts photons:
+                sel = (log10x < 0) & (dndlog10x > 0)
                 if not np.any(sel):
                     continue
 
