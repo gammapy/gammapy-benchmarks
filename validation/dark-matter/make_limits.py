@@ -50,7 +50,7 @@ PATH_RESULTS = VALIDATION_DIR / "results"
 TARGETS = ["DraI", "Scl"]
 TARGETS_FILE = PATH_DATA / "inputs_combined_analysis.csv"
 
-MASSES = [1, 5, 10, 50] * u.TeV
+MASSES = [1, 10, 50] * u.TeV
 CHANNELS = ["b", "tau"]  # soft and hard continuum
 PROFILE = "Einasto"
 LIVETIME = 100 * u.h
@@ -67,7 +67,6 @@ MODES = {
     "annihilation": {
         "factor_unit": "GeV2 cm-5",
         "limit_unit": "cm3 s-1",
-        "profile_file": "clumpy/Jfactors/profile/{profile}/rvir_{target}_MCMC.dat.Jalphaint_cls.output",
         "map_file": (
             "clumpy/Jfactors/2Dmaps/{profile}/"
             "annihil_{target}2D_FOVdiameter10.0deg_nside1024-JFACTOR-Jtot-image.fits"
@@ -80,7 +79,6 @@ MODES = {
     "decay": {
         "factor_unit": "GeV cm-2",
         "limit_unit": "s",
-        "profile_file": "clumpy/Dfactors/profile/{profile}/rvir_{target}_MCMC.dat.Dalphaint_cls.output",
         "map_file": (
             "clumpy/Dfactors/2Dmaps/{profile}/"
             "decay_{target}2D_FOVdiameter10.0deg_nside1024-DFACTOR-Dtot-image.fits"
@@ -92,8 +90,8 @@ MODES = {
 }
 
 
-def read_targets(targets):
-    """IRF and integration radius of each target, from TARGETS_FILE.
+def read_targets(targets, mode):
+    """IRF, integration radius (tidal radius) and J or D factor of each target.
 
     As in the paper pipeline, the J/D factor is integrated up to the tidal
     radius, which is also the maximum offset of the safe mask.
@@ -102,19 +100,16 @@ def read_targets(targets):
     missing = set(targets) - set(df.index)
     if missing:
         raise click.ClickException(f"{sorted(missing)} not in {TARGETS_FILE.name}")
+    column = "jfactor" if mode == "annihilation" else "dfactor"
+    unit = u.Unit(MODES[mode]["factor_unit"])
     return {
-        t: {"irf": df.loc[t, "irf"], "alpha_int": float(df.loc[t, "r_tidal"])}
+        t: {
+            "irf": df.loc[t, "irf"],
+            "alpha_int": float(df.loc[t, "r_tidal"]),
+            "factor": float(df.loc[t, column]) * unit,
+        }
         for t in targets
     }
-
-
-def read_factor(mode, target, alpha_int):
-    """J or D factor up to `alpha_int` (median of the CLUMPY profile, log-log interpolation)."""
-    cfg = MODES[mode]
-    filename = PATH_DATA / cfg["profile_file"].format(profile=PROFILE, target=target)
-    data = np.loadtxt(filename, comments="#")
-    log_factor = np.interp(np.log10(alpha_int), np.log10(data[:, 0]), np.log10(data[:, 1]))
-    return 10**log_factor * u.Unit(cfg["factor_unit"])
 
 
 def read_spatial_model(mode, target):
@@ -133,6 +128,9 @@ def read_paper_median(mode, target, channel):
     df = pd.read_csv(filename)
     df = df.loc[:, ~df.columns.str.startswith("Unnamed")]  # row index written by pandas
 
+    if "profile" in df.columns:
+        df = df[df["profile"].astype(str).str.lower() == PROFILE.lower()]
+
     ch = df["ch"].astype(str).str.lower().str.strip()
     df = df[ch.isin([channel.lower(), 2 * channel.lower()])]
 
@@ -143,7 +141,8 @@ def read_paper_median(mode, target, channel):
         is_median = df["quantile"].astype(str).str.lower().str.strip().isin(["median", "50%"])
     df = df[is_median]
 
-    value_columns = [c for c in df.columns if c not in ["name", "jfactor", "profile", "ch", "mass", "quantile"]]
+    value_columns = [c for c in df.columns
+                    if c not in ["name", "jfactor", "profile", "ch", "mass", "quantile"]]
     
     median = df.groupby("mass")[value_columns[0]].median()
 
@@ -158,9 +157,9 @@ def read_paper_median(mode, target, channel):
     log_median = np.interp(
         np.log10(MASSES.to_value("TeV")), np.log10(mass), np.log10(median.values)
     )
-    return 10**log_median, float(df["jfactor"].iloc[0])*1e19
+    return 10**log_median
 
-def build_dataset(target, irf, alpha_int, position, binsz):
+def build_dataset(target, irf, alpha_int, position):
     irf_file = PATH_DATA / "IRFs/cta/prod5-v0.1/bcf" / irf / "irf_file.fits.gz"
     obs = Observation.create(
         pointing=FixedPointingInfo(fixed_icrs=position.icrs),
@@ -168,7 +167,7 @@ def build_dataset(target, irf, alpha_int, position, binsz):
         irfs=load_irf_dict_from_file(irf_file),
     )
     geom = WcsGeom.create(
-        skydir=position, binsz=binsz, width=2 * u.deg, frame="galactic", axes=[ENERGY_AXIS]
+        skydir=position, binsz=0.02*u.deg, width=2 * u.deg, frame="galactic", axes=[ENERGY_AXIS]
     )
     empty = MapDataset.create(geom, energy_axis_true=ENERGY_AXIS_TRUE, name=target)
     maker = MapDatasetMaker(selection=["exposure", "background", "psf", "edisp"])
@@ -225,20 +224,21 @@ def median_limit(mode, dataset, mass, channel, factor, spatial_model, n_realizat
     unit = 2 * np.sqrt(ds.npred_background().data[ds.mask].sum()) / signal
     limits = []
 
+    for _ in range(3):
+        asimov = set_models(mode, dataset.copy(name=dataset.name), *model_args, unit)
+        asimov.counts = asimov.npred()
+        scale_ul = scale_upper_limit(asimov)
+        if 0.3 < scale_ul < 3:
+            break
+        unit *= scale_ul
+    limits = [scale_ul * unit]
+
     if n_realizations > 0:
+        limits = []
         for seed in range(n_realizations):
             toy = set_models(mode, dataset.copy(name=dataset.name), *model_args, unit)
             toy.fake(random_state=seed)
             limits.append(scale_upper_limit(toy) * unit)
-    else:
-        for _ in range(3):
-            asimov = set_models(mode, dataset.copy(name=dataset.name), *model_args, unit)
-            asimov.counts = asimov.npred()
-            scale_ul = scale_upper_limit(asimov)
-            if 0.3 < scale_ul < 3:
-                break
-            unit *= scale_ul
-        limits = [scale_ul * unit]
 
     return to_physical(mode, np.nanmedian(limits))
 
@@ -247,24 +247,21 @@ def median_limit(mode, dataset, mass, channel, factor, spatial_model, n_realizat
 @click.option("--mode", required=True, type=click.Choice(list(MODES)))
 @click.option("--targets", default=",".join(TARGETS), help="Comma-separated subset")
 @click.option("--n-realizations", default=0, help="0: Asimov dataset")
-@click.option("--binsz", default=0.02, help="Spatial bin size in deg")
 @click.option("--log-level", default="INFO", type=click.Choice(["DEBUG", "INFO", "WARNING"]))
-def main(mode, targets, n_realizations, binsz, log_level):
+def main(mode, targets, n_realizations, log_level):
     logging.basicConfig(level=log_level)
     warnings.simplefilter("ignore")
     start = time.time()
     rows = []
 
-    for target, cfg in read_targets(targets.split(",")).items():
-        factor = read_factor(mode, target, cfg["alpha_int"])
+    for target, cfg in read_targets(targets.split(","), mode).items():
+        factor = cfg["factor"]
         spatial_model, position = read_spatial_model(mode, target)
-        dataset = build_dataset(target, cfg["irf"], cfg["alpha_int"], position, binsz * u.deg)
+        dataset = build_dataset(target, cfg["irf"], cfg["alpha_int"], position)
         log.info(f"{target} ({cfg['irf']}): factor({cfg['alpha_int']} deg) = {factor:.3e}")
 
         for channel in CHANNELS:
-            paper, paper_factor = read_paper_median(mode, target, channel)
-            log.info(f"{target}: factor Gammapy / paper = {factor.value / paper_factor:.3f}")
-            factor = paper_factor * u.Unit(MODES[mode]["factor_unit"])
+            paper = read_paper_median(mode, target, channel)
 
             for mass, paper_median in zip(MASSES, paper):
                 gammapy_median = median_limit(mode, dataset, mass, channel, factor,
@@ -286,7 +283,7 @@ def main(mode, targets, n_realizations, binsz, log_level):
     table["gammapy_median"].unit = table["paper_median"].unit = MODES[mode]["limit_unit"]
     table.meta.update({
         "mode": mode, "profile": PROFILE, "livetime": str(LIVETIME), "spectra": SPECTRA,
-        "delta_ts": DELTA_TS, "n_realizations": n_realizations, "binsz_deg": binsz,
+        "delta_ts": DELTA_TS, "n_realizations": n_realizations,
         "tolerance": TOLERANCE,
     })
     PATH_RESULTS.mkdir(exist_ok=True)
