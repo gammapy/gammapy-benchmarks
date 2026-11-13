@@ -1,0 +1,20 @@
+# %ECSV 1.0
+# ---
+# datatype:
+# - {name: source, datatype: string}
+# - {name: channel, datatype: string}
+# - {name: n_masses, datatype: int64}
+# - {name: max_rel_diff, datatype: float64}
+# - {name: passed, datatype: bool}
+# meta: !!omap
+# - {tolerance: 1.0e-06}
+# schema: astropy-2.0
+source channel n_masses max_rel_diff passed
+pppc4 b 61 1.2656542480726785e-14 True
+pppc4 tau 62 1.2545520178264269e-14 True
+pppc4 mu 62 2.886579864025407e-15 True
+pppc4 W 49 4.04121180963557e-14 True
+cosmixs b 64 4.2299497238218464e-13 True
+cosmixs tau 64 6.88338275267597e-14 True
+cosmixs mu 64 4.884981308350689e-15 True
+cosmixs W 64 3.8786529543699544e-11 True

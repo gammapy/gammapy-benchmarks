@@ -1,0 +1,32 @@
+# %ECSV 1.0
+# ---
+# datatype:
+# - {name: target, datatype: string}
+# - {name: channel, datatype: string}
+# - {name: mass, unit: TeV, datatype: float64}
+# - {name: gammapy_median, unit: s, datatype: float64}
+# - {name: paper_median, unit: s, datatype: float64}
+# - {name: ratio, datatype: float64}
+# - {name: passed, datatype: bool}
+# meta: !!omap
+# - {mode: decay}
+# - {profile: Einasto}
+# - {livetime: 100.0 h}
+# - {spectra: pppc4}
+# - {delta_ts: 4}
+# - {n_realizations: 0}
+# - {tolerance: 0.15}
+# schema: astropy-2.0
+target channel mass gammapy_median paper_median ratio passed
+DraI b 1.0 1.5881577116861012e+25 5.616695324730311e+25 0.2827566068420059 False
+DraI b 10.0 7.531695649621359e+25 1.7641779013218674e+26 0.4269238178291425 False
+DraI b 50.0 1.6658511562941857e+26 3.0580962723361315e+26 0.5447347002655394 False
+DraI tau 1.0 5.515118904297673e+25 1.2986434610139675e+26 0.4246830688995673 False
+DraI tau 10.0 1.8462839451387692e+26 2.9203813824818186e+26 0.6322064495458971 False
+DraI tau 50.0 2.056736166660062e+26 2.126449453379289e+26 0.9672161091774645 True
+Scl b 1.0 8.575998193610105e+24 2.6987853873581606e+25 0.317772514768399 False
+Scl b 10.0 5.5193528940042225e+25 1.0352318114970681e+26 0.53315139978384 False
+Scl b 50.0 1.2093353991574768e+26 1.8289363284341397e+26 0.6612233462456619 False
+Scl tau 1.0 3.643294608907965e+25 7.202624837778171e+25 0.5058287347966093 False
+Scl tau 10.0 1.285587099252222e+26 1.8025205141135974e+26 0.7132163485442599 False
+Scl tau 50.0 1.713567781541913e+26 1.814952425421378e+26 0.9441392278610682 True

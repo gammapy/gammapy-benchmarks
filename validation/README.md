@@ -13,6 +13,7 @@ The following analyses are currently validated:
 - [joint-crab](joint-crab) - Joint Crab paper
 - [fermi-3fhl](fermi-3fhl) - Fermi 3FHL catalog paper
 - [lst1-dl3-crab](lst1-dl3-crab) - LST-1 Crab data from performance study
+- [dark-matter](dark-matter) - Validation of the Dark Matter module with the CTAO Dwarfs prospect paper
 
 Other ideas and contributions are welcome. If you want to contribute, please get in touch. Examples:
 
