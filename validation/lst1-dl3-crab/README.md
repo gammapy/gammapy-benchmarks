@@ -40,6 +40,6 @@ The differences seen in the validation results with respect to the results from 
 
 ## References
 
-- LST-1 performance study [H. Abe et al 2023 ApJ 956 80]([10.3847/1538-4357/ace89d](https://doi.org/10.3847/1538-4357/ace89d))
+- LST-1 performance study [H. Abe et al 2023 ApJ 956 80](https://doi.org/10.3847/1538-4357/ace89d)
 - DL3 files used here, [openly available in Zenodo](https://zenodo.org/records/11445184), are a subset of the sample used in the LST-1 performance study.
 - Results in machine-readable format: https://github.com/cta-observatory/lst-crab-performance-paper-2023
