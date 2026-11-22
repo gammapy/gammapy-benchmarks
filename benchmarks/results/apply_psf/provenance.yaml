@@ -1,0 +1,13 @@
+env:
+  machine: x86_64
+  system: Linux
+
+software:
+  python_version: 3.11.14
+  numpy: 1.26.4
+  scipy: 1.17.0
+  astropy: 7.2.0
+  gammapy: 2.0.dev2824+gc604bbf76
+  torch: 2.1.0
+  cuda: 12.8
+  gpu: NVIDIA H100 PCIe
